@@ -85,6 +85,7 @@ export class User {
     user.passwordHash = dto.passwordHash;
     user.login = dto.login;
     user.isEmailConfirmed = false; // пользователь ВСЕГДА должен после регистрации подтверждить свой Email
+    user.deletedAt = null;
 
     user.name = {
       firstName: 'firstName xxx',
@@ -104,6 +105,7 @@ export class User {
     if (this.deletedAt !== null) {
       throw new Error('Entity already deleted');
     }
+
     this.deletedAt = new Date();
   }
 
