@@ -9,7 +9,7 @@ export class BlogViewDto {
   isMembership: boolean;
 
   static mapToView(blog: BlogDocument): BlogViewDto {
-    const dto = new this();
+    const dto = new BlogViewDto();
 
     dto.id = blog._id.toString();
     dto.name = blog.name;
