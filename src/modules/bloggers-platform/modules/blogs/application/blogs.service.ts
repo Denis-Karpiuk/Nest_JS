@@ -19,4 +19,18 @@ export class BlogsService {
 
     return blog._id.toString();
   }
+
+  async updateBlog(id: string, dto: CreateBlogDto) {
+    const blog = await this.blogsRepository.findOrNotFoundFail(id);
+
+    blog.update(dto);
+
+    await this.blogsRepository.save(blog);
+
+    return blog._id.toString();
+  }
+
+  async deleteBlog(id: string) {
+    await this.blogsRepository.deleteBlog(id);
+  }
 }

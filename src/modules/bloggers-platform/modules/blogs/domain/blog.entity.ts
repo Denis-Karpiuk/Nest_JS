@@ -1,6 +1,7 @@
 import { HydratedDocument, Model } from 'mongoose';
 import { CreateBlogDomainDto } from './dto/create-blog.domain.dto';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { UpdateBlogDto } from '../dto/create-blog.dto';
 
 const WEB_SITE_REG_EXP =
   /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/;
@@ -41,6 +42,12 @@ export class Blog {
     blog.isMembership = true;
 
     return blog as BlogDocument;
+  }
+
+  update(dto: UpdateBlogDto) {
+    this.name = dto.name;
+    this.description = dto.description;
+    this.websiteUrl;
   }
 }
 

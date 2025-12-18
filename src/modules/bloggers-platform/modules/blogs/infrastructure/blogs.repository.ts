@@ -22,6 +22,12 @@ export class BlogsRepository {
     return blog;
   }
 
+  async deleteBlog(id: string) {
+    return this.BlogModel.deleteOne({
+      _id: id,
+    });
+  }
+
   async save(blog: BlogDocument) {
     await blog.save();
   }
