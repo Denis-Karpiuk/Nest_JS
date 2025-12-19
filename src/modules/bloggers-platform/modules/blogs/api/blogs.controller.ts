@@ -16,12 +16,18 @@ import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
 import { BlogViewDto } from './view-dto/blogs.view-dto';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { GetBlogsQueryParamsDto } from './input-dto/get-blogs-query-params.input.dto';
+import { CreateBlogPostDto } from './input-dto/creat-blog-post.dto';
+import { PostsExternalService } from '../../posts/application/posts.external-service';
+import { PostsExternalQueryRepository } from '../../posts/infrastructure/external-query/posts.external-query-repository';
+import { GetBlogsPostsQueryParamsDto } from './input-dto/get-blogs-posts-query-params';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
     private readonly blogsService: BlogsService,
+    private readonly postsExternalService: PostsExternalService,
     private readonly blogsQueryRepository: BlogsQueryRepository,
+    private readonly postsExternalQueryRepository: PostsExternalQueryRepository,
   ) {}
 
   @Get()
@@ -53,5 +59,34 @@ export class BlogsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param('id') id: string): Promise<void> {
     return this.blogsService.deleteBlog(id);
+  }
+
+  @Post(':id/posts')
+  async createPost(@Param('id') id: string, @Body() dto: CreateBlogPostDto) {
+    const postId = await this.postsExternalService.createPost({
+      blogId: id,
+      ...dto,
+    });
+
+    const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
+
+    return this.postsExternalQueryRepository.getByIdOrNotFoundFail(
+      postId,
+      blog.name,
+    );
+  }
+
+  @Get(':id/posts')
+  async getPostsByBlogId(
+    @Param('id') id: string,
+    @Query() query: GetBlogsPostsQueryParamsDto,
+  ) {
+    const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
+
+    return this.postsExternalQueryRepository.getAllPostsByBlogId(
+      id,
+      blog.name,
+      query,
+    );
   }
 }

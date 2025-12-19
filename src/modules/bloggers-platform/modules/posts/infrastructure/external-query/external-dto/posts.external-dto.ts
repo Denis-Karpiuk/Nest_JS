@@ -1,6 +1,8 @@
-import { PostDocument } from '../../domain/post.entity';
+import { Injectable } from '@nestjs/common';
+import { PostDocument } from '../../../domain/post.entity';
 
-export class PostsViewDto {
+@Injectable()
+export class PostExternalDto {
   id: string;
   title: string;
   shortDescription: string;
@@ -8,7 +10,6 @@ export class PostsViewDto {
   blogId: string;
   blogName: string;
   createdAt: Date;
-
   extendedLikesInfo: {
     likesCount: number;
     dislikesCount: number;
@@ -16,8 +17,8 @@ export class PostsViewDto {
     newestLikes: [];
   };
 
-  static mapToView(post: PostDocument): PostsViewDto {
-    const dto = new PostsViewDto();
+  static mapToView(post: PostDocument, blogName: string): PostExternalDto {
+    const dto = new PostExternalDto();
 
     dto.id = post._id.toString();
     dto.title = post.title;
@@ -25,6 +26,7 @@ export class PostsViewDto {
     dto.content = post.content;
     dto.blogId = post.blogId;
     dto.createdAt = post.createdAt;
+    dto.blogName = blogName;
 
     dto.extendedLikesInfo = {
       likesCount: 0,
