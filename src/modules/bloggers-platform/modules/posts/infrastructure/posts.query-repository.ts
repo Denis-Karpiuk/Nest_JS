@@ -36,12 +36,15 @@ export class PostsQueryRepository {
       .skip(query.calculateSkip())
       .limit(query.pageSize);
 
-    const blogId = posts[0].blogId;
-
-    const blogName =
-      await this.blogsExternalQueryRepository.getBlogNameByBlogId(blogId);
-
-    const items = posts.map((post) => PostsViewDto.mapToView(post, blogName));
+    const items = await Promise.all(
+      posts.map(async (post) => {
+        const blogName =
+          await this.blogsExternalQueryRepository.getBlogNameByBlogId(
+            post.blogId,
+          );
+        return PostsViewDto.mapToView(post, blogName);
+      }),
+    );
 
     const totalCount = await this.PostModel.countDocuments();
 
