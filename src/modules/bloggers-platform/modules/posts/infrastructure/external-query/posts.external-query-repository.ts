@@ -46,7 +46,7 @@ export class PostsExternalQueryRepository {
       PostExternalDto.mapToView(post, blogName),
     );
 
-    const totalCount = await this.PostModel.countDocuments();
+    const totalCount = await this.PostModel.countDocuments({ blogId: blogId });
 
     return PaginatedViewDto.mapToView({
       items,

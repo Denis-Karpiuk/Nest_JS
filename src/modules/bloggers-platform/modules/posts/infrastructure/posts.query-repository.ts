@@ -5,6 +5,8 @@ import { PostsViewDto } from '../api/view-dto/posts.view-dto';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { GetPostsQueryParamsDto } from '../api/input-dto/get-posts-query-params.input.dto';
 import { BlogsExternalQueryRepository } from '../../blogs/infrastructure/blogs.external-query-repository';
+import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
+import { PostsSortBy } from '../api/input-dto/posts-sort-by';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -31,6 +33,54 @@ export class PostsQueryRepository {
   async getAllPosts(
     query: GetPostsQueryParamsDto,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+    const totalCount = await this.PostModel.countDocuments();
+
+    // Если сортировка по blogName, нужно загрузить все посты и отсортировать в памяти
+    if (query.sortBy === PostsSortBy.BlogName) {
+      const allPosts = await this.PostModel.find();
+
+      // Добавляем blogName к каждому посту
+      const postsWithBlogName = await Promise.all(
+        allPosts.map(async (post) => {
+          const blogName =
+            await this.blogsExternalQueryRepository.getBlogNameByBlogId(
+              post.blogId,
+            );
+          return {
+            post,
+            blogName,
+          };
+        }),
+      );
+
+      // Сортируем по blogName
+      postsWithBlogName.sort((a, b) => {
+        if (query.sortDirection === SortDirection.Asc) {
+          return a.blogName.localeCompare(b.blogName);
+        } else {
+          return b.blogName.localeCompare(a.blogName);
+        }
+      });
+
+      // Применяем пагинацию
+      const paginatedPosts = postsWithBlogName.slice(
+        query.calculateSkip(),
+        query.calculateSkip() + query.pageSize,
+      );
+
+      const items = paginatedPosts.map(({ post, blogName }) =>
+        PostsViewDto.mapToView(post, blogName),
+      );
+
+      return PaginatedViewDto.mapToView({
+        items,
+        totalCount,
+        page: query.pageNumber,
+        size: query.pageSize,
+      });
+    }
+
+    // Обычная сортировка по полям из БД
     const posts = await this.PostModel.find()
       .sort({ [query.sortBy]: query.sortDirection })
       .skip(query.calculateSkip())
@@ -45,8 +95,6 @@ export class PostsQueryRepository {
         return PostsViewDto.mapToView(post, blogName);
       }),
     );
-
-    const totalCount = await this.PostModel.countDocuments();
 
     return PaginatedViewDto.mapToView({
       items,
