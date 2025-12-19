@@ -16,7 +16,7 @@ export class PostsViewDto {
     newestLikes: [];
   };
 
-  static mapToView(post: PostDocument): PostsViewDto {
+  static mapToView(post: PostDocument, blogName: string): PostsViewDto {
     const dto = new PostsViewDto();
 
     dto.id = post._id.toString();
@@ -25,6 +25,8 @@ export class PostsViewDto {
     dto.content = post.content;
     dto.blogId = post.blogId;
     dto.createdAt = post.createdAt;
+
+    dto.blogName = blogName;
 
     dto.extendedLikesInfo = {
       likesCount: 0,

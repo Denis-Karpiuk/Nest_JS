@@ -4,18 +4,17 @@ import { Post, type PostModelType } from '../../domain/post.entity';
 import { PostExternalDto } from './external-dto/posts.external-dto';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { GetPostsQueryParamsDto } from '../../api/input-dto/get-posts-query-params.input.dto';
+import { BlogsExternalQueryRepository } from '../../../blogs/infrastructure/blogs.external-query-repository';
 
 @Injectable()
 export class PostsExternalQueryRepository {
   constructor(
     @InjectModel(Post.name)
     private PostModel: PostModelType,
+    private blogsExternalQueryRepository: BlogsExternalQueryRepository,
   ) {}
 
-  async getByIdOrNotFoundFail(
-    id: string,
-    blogName: string,
-  ): Promise<PostExternalDto> {
+  async getByIdOrNotFoundFail(id: string): Promise<PostExternalDto> {
     const post = await this.PostModel.findOne({
       _id: id,
       deletedAt: null,
@@ -25,14 +24,19 @@ export class PostsExternalQueryRepository {
       throw new NotFoundException('post not found');
     }
 
+    const blogName =
+      await this.blogsExternalQueryRepository.getBlogNameByBlogId(post.blogId);
+
     return PostExternalDto.mapToView(post, blogName);
   }
 
   async getAllPostsByBlogId(
     blogId: string,
-    blogName: string,
     query: GetPostsQueryParamsDto,
   ): Promise<PaginatedViewDto<PostExternalDto[]>> {
+    const blogName =
+      await this.blogsExternalQueryRepository.getBlogNameByBlogId(blogId);
+
     const posts = await this.PostModel.find({ blogId: blogId })
       .sort({ [query.sortBy]: query.sortDirection })
       .skip(query.calculateSkip())

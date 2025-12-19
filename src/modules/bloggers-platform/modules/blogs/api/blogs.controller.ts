@@ -68,12 +68,7 @@ export class BlogsController {
       ...dto,
     });
 
-    const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
-
-    return this.postsExternalQueryRepository.getByIdOrNotFoundFail(
-      postId,
-      blog.name,
-    );
+    return this.postsExternalQueryRepository.getByIdOrNotFoundFail(postId);
   }
 
   @Get(':id/posts')
@@ -83,10 +78,6 @@ export class BlogsController {
   ) {
     const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
 
-    return this.postsExternalQueryRepository.getAllPostsByBlogId(
-      id,
-      blog.name,
-      query,
-    );
+    return this.postsExternalQueryRepository.getAllPostsByBlogId(id, query);
   }
 }
