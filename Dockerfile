@@ -30,7 +30,7 @@ RUN yarn install --frozen-lockfile --production
 COPY --from=builder /app/dist ./dist
 
 # Expose the port (matches main.ts default: 5001)
-EXPOSE 5001
+EXPOSE 5002
 
 # Set NODE_ENV to production
 ENV NODE_ENV=production
