@@ -53,6 +53,17 @@ export class UsersService {
   }
 
   async registerUser(dto: CreateUserDto) {
+    const userWithSameEmail = await this.usersRepository.findByEmailOrLogin(
+      dto.email,
+    );
+    const userWithSameLogin = await this.usersRepository.findByEmailOrLogin(
+      dto.login,
+    );
+
+    if (userWithSameEmail || userWithSameLogin) {
+      throw new Error('user with same email or login already exists');
+    }
+
     const createdUserId = await this.createUser(dto);
 
     const confirmationCode = uuid();
