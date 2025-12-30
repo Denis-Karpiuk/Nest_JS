@@ -6,6 +6,8 @@ import { User, type UserModelType } from '../domain/user.entity';
 import { CreateUserDto, UpdateUserDto } from '../dto/create-user.dto';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
+import { DomainException } from 'src/core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 
 @Injectable()
 export class UsersService {
@@ -17,14 +19,43 @@ export class UsersService {
     private readonly emailService: EmailService,
   ) {}
 
-  async createUser(dto: CreateUserDto): Promise<string> {
-    const passwordHash = await this.cryptoService.createPasswordHash(
-      dto.password,
-    );
+  async createUser({ email, login, password }: CreateUserDto): Promise<string> {
+    const userWithTheSameLogin =
+      await this.usersRepository.findByEmailOrLogin(login);
+    const userWithTheSameEmail =
+      await this.usersRepository.findByEmailOrLogin(email);
+
+    if (userWithTheSameLogin) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'User with the same login already exists',
+        extensions: [
+          {
+            field: 'login',
+            message: 'User with the same login already exists',
+          },
+        ],
+      });
+    }
+
+    if (userWithTheSameEmail) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'User with the same login already exists',
+        extensions: [
+          {
+            field: 'email',
+            message: 'User with the same email already exists',
+          },
+        ],
+      });
+    }
+
+    const passwordHash = await this.cryptoService.createPasswordHash(password);
 
     const user = this.UserModel.createInstance({
-      email: dto.email,
-      login: dto.login,
+      email,
+      login,
       passwordHash: passwordHash,
     });
 

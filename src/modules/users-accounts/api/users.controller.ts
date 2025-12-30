@@ -23,8 +23,8 @@ import { UsersQueryRepository } from '../infrastructure/query/users.query-reposi
 @Controller('users')
 export class UsersController {
   constructor(
-    private usersQueryRepository: UsersQueryRepository,
-    private usersService: UsersService,
+    private readonly usersQueryRepository: UsersQueryRepository,
+    private readonly usersService: UsersService,
   ) {}
 
   @ApiParam({ name: 'id' }) //для сваггера

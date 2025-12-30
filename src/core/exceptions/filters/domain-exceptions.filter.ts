@@ -9,8 +9,6 @@ import { Request, Response } from 'express';
 import { DomainExceptionCode } from '../domain-exception-codes';
 import { ErrorResponseBody } from './error-response-body.type';
 
-//https://docs.nestjs.com/exception-filters#exception-filters-1
-//Ошибки класса DomainException (instanceof DomainException)
 @Catch(DomainException)
 export class DomainHttpExceptionsFilter implements ExceptionFilter {
   catch(exception: DomainException, host: ArgumentsHost): void {
@@ -21,10 +19,19 @@ export class DomainHttpExceptionsFilter implements ExceptionFilter {
     const status = this.mapToHttpStatus(exception.code);
     const responseBody = this.buildResponseBody(exception, request.url);
 
-    response.status(status).json(responseBody);
+    if (status === HttpStatus.BAD_REQUEST) {
+      console.log(responseBody);
+      const result = {
+        errorsMessages: responseBody.extensions,
+      };
+
+      response.status(status).json(result);
+    } else {
+      response.status(status).json(responseBody);
+    }
   }
 
-  private mapToHttpStatus(code: DomainExceptionCode): number {
+  private mapToHttpStatus(code: DomainExceptionCode): HttpStatus {
     switch (code) {
       case DomainExceptionCode.BadRequest:
       case DomainExceptionCode.ValidationError:

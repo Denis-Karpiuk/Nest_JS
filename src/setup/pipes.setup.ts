@@ -15,13 +15,10 @@ export function pipesSetup(app: INestApplication) {
   app.useGlobalPipes(
     new ObjectIdValidationTransformationPipe(),
     new ValidationPipe({
-      //class-transformer создает экземпляр dto
-      //соответственно применятся значения по-умолчанию
-      //и методы классов dto
       transform: true,
+      // Отбрасывает все значения которые не валидируются
+      // whitelist: true,
 
-      whitelist: true,
-      //Выдавать первую ошибку для каждого поля
       stopAtFirstError: true,
       //Для преобразования ошибок класс валидатора в необходимый вид
       exceptionFactory: (errors) => {
@@ -42,7 +39,7 @@ export function errorFormatter(
   errorMessage?: any,
 ): Extension[] {
   const errorsForResponse = errorMessage || [];
-
+  console.log(errors);
   for (const error of errors) {
     if (!error.constraints && error.children?.length) {
       errorFormatter(error.children, errorsForResponse);
@@ -54,7 +51,7 @@ export function errorFormatter(
           message: error.constraints[key]
             ? `${error.constraints[key]}; Received value: ${error?.value}`
             : '',
-          key: error.property,
+          field: error.property,
         });
       }
     }

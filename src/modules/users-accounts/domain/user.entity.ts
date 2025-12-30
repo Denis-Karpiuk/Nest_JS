@@ -7,6 +7,10 @@ import {
   EmailConfirmation,
   EmailConfirmationSchema,
 } from './email-confirmation.schema';
+import {
+  EMAIL_PATTERN,
+  LOGIN_PATTERN,
+} from '../api/input-dto/create-user.input-dto';
 
 //флаг timestemp автоматичеки добавляет поля upatedAt и createdAt
 /**
@@ -20,7 +24,7 @@ export class User {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, min: 3, max: 10, match: LOGIN_PATTERN, required: true })
   login: string;
 
   /**
@@ -36,7 +40,7 @@ export class User {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, min: 5, required: true })
+  @Prop({ type: String, min: 5, match: EMAIL_PATTERN, required: true })
   email: string;
 
   /**
