@@ -1,22 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { EmailService } from 'src/modules/notifications/application/email.service';
+import { uuid } from 'uuidv4';
 import { User, type UserModelType } from '../domain/user.entity';
 import { CreateUserDto, UpdateUserDto } from '../dto/create-user.dto';
-import bcrypt from 'bcrypt';
 import { UsersRepository } from '../infrastructure/users.repository';
+import { CryptoService } from './crypto.service';
 
 @Injectable()
 export class UsersService {
   constructor(
-    //инжектирование модели в сервис через DI
     @InjectModel(User.name)
-    private UserModel: UserModelType,
-    private usersRepository: UsersRepository,
+    private readonly UserModel: UserModelType,
+    private readonly usersRepository: UsersRepository,
+    private readonly cryptoService: CryptoService,
+    private readonly emailService: EmailService,
   ) {}
 
   async createUser(dto: CreateUserDto): Promise<string> {
-    //TODO: move to bcrypt service
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const passwordHash = await this.cryptoService.createPasswordHash(
+      dto.password,
+    );
 
     const user = this.UserModel.createInstance({
       email: dto.email,
@@ -46,5 +50,21 @@ export class UsersService {
     user.makeDeleted();
 
     await this.usersRepository.save(user);
+  }
+
+  async registerUser(dto: CreateUserDto) {
+    const createdUserId = await this.createUser(dto);
+
+    const confirmationCode = uuid();
+
+    const user = await this.usersRepository.findOrNotFoundFail(createdUserId);
+
+    user.setConfirmationCode(confirmationCode);
+
+    await this.usersRepository.save(user);
+
+    this.emailService
+      .sendConfirmationEmail(dto.email, confirmationCode)
+      .catch(console.error);
   }
 }

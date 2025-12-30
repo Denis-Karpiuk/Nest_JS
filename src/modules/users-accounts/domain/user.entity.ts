@@ -3,6 +3,10 @@ import { HydratedDocument, Model } from 'mongoose';
 import { UpdateUserDto } from '../dto/create-user.dto';
 import { Name, NameSchema } from './name.schema';
 import { CreateUserDomainDto } from './dto/create-user.domain.dto';
+import {
+  EmailConfirmation,
+  EmailConfirmationSchema,
+} from './email-confirmation.schema';
 
 //флаг timestemp автоматичеки добавляет поля upatedAt и createdAt
 /**
@@ -46,6 +50,9 @@ export class User {
   // @Prop(NameSchema) this variant from docdoesn't make validation for inner object
   @Prop({ type: NameSchema })
   name: Name;
+
+  @Prop({ type: EmailConfirmationSchema })
+  emailConfirmation: EmailConfirmation;
 
   /**
    * Creation timestamp
@@ -92,6 +99,12 @@ export class User {
       lastName: 'lastName yyy',
     };
 
+    user.emailConfirmation = {
+      confirmationCode: 'code',
+      expirationDate: new Date(),
+      isConfirmed: false,
+    };
+
     return user as UserDocument;
   }
 
@@ -120,6 +133,10 @@ export class User {
       this.isEmailConfirmed = false;
       this.email = dto.email;
     }
+  }
+
+  setConfirmationCode(code: string) {
+    this.emailConfirmation.confirmationCode = code;
   }
 }
 

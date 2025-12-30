@@ -16,7 +16,7 @@ import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
 import { ApiParam } from '@nestjs/swagger';
 import { UpdateUserInputDto } from './input-dto/update-user.input-dto';
 import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dto';
-import { UsersService } from '../aplication/users.service';
+import { UsersService } from '../application/users.service';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 
