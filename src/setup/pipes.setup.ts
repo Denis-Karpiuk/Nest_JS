@@ -17,7 +17,7 @@ export function pipesSetup(app: INestApplication) {
     new ValidationPipe({
       transform: true,
       // Отбрасывает все значения которые не валидируются
-      // whitelist: true,
+      whitelist: true,
 
       stopAtFirstError: true,
       //Для преобразования ошибок класс валидатора в необходимый вид

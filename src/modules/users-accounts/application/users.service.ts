@@ -109,4 +109,6 @@ export class UsersService {
       .sendConfirmationEmail(dto.email, confirmationCode)
       .catch(console.error);
   }
+
+  async validateUser() {}
 }
