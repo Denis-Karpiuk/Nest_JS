@@ -16,7 +16,7 @@ import { UsersQueryRepository } from './infrastructure/query/users.query-reposit
 import { UsersRepository } from './infrastructure/users.repository';
 import { AuthService } from './application/auth.service';
 import { JwtStrategy } from './guards/bearer/jwt.strategy';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { JwtService } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { throttleModule } from './modules/throttle-module';
