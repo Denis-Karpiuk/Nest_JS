@@ -106,7 +106,7 @@ export class User {
     user.emailConfirmation = {
       confirmationCode: 'code',
       expirationDate: new Date(),
-      isConfirmed: false,
+      // isConfirmed: false,
     };
 
     return user as UserDocument;
@@ -141,6 +141,10 @@ export class User {
 
   setConfirmationCode(code: string) {
     this.emailConfirmation.confirmationCode = code;
+  }
+
+  setIsEmailConfirmation(isConfirmed: boolean) {
+    this.isEmailConfirmed = isConfirmed;
   }
 }
 

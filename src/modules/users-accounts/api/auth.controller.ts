@@ -16,6 +16,7 @@ import { ExtractUserFromRequest } from '../guards/decorators/params/extract-user
 import { AuthService } from '../application/auth.service';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { MeViewDto } from './view-dto/users.view-dto';
+import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
 
 @Controller('auth')
 export class AuthController {
@@ -26,8 +27,15 @@ export class AuthController {
   ) {}
 
   @Post('registration')
+  @HttpCode(HttpStatus.NO_CONTENT)
   registration(@Body() body: CreateUserInputDto): Promise<void> {
     return this.usersService.registerUser(body);
+  }
+
+  @Post('registration-confirmation')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  registrationConfirmation(@Body() body: RegistrationConfirmationInputDto) {
+    return this.usersService.registrationConfirmation(body.code);
   }
 
   @Post('login')

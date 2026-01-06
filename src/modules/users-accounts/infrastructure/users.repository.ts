@@ -16,6 +16,14 @@ export class UsersRepository {
     });
   }
 
+  async findByConfirmationCode(
+    confirmationCode: string,
+  ): Promise<UserDocument | null> {
+    return await this.UserModel.findOne({
+      'emailConfirmation.confirmationCode': confirmationCode,
+    });
+  }
+
   async findByEmailOrLogin(loginOrEmail: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({
       $or: [{ email: loginOrEmail }, { login: loginOrEmail }],

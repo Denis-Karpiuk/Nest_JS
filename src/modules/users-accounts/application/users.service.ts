@@ -75,7 +75,7 @@ export class UsersService {
     return user._id.toString();
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(id: string): Promise<void> {
     const user = await this.usersRepository.findOrNotFoundFail(id);
 
     user.makeDeleted();
@@ -91,8 +91,30 @@ export class UsersService {
       dto.login,
     );
 
-    if (userWithSameEmail || userWithSameLogin) {
-      throw new Error('user with same email or login already exists');
+    if (userWithSameEmail) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'User with the same email or login already exists',
+        extensions: [
+          {
+            field: 'email',
+            message: 'User with the same email already exists',
+          },
+        ],
+      });
+    }
+
+    if (userWithSameLogin) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'User with the same email or login already exists',
+        extensions: [
+          {
+            field: 'login',
+            message: 'User with the same login already exists',
+          },
+        ],
+      });
     }
 
     const createdUserId = await this.createUser(dto);
@@ -108,6 +130,60 @@ export class UsersService {
     this.emailService
       .sendConfirmationEmail(dto.email, confirmationCode)
       .catch(console.error);
+  }
+
+  async registrationConfirmation(confirmationCode: string): Promise<void> {
+    const user =
+      await this.usersRepository.findByConfirmationCode(confirmationCode);
+
+    if (!user) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'User not found',
+        extensions: [
+          {
+            field: 'confirmationCode',
+            message: 'User not found',
+          },
+        ],
+      });
+    }
+
+    const isConfirmed = user.isEmailConfirmed;
+
+    if (isConfirmed) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'User already confirmed',
+        extensions: [
+          {
+            field: 'confirmationCode',
+            message: 'User already confirmed',
+          },
+        ],
+      });
+    }
+
+    const expirationData = user.emailConfirmation.expirationDate;
+
+    if (expirationData < new Date()) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'Confirmation code expired',
+        extensions: [
+          {
+            field: 'confirmationCode',
+            message: 'Confirmation code expired',
+          },
+        ],
+      });
+    }
+
+    user.setIsEmailConfirmation(true);
+
+    await this.usersRepository.save(user);
+
+    this.emailService.sendVerifiedEmail(user.email);
   }
 
   async validateUser() {}
