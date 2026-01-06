@@ -17,6 +17,7 @@ import { AuthService } from '../application/auth.service';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { MeViewDto } from './view-dto/users.view-dto';
 import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {

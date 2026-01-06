@@ -19,6 +19,7 @@ import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dt
 import { UsersService } from '../application/users.service';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('users')
 export class UsersController {
