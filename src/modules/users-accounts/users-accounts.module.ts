@@ -16,6 +16,7 @@ import { UsersQueryRepository } from './infrastructure/query/users.query-reposit
 import { UsersRepository } from './infrastructure/users.repository';
 import { jwtModule } from './modules/jwt-module';
 import { AuthService } from './application/auth.service';
+import { JwtStrategy } from './guards/bearer/jwt.strategy';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AuthService } from './application/auth.service';
     UsersExternalService,
     CryptoService,
     LocalStrategy,
+    JwtStrategy,
   ],
   exports: [UsersExternalQueryRepository, UsersExternalService],
 })

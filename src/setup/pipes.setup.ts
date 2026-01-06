@@ -39,7 +39,7 @@ export function errorFormatter(
   errorMessage?: any,
 ): Extension[] {
   const errorsForResponse = errorMessage || [];
-  console.log(errors);
+
   for (const error of errors) {
     if (!error.constraints && error.children?.length) {
       errorFormatter(error.children, errorsForResponse);
