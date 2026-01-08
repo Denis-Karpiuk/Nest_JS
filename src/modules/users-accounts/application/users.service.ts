@@ -8,6 +8,7 @@ import { UsersRepository } from '../infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -186,5 +187,18 @@ export class UsersService {
     this.emailService.sendVerifiedEmail(user.email);
   }
 
-  async validateUser() {}
+  async passwordRecovery(email: string): Promise<void> {
+    const user = await this.usersRepository.findByEmailOrLogin(email);
+
+    const recoveryCode = randomUUID();
+
+    if (user) {
+      user.setRecoveryPasswordInformation(recoveryCode);
+      await this.usersRepository.save(user);
+    }
+
+    this.emailService
+      .sendPasswordRecoveryEmail(email, recoveryCode)
+      .catch((err) => console.log('Error sending email', err));
+  }
 }

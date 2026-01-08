@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { MeViewDto } from './view-dto/users.view-dto';
 import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
 import { Throttle } from '@nestjs/throttler';
+import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 
 @Controller('auth')
 export class AuthController {
@@ -52,5 +53,11 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   me(@ExtractUserFromRequest() user: UserContextDto): Promise<MeViewDto> {
     return this.authQueryRepository.me(user.id);
+  }
+
+  @Post('password-recovery')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  passwordRecovery(@Body() body: PasswordRecoveryInputDto) {
+    return this.usersService.passwordRecovery(body.email);
   }
 }

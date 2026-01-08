@@ -11,6 +11,10 @@ import {
   EMAIL_PATTERN,
   LOGIN_PATTERN,
 } from '../api/input-dto/create-user.input-dto';
+import {
+  PasswordRecoveryInformation,
+  PasswordRecoveryInformationSchema,
+} from './password-recovery.schema copy';
 
 //флаг timestemp автоматичеки добавляет поля upatedAt и createdAt
 /**
@@ -57,6 +61,9 @@ export class User {
 
   @Prop({ type: EmailConfirmationSchema })
   emailConfirmation: EmailConfirmation;
+
+  @Prop({ type: PasswordRecoveryInformationSchema })
+  passwordRecoveryInformation: PasswordRecoveryInformation;
 
   /**
    * Creation timestamp
@@ -106,7 +113,6 @@ export class User {
     user.emailConfirmation = {
       confirmationCode: 'code',
       expirationDate: new Date(),
-      // isConfirmed: false,
     };
 
     return user as UserDocument;
@@ -145,6 +151,13 @@ export class User {
 
   setIsEmailConfirmation(isConfirmed: boolean) {
     this.isEmailConfirmed = isConfirmed;
+  }
+
+  setRecoveryPasswordInformation(recoveryCode: string) {
+    this.passwordRecoveryInformation = {
+      recoveryCode,
+      expirationDate: new Date(Date.now() + 2 * 60 * 1000),
+    };
   }
 }
 

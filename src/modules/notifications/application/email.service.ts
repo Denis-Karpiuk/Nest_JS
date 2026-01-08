@@ -30,4 +30,13 @@ export class EmailService {
       html: this.emailTemplateService.verifiedEmailSuccess(),
     });
   }
+
+  async sendPasswordRecoveryEmail(email: string, code: string): Promise<void> {
+    await this.mailerService.sendMail({
+      to: email,
+      from: this.from,
+      subject: 'Recovery password code',
+      html: this.emailTemplateService.passwordRecoveryEmail(code),
+    });
+  }
 }
