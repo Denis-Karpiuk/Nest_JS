@@ -20,6 +20,7 @@ import { RegistrationConfirmationInputDto } from './input-dto/registration-confi
 import { Throttle } from '@nestjs/throttler';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 import { CreateNewPasswordInputDto } from './input-dto/create-new-password.input-dto';
+import { RegistrationEmailResendingInputDto } from './input-dto/registration-email-resending.input-dto';
 
 @Controller('auth')
 export class AuthController {
@@ -39,6 +40,12 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   registrationConfirmation(@Body() body: RegistrationConfirmationInputDto) {
     return this.usersService.registrationConfirmation(body.code);
+  }
+
+  @Post('registration-email-resending')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  registrationEmailResending(@Body() body: RegistrationEmailResendingInputDto) {
+    return this.usersService.registrationEmailResending(body.email);
   }
 
   @Post('login')

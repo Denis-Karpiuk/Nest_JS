@@ -1,5 +1,3 @@
-import { UpdateUserDto } from '../../dto/create-user.dto';
+import { UserEmailDto } from './user-email.dto';
 
-export class UpdateUserInputDto implements UpdateUserDto {
-  email: string;
-}
+export class UpdateUserInputDto extends UserEmailDto {}

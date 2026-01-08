@@ -7,14 +7,12 @@ import {
   EmailConfirmation,
   EmailConfirmationSchema,
 } from './email-confirmation.schema';
-import {
-  EMAIL_PATTERN,
-  LOGIN_PATTERN,
-} from '../api/input-dto/create-user.input-dto';
+import { LOGIN_PATTERN } from '../api/input-dto/create-user.input-dto';
 import {
   PasswordRecoveryInformation,
   PasswordRecoveryInformationSchema,
 } from './password-recovery.schema copy';
+import { EMAIL_PATTERN } from '../api/input-dto/user-email.dto';
 
 //флаг timestemp автоматичеки добавляет поля upatedAt и createdAt
 /**
@@ -145,7 +143,7 @@ export class User {
     }
   }
 
-  updatePassword(passwordHash: string) {
+  updatePasswordHash(passwordHash: string) {
     this.passwordHash = passwordHash;
   }
 
@@ -155,6 +153,16 @@ export class User {
 
   setIsEmailConfirmation(isConfirmed: boolean) {
     this.isEmailConfirmed = isConfirmed;
+  }
+
+  updateConfirmationInformation(code: string) {
+    this.emailConfirmation.expirationDate = new Date(
+      Date.now() + 2 * 60 * 1000,
+    );
+
+    this.setConfirmationCode(code);
+
+    this.setIsEmailConfirmation(false);
   }
 
   setRecoveryPasswordInformation(recoveryCode: string) {
