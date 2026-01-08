@@ -19,6 +19,7 @@ import { MeViewDto } from './view-dto/users.view-dto';
 import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
 import { Throttle } from '@nestjs/throttler';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
+import { CreateNewPasswordInputDto } from './input-dto/create-new-password.input-dto';
 
 @Controller('auth')
 export class AuthController {
@@ -59,5 +60,11 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   passwordRecovery(@Body() body: PasswordRecoveryInputDto) {
     return this.usersService.passwordRecovery(body.email);
+  }
+
+  @Post('new-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  createNewPassword(@Body() body: CreateNewPasswordInputDto) {
+    return this.usersService.createNewPassword(body);
   }
 }

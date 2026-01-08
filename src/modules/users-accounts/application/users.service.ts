@@ -9,6 +9,7 @@ import { CryptoService } from './crypto.service';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { randomUUID } from 'crypto';
+import { CreateNewPasswordDto } from '../dto/create-new-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -200,5 +201,48 @@ export class UsersService {
     this.emailService
       .sendPasswordRecoveryEmail(email, recoveryCode)
       .catch((err) => console.log('Error sending email', err));
+  }
+
+  async createNewPassword(dto: CreateNewPasswordDto): Promise<void> {
+    const user = await this.usersRepository.findByRecoveryCode(
+      dto.recoveryCode,
+    );
+
+    if (!user) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'User not found',
+        extensions: [
+          {
+            field: 'recoveryCode',
+            message: 'User not found',
+          },
+        ],
+      });
+    }
+
+    const recoveryCodeExpirationDate =
+      user?.passwordRecoveryInformation.expirationDate;
+
+    if (recoveryCodeExpirationDate && recoveryCodeExpirationDate < new Date()) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'Recovery code expired',
+        extensions: [
+          {
+            field: 'recoveryCode',
+            message: 'Recovery code expired',
+          },
+        ],
+      });
+    }
+
+    const passwordHash = await this.cryptoService.createPasswordHash(
+      dto.newPassword,
+    );
+
+    user.updatePasswordHash(passwordHash);
+
+    await this.usersRepository.save(user);
   }
 }

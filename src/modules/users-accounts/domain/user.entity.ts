@@ -145,6 +145,10 @@ export class User {
     }
   }
 
+  updatePassword(passwordHash: string) {
+    this.passwordHash = passwordHash;
+  }
+
   setConfirmationCode(code: string) {
     this.emailConfirmation.confirmationCode = code;
   }

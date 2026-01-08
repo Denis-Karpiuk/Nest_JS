@@ -17,15 +17,16 @@ import { UsersRepository } from './infrastructure/users.repository';
 import { AuthService } from './application/auth.service';
 import { JwtStrategy } from './guards/bearer/jwt.strategy';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { JwtService } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { throttleModule } from './modules/throttle-module';
+import { jwtModule } from './modules/jwt-module';
 
 @Module({
   imports: [
     NotificationsModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     throttleModule,
+    jwtModule,
   ],
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
@@ -44,7 +45,6 @@ import { throttleModule } from './modules/throttle-module';
     CryptoService,
     LocalStrategy,
     JwtStrategy,
-    JwtService,
   ],
   exports: [UsersExternalQueryRepository, UsersExternalService],
 })

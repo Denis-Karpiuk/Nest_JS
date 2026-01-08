@@ -24,6 +24,12 @@ export class UsersRepository {
     });
   }
 
+  async findByRecoveryCode(recoveryCode: string): Promise<UserDocument | null> {
+    return await this.UserModel.findOne({
+      'passwordRecoveryInformation.recoveryCode': recoveryCode,
+    });
+  }
+
   async findByEmailOrLogin(loginOrEmail: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({
       $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
