@@ -8,7 +8,6 @@ import { deleteAllData } from 'test/helpers/delete-all-data';
 import { initSettings } from 'test/helpers/init-settings';
 import { UsersTestManager } from 'test/helpers/users-tests-manager';
 import { GLOBAL_PREFIX } from 'src/setup/global-prefix.setup';
-import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import mongoose from 'mongoose';
 
 describe('Users Controller (e2e)', () => {
@@ -72,6 +71,13 @@ describe('Users Controller (e2e)', () => {
         },
       ],
     });
+  });
+
+  it('should get user by id', async () => {
+    const user = await userTestManger.createUser(createUserBody);
+    const userById = await userTestManger.getUserById(user.id);
+
+    expect(userById).toEqual(user);
   });
 
   it('should get users with paging', async () => {
