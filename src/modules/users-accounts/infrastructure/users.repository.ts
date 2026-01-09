@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { isValidObjectId } from 'mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { User, UserDocument, type UserModelType } from '../domain/user.entity';
@@ -7,7 +8,9 @@ import { User, UserDocument, type UserModelType } from '../domain/user.entity';
 @Injectable()
 export class UsersRepository {
   //инжектирование модели через DI
-  constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
+  constructor(
+    @InjectModel(User.name) private readonly UserModel: UserModelType,
+  ) {}
 
   async findById(id: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({

@@ -25,6 +25,28 @@ export class UsersTestManager {
     return response.body as UserViewDto;
   }
 
+  async deleteUser(
+    userId: string,
+    statusCode: number = HttpStatus.NO_CONTENT,
+  ): Promise<void> {
+    await request(this.app.getHttpServer())
+      .delete(`/${GLOBAL_PREFIX}/users/${userId}`)
+      .auth('admin', 'qwerty')
+      .expect(statusCode);
+  }
+
+  async getUserById(
+    userId: string,
+    statusCode: number = HttpStatus.OK,
+  ): Promise<UserViewDto> {
+    const response = await request(this.app.getHttpServer())
+      .get(`/${GLOBAL_PREFIX}/users/${userId}`)
+      .auth('admin', 'qwerty')
+      .expect(statusCode);
+
+    return response.body as UserViewDto;
+  }
+
   async updateUser(
     userId: string,
     updateModel: UpdateUserInputDto,

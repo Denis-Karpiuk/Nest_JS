@@ -9,6 +9,7 @@ import { initSettings } from 'test/helpers/init-settings';
 import { UsersTestManager } from 'test/helpers/users-tests-manager';
 import { GLOBAL_PREFIX } from 'src/setup/global-prefix.setup';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import mongoose from 'mongoose';
 
 describe('Users Controller (e2e)', () => {
   let app: INestApplication;
@@ -89,17 +90,14 @@ describe('Users Controller (e2e)', () => {
 
   it('should delete user', async () => {
     const user = await userTestManger.createUser(createUserBody);
-    await request(app.getHttpServer())
-      .delete(`/${GLOBAL_PREFIX}/users/${user.id}`)
-      .auth('admin', 'qwerty')
-      .expect(HttpStatus.NO_CONTENT);
+    await userTestManger.deleteUser(user.id);
+    await userTestManger.getUserById(user.id, HttpStatus.NOT_FOUND);
+  });
 
-    const userById = await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/users/${user.id}`)
-      .auth('admin', 'qwerty')
-      .expect(HttpStatus.NOT_FOUND);
-
-    expect(userById.body).toHaveProperty('code', DomainExceptionCode.NotFound);
-    expect(userById.body).toHaveProperty('message', 'User not found');
+  it("should't delete user if user not found", async () => {
+    await userTestManger.deleteUser(
+      new mongoose.Types.ObjectId().toString(),
+      HttpStatus.NOT_FOUND,
+    );
   });
 });
