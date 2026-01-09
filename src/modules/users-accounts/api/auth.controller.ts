@@ -7,6 +7,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from '../application/auth.service';
 import { UsersService } from '../application/users.service';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
@@ -30,24 +31,28 @@ export class AuthController {
   ) {}
 
   @Post('registration')
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   registration(@Body() body: CreateUserInputDto): Promise<void> {
     return this.usersService.registerUser(body);
   }
 
   @Post('registration-confirmation')
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   registrationConfirmation(@Body() body: RegistrationConfirmationInputDto) {
     return this.usersService.registrationConfirmation(body.code);
   }
 
   @Post('registration-email-resending')
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   registrationEmailResending(@Body() body: RegistrationEmailResendingInputDto) {
     return this.usersService.registrationEmailResending(body.email);
   }
 
   @Post('login')
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   login(
@@ -63,12 +68,14 @@ export class AuthController {
   }
 
   @Post('password-recovery')
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   passwordRecovery(@Body() body: PasswordRecoveryInputDto) {
     return this.usersService.passwordRecovery(body.email);
   }
 
   @Post('new-password')
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   createNewPassword(@Body() body: CreateNewPasswordInputDto) {
     return this.usersService.createNewPassword(body);

@@ -29,9 +29,9 @@ describe('Users Controller (e2e)', () => {
   });
 
   const createUserBody: CreateUserDto = {
-    login: 'name1',
-    password: 'qwerty',
-    email: 'email@email.em',
+    login: 'user',
+    password: 'user_pass',
+    email: 'user@email.em',
   };
 
   it('should create user and return correct response', async () => {
@@ -40,8 +40,8 @@ describe('Users Controller (e2e)', () => {
     expect(response).toEqual({
       login: createUserBody.login,
       email: createUserBody.email,
-      id: expect.any(String),
-      createdAt: expect.any(String),
+      id: expect.any(String) as string,
+      createdAt: expect.any(String) as string,
     });
   });
 
