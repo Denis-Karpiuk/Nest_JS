@@ -86,39 +86,6 @@ export class UsersService {
   }
 
   async registerUser(dto: CreateUserDto) {
-    const userWithSameEmail = await this.usersRepository.findByEmailOrLogin(
-      dto.email,
-    );
-    const userWithSameLogin = await this.usersRepository.findByEmailOrLogin(
-      dto.login,
-    );
-
-    if (userWithSameEmail) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'User with the same email or login already exists',
-        extensions: [
-          {
-            field: 'email',
-            message: 'User with the same email already exists',
-          },
-        ],
-      });
-    }
-
-    if (userWithSameLogin) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'User with the same email or login already exists',
-        extensions: [
-          {
-            field: 'login',
-            message: 'User with the same login already exists',
-          },
-        ],
-      });
-    }
-
     const createdUserId = await this.createUser(dto);
 
     const confirmationCode = uuid();

@@ -61,6 +61,16 @@ export class UsersTestManager {
     return response.body as UserViewDto;
   }
 
+  async registration(
+    registrationModel: CreateUserInputDto,
+    statusCode: number = HttpStatus.NO_CONTENT,
+  ): Promise<void> {
+    await request(this.app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/auth/registration`)
+      .send(registrationModel)
+      .expect(statusCode);
+  }
+
   async login(
     login: string,
     password: string,

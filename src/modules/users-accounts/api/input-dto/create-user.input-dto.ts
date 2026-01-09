@@ -1,4 +1,4 @@
-import { IsEmail, Length, Matches } from 'class-validator';
+import { Length, Matches } from 'class-validator';
 import { UserEmailDto } from './user-email.dto';
 
 export const LOGIN_PATTERN = /^[a-zA-Z0-9_-]*$/;

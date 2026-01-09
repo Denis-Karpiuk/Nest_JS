@@ -1,30 +1,20 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import request from 'supertest';
+import mongoose from 'mongoose';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
-import { CreateUserDto } from 'src/modules/users-accounts/dto/create-user.dto';
 import { UserViewDto } from 'src/modules/users-accounts/api/view-dto/users.view-dto';
+import { CreateUserDto } from 'src/modules/users-accounts/dto/create-user.dto';
+import { GLOBAL_PREFIX } from 'src/setup/global-prefix.setup';
+import request from 'supertest';
 import { deleteAllData } from 'test/helpers/delete-all-data';
 import { initSettings } from 'test/helpers/init-settings';
 import { UsersTestManager } from 'test/helpers/users-tests-manager';
-import { GLOBAL_PREFIX } from 'src/setup/global-prefix.setup';
-import mongoose from 'mongoose';
 
 describe('Users Controller (e2e)', () => {
   let app: INestApplication;
   let userTestManger: UsersTestManager;
-  const TEST_JWT_SECRET = 'test_access-token-secret';
 
   beforeAll(async () => {
-    const { app: application, userTestManager } = await initSettings(
-      (moduleBuilder) =>
-        moduleBuilder.overrideProvider(JwtService).useValue(
-          new JwtService({
-            secret: TEST_JWT_SECRET,
-            signOptions: { expiresIn: '2s' },
-          }),
-        ),
-    );
+    const { app: application, userTestManager } = await initSettings();
 
     app = application;
     userTestManger = userTestManager;
