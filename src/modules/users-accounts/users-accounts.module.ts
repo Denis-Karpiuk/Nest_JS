@@ -20,6 +20,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { throttleModule } from './modules/throttle-module';
 import { jwtModule } from './modules/jwt-module';
+import { AuthConfig } from './config/auth.config';
 
 @Module({
   imports: [
@@ -30,10 +31,10 @@ import { jwtModule } from './modules/jwt-module';
   ],
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: ThrottlerGuard,
+    // },
     AuthService,
     UsersService,
     UsersRepository,
@@ -45,6 +46,7 @@ import { jwtModule } from './modules/jwt-module';
     CryptoService,
     LocalStrategy,
     JwtStrategy,
+    AuthConfig,
   ],
   exports: [UsersExternalQueryRepository, UsersExternalService],
 })

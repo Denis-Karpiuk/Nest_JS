@@ -1,7 +1,14 @@
 import { JwtModule } from '@nestjs/jwt';
 
-export const jwtModule = JwtModule.register({
-  // TODO: move to env
-  secret: 'access-token-secret',
-  signOptions: { expiresIn: '60m' },
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+export const jwtModule = JwtModule.registerAsync({
+  imports: [ConfigModule],
+  useFactory: async (configService: ConfigService) => ({
+    secret: configService.get('ACCESS_TOKEN_SECRET'),
+    signOptions: {
+      expiresIn: configService.get('JWT_EXPIRES_IN', '60m'),
+    },
+  }),
+  inject: [ConfigService],
 });

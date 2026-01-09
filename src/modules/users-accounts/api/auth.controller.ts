@@ -1,4 +1,3 @@
-import { AuthQueryRepository } from './../infrastructure/query/auth.query-repository';
 import {
   Body,
   Controller,
@@ -8,19 +7,19 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { UsersService } from '../application/users.service';
-import { CreateUserInputDto } from './input-dto/create-user.input-dto';
-import { LocalAuthGuard } from '../guards/local/local-auth.guard';
-import { UserContextDto } from '../guards/dto/user-context.dto';
-import { ExtractUserFromRequest } from '../guards/decorators/params/extract-user-from-request.decorator';
 import { AuthService } from '../application/auth.service';
+import { UsersService } from '../application/users.service';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
-import { MeViewDto } from './view-dto/users.view-dto';
-import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
-import { Throttle } from '@nestjs/throttler';
-import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
+import { ExtractUserFromRequest } from '../guards/decorators/params/extract-user-from-request.decorator';
+import { UserContextDto } from '../guards/dto/user-context.dto';
+import { LocalAuthGuard } from '../guards/local/local-auth.guard';
+import { AuthQueryRepository } from './../infrastructure/query/auth.query-repository';
 import { CreateNewPasswordInputDto } from './input-dto/create-new-password.input-dto';
+import { CreateUserInputDto } from './input-dto/create-user.input-dto';
+import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
+import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
 import { RegistrationEmailResendingInputDto } from './input-dto/registration-email-resending.input-dto';
+import { MeViewDto } from './view-dto/users.view-dto';
 
 @Controller('auth')
 export class AuthController {

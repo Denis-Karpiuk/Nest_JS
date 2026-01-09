@@ -8,8 +8,8 @@ export class UsersExternalService {
   constructor(
     //инжектирование модели в сервис через DI
     @InjectModel(User.name)
-    private UserModel: UserModelType,
-    private usersRepository: UsersRepository,
+    private readonly UserModel: UserModelType,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
   async makeUserAsSpammer(userId: string) {

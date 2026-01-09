@@ -20,7 +20,6 @@ export class DomainHttpExceptionsFilter implements ExceptionFilter {
     const responseBody = this.buildResponseBody(exception, request.url);
 
     if (status === HttpStatus.BAD_REQUEST) {
-      console.log(responseBody);
       const result = {
         errorsMessages: responseBody.extensions,
       };

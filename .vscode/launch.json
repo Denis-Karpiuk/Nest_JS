@@ -39,6 +39,64 @@
         "<node_internals>/**"
       ],
       "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Jest Unit Tests",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": [
+        "test",
+        "--runInBand",
+        "--no-cache"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "NODE_ENV": "testing"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Jest E2E Tests",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": [
+        "test:e2e",
+        "--runInBand",
+        "--no-cache"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "NODE_ENV": "testing"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Current Jest Test File",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": [
+        "test",
+        "${relativeFile}",
+        "--runInBand",
+        "--no-cache"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "NODE_ENV": "testing"
+      }
     }
   ]
 }

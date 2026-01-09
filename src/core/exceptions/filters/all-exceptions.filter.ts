@@ -7,11 +7,15 @@ import {
 import { Request, Response } from 'express';
 import { ErrorResponseBody } from './error-response-body.type';
 import { DomainExceptionCode } from '../domain-exception-codes';
+import { ConfigService } from '@nestjs/config';
+import { NodeEnv } from 'src/common/constants/environment.constants';
 
 //https://docs.nestjs.com/exception-filters#exception-filters-1
 //Все ошибки
 @Catch()
 export class AllHttpExceptionsFilter implements ExceptionFilter {
+  constructor(private readonly configService: ConfigService) {}
+
   catch(exception: any, host: ArgumentsHost): void {
     //ctx нужен, чтобы получить request и response (express). Это из документации, делаем по аналогии
     const ctx = host.switchToHttp();
@@ -30,8 +34,8 @@ export class AllHttpExceptionsFilter implements ExceptionFilter {
     requestUrl: string,
     message: string,
   ): ErrorResponseBody {
-    //TODO: Replace with getter from configService. will be in the following lessons
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction =
+      this.configService.get('NODE_ENV') === NodeEnv.PRODUCTION;
 
     if (isProduction) {
       return {

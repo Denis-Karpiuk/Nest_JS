@@ -7,9 +7,9 @@ import { UserContextDto } from '../guards/dto/user-context.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private usersRepository: UsersRepository,
-    private jwtService: JwtService,
-    private cryptoService: CryptoService,
+    private readonly usersRepository: UsersRepository,
+    private readonly jwtService: JwtService,
+    private readonly cryptoService: CryptoService,
   ) {}
 
   async validateUser(
@@ -34,7 +34,9 @@ export class AuthService {
   }
 
   async login(userId: string) {
-    const accessToken = this.jwtService.sign({ id: userId } as UserContextDto);
+    const accessToken = this.jwtService.sign({
+      id: userId,
+    } as UserContextDto);
 
     return {
       accessToken,
