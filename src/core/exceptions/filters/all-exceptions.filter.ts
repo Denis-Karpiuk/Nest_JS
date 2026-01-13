@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 import { ErrorResponseBody } from './error-response-body.type';
 import { DomainExceptionCode } from '../domain-exception-codes';
 import { ConfigService } from '@nestjs/config';
-import { NodeEnv } from 'src/common/constants/environment.constants';
+import { NodeEnv } from 'src/core/constants/environment.constants';
 
 //https://docs.nestjs.com/exception-filters#exception-filters-1
 //Все ошибки
