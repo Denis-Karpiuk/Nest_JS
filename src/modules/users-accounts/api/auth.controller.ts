@@ -8,8 +8,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { AuthService } from '../application/auth.service';
-import { UsersService } from '../application/users.service';
+import { AuthService } from '../application/services/auth.service';
+import { UsersService } from '../application/services/users.service';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from '../guards/dto/user-context.dto';

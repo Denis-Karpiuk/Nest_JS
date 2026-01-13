@@ -10,6 +10,7 @@ import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exception
 import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
 import { mongooseModule } from './mongoose-module';
 import { ThrottleHttpExceptionsFilter } from './core/exceptions/filters/throttle-exceptions.filter';
+import { CoreModule } from './core/core.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ThrottleHttpExceptionsFilter } from './core/exceptions/filters/throttle
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
+    CoreModule,
   ],
   controllers: [AppController],
   providers: [

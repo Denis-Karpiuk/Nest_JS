@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { EmailService } from 'src/modules/notifications/application/email.service';
 import { uuid } from 'uuidv4';
-import { User, type UserModelType } from '../domain/user.entity';
-import { CreateUserDto, UpdateUserDto } from '../dto/create-user.dto';
-import { UsersRepository } from '../infrastructure/users.repository';
+import { User, type UserModelType } from '../../domain/user.entity';
+import { CreateUserDto, UpdateUserDto } from '../../dto/create-user.dto';
+import { UsersRepository } from '../../infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { randomUUID } from 'crypto';
-import { CreateNewPasswordDto } from '../dto/create-new-password.dto';
+import { CreateNewPasswordDto } from '../../dto/create-new-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -43,7 +43,7 @@ export class UsersService {
     if (userWithTheSameEmail) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
-        message: 'User with the same login already exists',
+        message: 'User with the same email already exists',
         extensions: [
           {
             field: 'email',

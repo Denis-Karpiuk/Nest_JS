@@ -17,10 +17,13 @@ import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
 import { ApiBasicAuth, ApiParam } from '@nestjs/swagger';
 import { UpdateUserInputDto } from './input-dto/update-user.input-dto';
 import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dto';
-import { UsersService } from '../application/users.service';
+import { UsersService } from '../application/services/users.service';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateUserCommand } from '../application/usecases/admins/create-user.usecase';
+import { Types } from 'mongoose';
 
 @Controller('users')
 @UseGuards(BasicAuthGuard)
@@ -29,13 +32,17 @@ export class UsersController {
   constructor(
     private readonly usersQueryRepository: UsersQueryRepository,
     private readonly usersService: UsersService,
+    private readonly commandBus: CommandBus,
   ) {}
 
   @Post()
   async createUser(@Body() body: CreateUserInputDto): Promise<UserViewDto> {
-    const userId = await this.usersService.createUser(body);
+    const userId = await this.commandBus.execute<
+      CreateUserCommand,
+      Types.ObjectId
+    >(new CreateUserCommand(body));
 
-    return this.usersQueryRepository.getByIdOrNotFoundFail(userId);
+    return this.usersQueryRepository.getByIdOrNotFoundFail(userId.toString());
   }
 
   @Get()
