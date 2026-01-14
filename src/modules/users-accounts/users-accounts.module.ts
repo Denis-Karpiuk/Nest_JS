@@ -14,6 +14,7 @@ import { UsersService } from './application/services/users.service';
 import { CreateUserUseCase } from './application/usecases/admin/create-user.usecase';
 import { DeleteUserUseCase } from './application/usecases/admin/delete-user.usecase';
 import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
+import { LoginUserUseCase } from './application/usecases/login-user.usecase';
 import { AuthConfig } from './config/auth.config';
 import { User, UserSchema } from './domain/user.entity';
 import { JwtStrategy } from './guards/bearer/jwt.strategy';
@@ -23,13 +24,15 @@ import { AuthQueryRepository } from './infrastructure/query/auth.query-repositor
 import { SecurityDevicesQueryRepository } from './infrastructure/query/security-devices.query-repository';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 import { UsersRepository } from './infrastructure/users.repository';
-import { jwtModule } from './modules/jwt-module';
 import { throttleModule } from './modules/throttle-module';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
 
 const commandHandlers = [
   CreateUserUseCase,
   UpdateUserUseCase,
   DeleteUserUseCase,
+  LoginUserUseCase,
   GetAllUsersQueryHandler,
   GetUserByIdQueryHandler,
 ];
@@ -39,11 +42,12 @@ const commandHandlers = [
     NotificationsModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     throttleModule,
-    jwtModule,
+    JwtModule,
   ],
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
     ...commandHandlers,
+
     // {
     //   provide: APP_GUARD,
     //   useClass: ThrottlerGuard,
@@ -61,6 +65,8 @@ const commandHandlers = [
     LocalStrategy,
     JwtStrategy,
     AuthConfig,
+    jwtAccessModule,
+    jwtRefreshModule,
   ],
   exports: [UsersExternalQueryRepository, UsersExternalService],
 })

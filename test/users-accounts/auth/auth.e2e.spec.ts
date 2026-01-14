@@ -73,7 +73,12 @@ describe('Auth Controller (e2e)', () => {
 
     expect(response).toEqual({
       accessToken: expect.any(String) as string,
+      refreshTokenCookie: expect.any(String) as string,
     });
+
+    expect(response.refreshTokenCookie).toBeDefined();
+    expect(response.refreshTokenCookie).toContain('refreshToken=');
+    expect(response.refreshTokenCookie).toContain('HttpOnly');
   });
 
   it("should't registration user with existing email", async () => {

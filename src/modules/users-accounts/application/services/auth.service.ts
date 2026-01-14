@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../../infrastructure/users.repository';
-import { JwtService } from '@nestjs/jwt';
 import { UserContextDto } from '../../guards/dto/user-context.dto';
 import { CryptoService } from './crypto.service';
 
@@ -8,7 +7,6 @@ import { CryptoService } from './crypto.service';
 export class AuthService {
   constructor(
     private readonly usersRepository: UsersRepository,
-    private readonly jwtService: JwtService,
     private readonly cryptoService: CryptoService,
   ) {}
 
@@ -30,16 +28,6 @@ export class AuthService {
       return null;
     }
 
-    return { id: user.id.toString() };
-  }
-
-  async login(userId: string) {
-    const accessToken = this.jwtService.sign({
-      id: userId,
-    } as UserContextDto);
-
-    return {
-      accessToken,
-    };
+    return { id: user._id.toString() };
   }
 }

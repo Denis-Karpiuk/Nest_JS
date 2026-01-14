@@ -5,8 +5,11 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
+import { CommandBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from '../application/services/auth.service';
 import { UsersService } from '../application/services/users.service';
@@ -15,6 +18,10 @@ import { ExtractUserFromRequest } from '../guards/decorators/params/extract-user
 import { UserContextDto } from '../guards/dto/user-context.dto';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { AuthQueryRepository } from './../infrastructure/query/auth.query-repository';
+import {
+  LoginUserCommand,
+  LoginUserCommandResult,
+} from '../application/usecases/login-user.usecase';
 import { CreateNewPasswordInputDto } from './input-dto/create-new-password.input-dto';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
@@ -29,6 +36,7 @@ export class AuthController {
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
     private readonly authQueryRepository: AuthQueryRepository,
+    private readonly commandBus: CommandBus,
   ) {}
 
   @Post('registration')
@@ -56,10 +64,23 @@ export class AuthController {
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
-  login(
+  async login(
     @ExtractUserFromRequest() user: UserContextDto,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    return this.authService.login(user.id.toString());
+    const { accessToken, refreshToken } = await this.commandBus.execute<
+      LoginUserCommand,
+      LoginUserCommandResult
+    >(new LoginUserCommand(user.id.toString()));
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    return { accessToken };
   }
 
   @Get('me')
