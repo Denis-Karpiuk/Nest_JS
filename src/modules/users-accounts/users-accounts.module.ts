@@ -20,9 +20,10 @@ import { throttleModule } from './modules/throttle-module';
 import { jwtModule } from './modules/jwt-module';
 import { AuthConfig } from './config/auth.config';
 import { CreateUserUseCase } from './application/usecases/admins/create-user.usecase';
+import { DeleteUserUseCase } from './application/usecases/admins/delete-user.usecase';
 import { UsersFactory } from './application/factories/users.factory';
 
-const commandHandlers = [CreateUserUseCase];
+const commandHandlers = [CreateUserUseCase, DeleteUserUseCase];
 
 @Module({
   imports: [

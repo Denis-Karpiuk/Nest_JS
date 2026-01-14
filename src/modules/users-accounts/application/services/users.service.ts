@@ -10,6 +10,7 @@ import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { randomUUID } from 'crypto';
 import { CreateNewPasswordDto } from '../../dto/create-new-password.dto';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -65,7 +66,7 @@ export class UsersService {
 
     return user._id.toString();
   }
-  async updateUser(id: string, dto: UpdateUserDto): Promise<string> {
+  async updateUser(id: Types.ObjectId, dto: UpdateUserDto): Promise<string> {
     const user = await this.usersRepository.findOrNotFoundFail(id);
 
     // не присваиваем св-ва сущностям напрямую в сервисах! даже для изменения одного св-ва
@@ -77,20 +78,14 @@ export class UsersService {
     return user._id.toString();
   }
 
-  async deleteUser(id: string): Promise<void> {
-    const user = await this.usersRepository.findOrNotFoundFail(id);
-
-    user.makeDeleted();
-
-    await this.usersRepository.save(user);
-  }
-
   async registerUser(dto: CreateUserDto) {
     const createdUserId = await this.createUser(dto);
 
     const confirmationCode = uuid();
 
-    const user = await this.usersRepository.findOrNotFoundFail(createdUserId);
+    const user = await this.usersRepository.findOrNotFoundFail(
+      new Types.ObjectId(createdUserId),
+    );
 
     user.setConfirmationCode(confirmationCode);
 

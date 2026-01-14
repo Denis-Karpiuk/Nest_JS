@@ -21,6 +21,7 @@ import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dt
 import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
 import { RegistrationEmailResendingInputDto } from './input-dto/registration-email-resending.input-dto';
 import { MeViewDto } from './view-dto/users.view-dto';
+import { Types } from 'mongoose';
 
 @Controller('auth')
 export class AuthController {
@@ -58,13 +59,13 @@ export class AuthController {
   login(
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<{ accessToken: string }> {
-    return this.authService.login(user.id);
+    return this.authService.login(user.id.toString());
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@ExtractUserFromRequest() user: UserContextDto): Promise<MeViewDto> {
-    return this.authQueryRepository.me(user.id);
+    return this.authQueryRepository.me(new Types.ObjectId(user.id));
   }
 
   @Post('password-recovery')

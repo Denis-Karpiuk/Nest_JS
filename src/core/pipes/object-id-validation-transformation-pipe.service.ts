@@ -3,13 +3,15 @@ import { isValidObjectId, Types } from 'mongoose';
 import { DomainException } from '../exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../exceptions/domain-exception-codes';
 
+export const ObjectIdType = Types.ObjectId;
+
 // Custom pipe example
 // https://docs.nestjs.com/pipes#custom-pipes
 @Injectable()
 export class ObjectIdValidationTransformationPipe implements PipeTransform {
   transform(value: string, metadata: ArgumentMetadata): any {
     // Проверяем, что тип данных в декораторе — ObjectId
-    if (metadata.metatype !== Types.ObjectId) {
+    if (metadata.metatype !== ObjectIdType) {
       return value;
     }
 
@@ -19,7 +21,7 @@ export class ObjectIdValidationTransformationPipe implements PipeTransform {
         message: `Invalid ObjectId: ${value}`,
       });
     }
-    return new Types.ObjectId(value); // Преобразуем строку в ObjectId
+    return new ObjectIdType(value); // Преобразуем строку в ObjectId
 
     // Если тип не ObjectId, возвращаем значение без изменений
   }
@@ -30,7 +32,8 @@ export class ObjectIdValidationTransformationPipe implements PipeTransform {
  */
 @Injectable()
 export class ObjectIdValidationPipe implements PipeTransform {
-  transform(value: any, metadata: ArgumentMetadata): any {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  transform(value: any, _metadata: ArgumentMetadata): any {
     // Проверяем, что тип данных в декораторе — ObjectId
 
     if (!isValidObjectId(value)) {

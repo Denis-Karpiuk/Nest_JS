@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { User, UserDocument, type UserModelType } from '../domain/user.entity';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersRepository {
@@ -11,7 +12,7 @@ export class UsersRepository {
     @InjectModel(User.name) private readonly UserModel: UserModelType,
   ) {}
 
-  async findById(id: string): Promise<UserDocument | null> {
+  async findById(id: Types.ObjectId): Promise<UserDocument | null> {
     return this.UserModel.findOne({
       _id: id,
       deletedAt: null,
@@ -42,7 +43,7 @@ export class UsersRepository {
     await user.save();
   }
 
-  async findOrNotFoundFail(id: string): Promise<UserDocument> {
+  async findOrNotFoundFail(id: Types.ObjectId): Promise<UserDocument> {
     const user = await this.findById(id);
 
     if (!user) {

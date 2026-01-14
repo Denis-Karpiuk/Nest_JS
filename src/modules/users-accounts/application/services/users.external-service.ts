@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, type UserModelType } from '../../domain/user.entity';
 import { UsersRepository } from '../../infrastructure/users.repository';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersExternalService {
@@ -12,7 +13,7 @@ export class UsersExternalService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async makeUserAsSpammer(userId: string) {
+  async makeUserAsSpammer(userId: Types.ObjectId) {
     const user = await this.usersRepository.findOrNotFoundFail(userId);
 
     // user.makeSpammer();

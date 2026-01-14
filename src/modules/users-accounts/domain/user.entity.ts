@@ -7,12 +7,25 @@ import {
   EmailConfirmation,
   EmailConfirmationSchema,
 } from './email-confirmation.schema';
-import { LOGIN_PATTERN } from '../api/input-dto/create-user.input-dto';
 import {
   PasswordRecoveryInformation,
   PasswordRecoveryInformationSchema,
 } from './password-recovery.schema copy';
-import { EMAIL_PATTERN } from '../api/input-dto/user-email.dto';
+
+export const loginConstraints = {
+  minLength: 3,
+  maxLength: 10,
+  match: /^[a-zA-Z0-9_-]*$/,
+};
+
+export const passwordConstraints = {
+  minLength: 6,
+  maxLength: 20,
+};
+
+export const emailConstraints = {
+  match: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+};
 
 //флаг timestemp автоматичеки добавляет поля upatedAt и createdAt
 /**
@@ -26,7 +39,7 @@ export class User {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, min: 3, max: 10, match: LOGIN_PATTERN, required: true })
+  @Prop({ type: String, required: true, ...loginConstraints })
   login: string;
 
   /**
@@ -42,7 +55,7 @@ export class User {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, min: 5, match: EMAIL_PATTERN, required: true })
+  @Prop({ type: String, required: true, ...emailConstraints })
   email: string;
 
   /**

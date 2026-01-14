@@ -24,6 +24,8 @@ import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../application/usecases/admins/create-user.usecase';
 import { Types } from 'mongoose';
+import { DeleteUserCommand } from '../application/usecases/admins/delete-user.usecase';
+import { ObjectIdValidationPipe } from '../../../core/pipes/object-id-validation-transformation-pipe.service';
 
 @Controller('users')
 @UseGuards(BasicAuthGuard)
@@ -63,7 +65,10 @@ export class UsersController {
     @Param('id') id: string,
     @Body() body: UpdateUserInputDto,
   ): Promise<UserViewDto> {
-    const userId = await this.usersService.updateUser(id, body);
+    const userId = await this.usersService.updateUser(
+      new Types.ObjectId(id),
+      body,
+    );
 
     return this.usersQueryRepository.getByIdOrNotFoundFail(userId);
   }
@@ -72,7 +77,11 @@ export class UsersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
-  async deleteUser(@Param('id') id: string): Promise<void> {
-    return this.usersService.deleteUser(id);
+  async deleteUser(
+    @Param('id', ObjectIdValidationPipe) id: string,
+  ): Promise<void> {
+    await this.commandBus.execute<DeleteUserCommand>(
+      new DeleteUserCommand(new Types.ObjectId(id)),
+    );
   }
 }

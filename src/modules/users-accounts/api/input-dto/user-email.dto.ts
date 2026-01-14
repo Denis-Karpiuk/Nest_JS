@@ -1,9 +1,10 @@
 import { IsEmail, Matches } from 'class-validator';
-
-export const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+import { emailConstraints } from '../../domain/user.entity';
+import { Trim } from 'src/core/decorators/transform/trim';
 
 export class UserEmailDto {
+  @Trim()
   @IsEmail()
-  @Matches(EMAIL_PATTERN)
+  @Matches(emailConstraints.match)
   email: string;
 }
