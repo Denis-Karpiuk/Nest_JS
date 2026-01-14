@@ -21,11 +21,13 @@ import { UsersService } from '../application/services/users.service';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../application/usecases/admins/create-user.usecase';
 import { Types } from 'mongoose';
 import { DeleteUserCommand } from '../application/usecases/admins/delete-user.usecase';
 import { ObjectIdValidationPipe } from '../../../core/pipes/object-id-validation-transformation-pipe.service';
+import { GetUserByIdQuery } from '../application/queries/get-user-by-id.query';
+import { GetAllUsersQuery } from '../application/queries/get-all-users.query';
 
 @Controller('users')
 @UseGuards(BasicAuthGuard)
@@ -35,6 +37,7 @@ export class UsersController {
     private readonly usersQueryRepository: UsersQueryRepository,
     private readonly usersService: UsersService,
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Post()
@@ -44,20 +47,27 @@ export class UsersController {
       Types.ObjectId
     >(new CreateUserCommand(body));
 
-    return this.usersQueryRepository.getByIdOrNotFoundFail(userId.toString());
+    return this.usersQueryRepository.getByIdOrNotFoundFail(
+      new Types.ObjectId(userId),
+    );
   }
 
   @Get()
   async getAll(
     @Query() query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UserViewDto[]>> {
-    return this.usersQueryRepository.getAll(query);
+    return this.queryBus.execute<
+      GetAllUsersQuery,
+      PaginatedViewDto<UserViewDto[]>
+    >(new GetAllUsersQuery(query));
   }
 
   @ApiParam({ name: 'id' }) //для сваггера
   @Get(':id')
   async getById(@Param('id') id: string): Promise<UserViewDto> {
-    return this.usersQueryRepository.getByIdOrNotFoundFail(id);
+    return this.queryBus.execute<GetUserByIdQuery, UserViewDto>(
+      new GetUserByIdQuery(new Types.ObjectId(id)),
+    );
   }
 
   @Put(':id')
@@ -70,7 +80,9 @@ export class UsersController {
       body,
     );
 
-    return this.usersQueryRepository.getByIdOrNotFoundFail(userId);
+    return this.usersQueryRepository.getByIdOrNotFoundFail(
+      new Types.ObjectId(userId),
+    );
   }
 
   @ApiParam({ name: 'id' })

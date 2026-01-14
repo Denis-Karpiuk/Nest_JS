@@ -22,8 +22,15 @@ import { AuthConfig } from './config/auth.config';
 import { CreateUserUseCase } from './application/usecases/admins/create-user.usecase';
 import { DeleteUserUseCase } from './application/usecases/admins/delete-user.usecase';
 import { UsersFactory } from './application/factories/users.factory';
+import { GetAllUsersQuery } from './application/queries/get-all-users.query';
+import { GetUserByIdQuery } from './application/queries/get-user-by-id.query';
 
-const commandHandlers = [CreateUserUseCase, DeleteUserUseCase];
+const commandHandlers = [
+  CreateUserUseCase,
+  DeleteUserUseCase,
+  GetAllUsersQuery,
+  GetUserByIdQuery,
+];
 
 @Module({
   imports: [

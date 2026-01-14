@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { QueryFilter } from 'mongoose';
+import type { QueryFilter, Types } from 'mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
@@ -15,7 +15,7 @@ export class UsersQueryRepository {
     private readonly UserModel: UserModelType,
   ) {}
 
-  async getByIdOrNotFoundFail(id: string): Promise<UserViewDto> {
+  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<UserViewDto> {
     const user = await this.UserModel.findOne({
       _id: id,
       deletedAt: null,

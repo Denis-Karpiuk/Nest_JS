@@ -7,7 +7,7 @@ import { UserExternalDto } from './external-dto/users.external-dto';
 export class UsersExternalQueryRepository {
   constructor(
     @InjectModel(User.name)
-    private UserModel: UserModelType,
+    private readonly UserModel: UserModelType,
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<UserExternalDto> {
