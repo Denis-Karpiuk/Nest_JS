@@ -96,4 +96,26 @@ describe('Users Controller (e2e)', () => {
       HttpStatus.NOT_FOUND,
     );
   });
+
+  it('should update user', async () => {
+    const user = await userTestManger.createUser(createUserBody);
+    const updatedUser = await userTestManger.updateUser(user.id, {
+      email: 'updatedUser@email.em',
+    });
+
+    expect(updatedUser).toEqual({
+      ...user,
+      email: 'updatedUser@email.em',
+    });
+  });
+
+  it("should't update user if user not found", async () => {
+    await userTestManger.updateUser(
+      new mongoose.Types.ObjectId().toString(),
+      {
+        email: 'updatedUser@email.em',
+      },
+      HttpStatus.NOT_FOUND,
+    );
+  });
 });

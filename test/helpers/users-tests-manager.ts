@@ -50,7 +50,7 @@ export class UsersTestManager {
   async updateUser(
     userId: string,
     updateModel: UpdateUserInputDto,
-    statusCode: number = HttpStatus.NO_CONTENT,
+    statusCode: number = HttpStatus.OK,
   ): Promise<UserViewDto> {
     const response = await request(this.app.getHttpServer())
       .put(`/${GLOBAL_PREFIX}/users/${userId}`)

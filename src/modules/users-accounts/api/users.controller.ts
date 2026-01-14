@@ -12,22 +12,22 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { UserViewDto } from './view-dto/users.view-dto';
-import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
-import { ApiBasicAuth, ApiParam } from '@nestjs/swagger';
-import { UpdateUserInputDto } from './input-dto/update-user.input-dto';
-import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dto';
-import { UsersService } from '../application/services/users.service';
-import { CreateUserInputDto } from './input-dto/create-user.input-dto';
-import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
-import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { CreateUserCommand } from '../application/usecases/admins/create-user.usecase';
+import { ApiBasicAuth, ApiParam } from '@nestjs/swagger';
 import { Types } from 'mongoose';
-import { DeleteUserCommand } from '../application/usecases/admins/delete-user.usecase';
+import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
 import { ObjectIdValidationPipe } from '../../../core/pipes/object-id-validation-transformation-pipe.service';
-import { GetUserByIdQuery } from '../application/queries/get-user-by-id.query';
 import { GetAllUsersQuery } from '../application/queries/get-all-users.query';
+import { GetUserByIdQuery } from '../application/queries/get-user-by-id.query';
+import { CreateUserCommand } from '../application/usecases/admin/create-user.usecase';
+import { DeleteUserCommand } from '../application/usecases/admin/delete-user.usecase';
+import { UpdateUserCommand } from '../application/usecases/update-user.usecase';
+import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
+import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
+import { CreateUserInputDto } from './input-dto/create-user.input-dto';
+import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dto';
+import { UpdateUserInputDto } from './input-dto/update-user.input-dto';
+import { UserViewDto } from './view-dto/users.view-dto';
 
 @Controller('users')
 @UseGuards(BasicAuthGuard)
@@ -35,7 +35,6 @@ import { GetAllUsersQuery } from '../application/queries/get-all-users.query';
 export class UsersController {
   constructor(
     private readonly usersQueryRepository: UsersQueryRepository,
-    private readonly usersService: UsersService,
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
@@ -62,7 +61,7 @@ export class UsersController {
     >(new GetAllUsersQuery(query));
   }
 
-  @ApiParam({ name: 'id' }) //для сваггера
+  @ApiParam({ name: 'id' })
   @Get(':id')
   async getById(@Param('id') id: string): Promise<UserViewDto> {
     return this.queryBus.execute<GetUserByIdQuery, UserViewDto>(
@@ -72,28 +71,22 @@ export class UsersController {
 
   @Put(':id')
   async updateUser(
-    @Param('id') id: string,
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
     @Body() body: UpdateUserInputDto,
   ): Promise<UserViewDto> {
-    const userId = await this.usersService.updateUser(
-      new Types.ObjectId(id),
-      body,
+    await this.commandBus.execute<UpdateUserCommand, Types.ObjectId>(
+      new UpdateUserCommand(new Types.ObjectId(id), body),
     );
 
-    return this.usersQueryRepository.getByIdOrNotFoundFail(
-      new Types.ObjectId(userId),
-    );
+    return this.usersQueryRepository.getByIdOrNotFoundFail(id);
   }
 
   @ApiParam({ name: 'id' })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(BasicAuthGuard)
   async deleteUser(
-    @Param('id', ObjectIdValidationPipe) id: string,
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
   ): Promise<void> {
-    await this.commandBus.execute<DeleteUserCommand>(
-      new DeleteUserCommand(new Types.ObjectId(id)),
-    );
+    await this.commandBus.execute<DeleteUserCommand>(new DeleteUserCommand(id));
   }
 }

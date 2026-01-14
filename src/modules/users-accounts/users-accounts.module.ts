@@ -4,32 +4,34 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { AuthController } from './api/auth.controller';
 import { SecurityDevicesController } from './api/security-devices.controller';
 import { UsersController } from './api/users.controller';
+import { UsersFactory } from './application/factories/users.factory';
+import { GetAllUsersQueryHandler } from './application/queries/get-all-users.query';
+import { GetUserByIdQueryHandler } from './application/queries/get-user-by-id.query';
+import { AuthService } from './application/services/auth.service';
 import { CryptoService } from './application/services/crypto.service';
 import { UsersExternalService } from './application/services/users.external-service';
 import { UsersService } from './application/services/users.service';
+import { CreateUserUseCase } from './application/usecases/admin/create-user.usecase';
+import { DeleteUserUseCase } from './application/usecases/admin/delete-user.usecase';
+import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
+import { AuthConfig } from './config/auth.config';
 import { User, UserSchema } from './domain/user.entity';
+import { JwtStrategy } from './guards/bearer/jwt.strategy';
 import { LocalStrategy } from './guards/local/local.strategy';
 import { UsersExternalQueryRepository } from './infrastructure/external-query/users.external-query-repository';
 import { AuthQueryRepository } from './infrastructure/query/auth.query-repository';
 import { SecurityDevicesQueryRepository } from './infrastructure/query/security-devices.query-repository';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 import { UsersRepository } from './infrastructure/users.repository';
-import { AuthService } from './application/services/auth.service';
-import { JwtStrategy } from './guards/bearer/jwt.strategy';
-import { throttleModule } from './modules/throttle-module';
 import { jwtModule } from './modules/jwt-module';
-import { AuthConfig } from './config/auth.config';
-import { CreateUserUseCase } from './application/usecases/admins/create-user.usecase';
-import { DeleteUserUseCase } from './application/usecases/admins/delete-user.usecase';
-import { UsersFactory } from './application/factories/users.factory';
-import { GetAllUsersQuery } from './application/queries/get-all-users.query';
-import { GetUserByIdQuery } from './application/queries/get-user-by-id.query';
+import { throttleModule } from './modules/throttle-module';
 
 const commandHandlers = [
   CreateUserUseCase,
+  UpdateUserUseCase,
   DeleteUserUseCase,
-  GetAllUsersQuery,
-  GetUserByIdQuery,
+  GetAllUsersQueryHandler,
+  GetUserByIdQueryHandler,
 ];
 
 @Module({
