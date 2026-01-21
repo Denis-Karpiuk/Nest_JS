@@ -8,9 +8,16 @@ import {
 import { CreateUserInputDto } from 'src/modules/users-accounts/api/input-dto/create-user.input-dto';
 import { UpdateUserInputDto } from 'src/modules/users-accounts/api/input-dto/update-user.input-dto';
 import { delay } from './delay';
+import { UsersRepository } from 'src/modules/users-accounts/infrastructure/users.repository';
+import { UserDocument } from 'src/modules/users-accounts/domain/user.entity';
 
 export class UsersTestManager {
   constructor(private readonly app: INestApplication) {}
+
+  async findByEmailOrLogin(emailOrLogin: string): Promise<UserDocument | null> {
+    const usersRepository = this.app.get(UsersRepository);
+    return usersRepository.findByEmailOrLogin(emailOrLogin);
+  }
 
   async createUser(
     createModel: CreateUserInputDto,
@@ -103,6 +110,16 @@ export class UsersTestManager {
       .expect(statusCode);
 
     return response.body as MeViewDto;
+  }
+
+  async confirmation(
+    confirmationCode?: string,
+    statusCode: number = HttpStatus.NO_CONTENT,
+  ): Promise<void> {
+    await request(this.app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/auth/registration-confirmation`)
+      .send({ code: confirmationCode })
+      .expect(statusCode);
   }
 
   async createSeveralUsers(count: number): Promise<UserViewDto[]> {

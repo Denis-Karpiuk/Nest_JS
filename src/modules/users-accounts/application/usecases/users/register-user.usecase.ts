@@ -59,10 +59,6 @@ export class RegisterUserUseCase implements ICommandHandler<RegisterUserCommand>
     user.setConfirmationCode(confirmCode);
     await this.usersRepository.save(user);
 
-    console.log('Publishing UserRegisteredEvent', {
-      email: user.email,
-      code: confirmCode,
-    });
     this.eventBus.publish(new UserRegisteredEvent(user.email, confirmCode));
   }
 }

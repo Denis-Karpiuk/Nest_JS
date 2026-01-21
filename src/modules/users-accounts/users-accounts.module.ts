@@ -28,6 +28,7 @@ import { throttleModule } from './modules/throttle-module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
 import { RegisterUserUseCase } from './application/usecases/users/register-user.usecase';
+import { ConfirmationRegisterUserUseCase } from './application/usecases/users/confirmation-register-user.usecase';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -35,6 +36,7 @@ const commandHandlers = [
   DeleteUserUseCase,
   LoginUserUseCase,
   RegisterUserUseCase,
+  ConfirmationRegisterUserUseCase,
 ];
 
 const queryHandlers = [GetUserByIdQueryHandler, GetAllUsersQueryHandler];

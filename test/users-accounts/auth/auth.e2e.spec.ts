@@ -151,4 +151,51 @@ describe('Auth Controller (e2e)', () => {
 
     expect(response.body).toBe('To many requests');
   }, 20000); // Таймаут 20 секунд (11 секунд задержка + запас для запросов)
+
+  it('should confirm user email', async () => {
+    await delay(11000);
+
+    await userTestManger.registration(createUserBody);
+
+    const userDocument = await userTestManger.findByEmailOrLogin(
+      createUserBody.email,
+    );
+
+    const confirmationCode = userDocument?.emailConfirmation.confirmationCode;
+
+    await userTestManger.confirmation(confirmationCode);
+
+    const confirmedUser = await userTestManger.findByEmailOrLogin(
+      createUserBody.email,
+    );
+
+    expect(confirmedUser?.isEmailConfirmed).toBe(true);
+  }, 25000);
+
+  it(`should call email sending method while confirmation email`, async () => {
+    await delay(11000);
+
+    const sendEmailMethod = (app.get(EmailService).sendVerifiedEmail = jest
+      .fn()
+      .mockImplementation(() => Promise.resolve()));
+
+    await userTestManger.registration(createUserBody);
+
+    const userDocument = await userTestManger.findByEmailOrLogin(
+      createUserBody.email,
+    );
+
+    const confirmationCode = userDocument?.emailConfirmation.confirmationCode;
+
+    await userTestManger.confirmation(confirmationCode);
+
+    expect(sendEmailMethod).toHaveBeenCalled();
+  }, 30000);
+
+  it('should return 404 if confirmation code is invalid', async () => {
+    await delay(11000);
+    await userTestManger.registration(createUserBody);
+
+    await userTestManger.confirmation('confirmationCode', HttpStatus.NOT_FOUND);
+  }, 30000);
 });
