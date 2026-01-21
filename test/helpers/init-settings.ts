@@ -8,6 +8,7 @@ import { EmailServiceMock } from 'test/mock/email-service.mock';
 import { AppModule } from '../../src/app.module';
 import { deleteAllData } from './delete-all-data';
 import { UsersTestManager } from './users-tests-manager';
+import { BlogsTestManager } from './blogs-tests-manager';
 
 export const initSettings = async (
   addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
@@ -35,6 +36,8 @@ export const initSettings = async (
 
   const userTestManager = new UsersTestManager(app);
 
+  const blogsTestManager = new BlogsTestManager(app);
+
   await deleteAllData(app);
 
   return {
@@ -42,5 +45,6 @@ export const initSettings = async (
     databaseConnection,
     httpServer,
     userTestManager,
+    blogsTestManager,
   };
 };
