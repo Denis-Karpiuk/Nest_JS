@@ -1,4 +1,5 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { CreateBlogDto } from 'src/modules/bloggers-platform/modules/blogs/dto/create-blog.dto';
 import { BlogsTestManager } from 'test/helpers/blogs-tests-manager';
 import { deleteAllData } from 'test/helpers/delete-all-data';
@@ -57,6 +58,27 @@ describe('Blogs Controller (e2e)', () => {
   it('should update blog and return 204 status code', async () => {
     const blog = await blogTestManger.createBlog(createBlogBody);
 
-    await blogTestManger.updateBlog(createBlogBody, blog.id);
+    await blogTestManger.updateBlog(
+      createBlogBody,
+      new Types.ObjectId(blog.id),
+    );
+  });
+
+  it('should not update blog if it not found', async () => {
+    await blogTestManger.updateBlog(
+      createBlogBody,
+      new Types.ObjectId(),
+      HttpStatus.NOT_FOUND,
+    );
+  });
+
+  it('should delete blog and return 204 status code', async () => {
+    const blog = await blogTestManger.createBlog(createBlogBody);
+
+    await blogTestManger.deleteBlog(new Types.ObjectId(blog.id));
+  });
+
+  it('should not delete blog if it not found', async () => {
+    await blogTestManger.deleteBlog(new Types.ObjectId(), HttpStatus.NOT_FOUND);
   });
 });

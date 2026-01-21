@@ -11,7 +11,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { BlogsService } from '../application/blogs.service';
 import { CreateBlogInputDto } from './input-dto/create-blog.input.dto';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
 import { BlogViewDto } from './view-dto/blogs.view-dto';
@@ -28,11 +27,11 @@ import { Types } from 'mongoose';
 import { GetBlogByIdQuery } from '../application/queries/get-blog-by-id';
 import { ObjectIdValidationPipe } from 'src/core/pipes/object-id-validation-transformation-pipe.service';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
+import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
-    private readonly blogsService: BlogsService,
     private readonly postsExternalService: PostsExternalService,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsExternalQueryRepository: PostsExternalQueryRepository,
@@ -70,7 +69,10 @@ export class BlogsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async updateBlog(@Param('id') id: string, @Body() dto: CreateBlogInputDto) {
+  async updateBlog(
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Body() dto: CreateBlogInputDto,
+  ) {
     return this.commandBus.execute<UpdateBlogCommand, void>(
       new UpdateBlogCommand(id, dto),
     );
@@ -78,8 +80,12 @@ export class BlogsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlog(@Param('id') id: string): Promise<void> {
-    return this.blogsService.deleteBlog(id);
+  async deleteBlog(
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+  ): Promise<void> {
+    return this.commandBus.execute<DeleteBlogCommand, void>(
+      new DeleteBlogCommand(id),
+    );
   }
 
   @Post(':id/posts')

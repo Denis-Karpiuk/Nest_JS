@@ -1,4 +1,5 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
+import { Types } from 'mongoose';
 import type { Server } from 'http';
 import { CreateBlogInputDto } from 'src/modules/bloggers-platform/modules/blogs/api/input-dto/create-blog.input.dto';
 import { BlogViewDto } from 'src/modules/bloggers-platform/modules/blogs/api/view-dto/blogs.view-dto';
@@ -23,12 +24,22 @@ export class BlogsTestManager {
 
   async updateBlog(
     dto: CreateBlogInputDto,
-    blogId: string,
+    blogId: Types.ObjectId,
     statusCode: number = HttpStatus.NO_CONTENT,
   ): Promise<any> {
     await request(this.app.getHttpServer() as Server)
-      .put(`/${GLOBAL_PREFIX}/blogs/${blogId}`)
+      .put(`/${GLOBAL_PREFIX}/blogs/${blogId.toString()}`)
       .send(dto)
+      .auth('admin', 'qwerty')
+      .expect(statusCode);
+  }
+
+  async deleteBlog(
+    blogId: Types.ObjectId,
+    statusCode: number = HttpStatus.NO_CONTENT,
+  ): Promise<void> {
+    await request(this.app.getHttpServer() as Server)
+      .delete(`/${GLOBAL_PREFIX}/blogs/${blogId.toString()}`)
       .auth('admin', 'qwerty')
       .expect(statusCode);
   }
