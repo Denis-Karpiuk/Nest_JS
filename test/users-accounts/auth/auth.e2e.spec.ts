@@ -198,4 +198,20 @@ describe('Auth Controller (e2e)', () => {
 
     await userTestManger.confirmation('confirmationCode', HttpStatus.NOT_FOUND);
   }, 30000);
+
+  it('should resend registration email', async () => {
+    await delay(11000);
+    await userTestManger.registration(createUserBody);
+
+    const sendEmailMethod = (app.get(EmailService).sendConfirmationEmail = jest
+      .fn()
+      .mockImplementation(() => Promise.resolve()));
+
+    await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/auth/registration-email-resending`)
+      .send({ email: createUserBody.email })
+      .expect(HttpStatus.NO_CONTENT);
+
+    expect(sendEmailMethod).toHaveBeenCalled();
+  }, 30000);
 });

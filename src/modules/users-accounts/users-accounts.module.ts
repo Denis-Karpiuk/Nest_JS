@@ -29,6 +29,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
 import { RegisterUserUseCase } from './application/usecases/users/register-user.usecase';
 import { ConfirmationRegisterUserUseCase } from './application/usecases/users/confirmation-register-user.usecase';
+import { ResendRegistrationEmailUserUseCase } from './application/usecases/users/resend-registration-email-user';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -37,6 +38,7 @@ const commandHandlers = [
   LoginUserUseCase,
   RegisterUserUseCase,
   ConfirmationRegisterUserUseCase,
+  ResendRegistrationEmailUserUseCase,
 ];
 
 const queryHandlers = [GetUserByIdQueryHandler, GetAllUsersQueryHandler];

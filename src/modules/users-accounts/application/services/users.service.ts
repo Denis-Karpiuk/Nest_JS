@@ -77,48 +77,6 @@ export class UsersService {
     return user._id.toString();
   }
 
-  async registrationEmailResending(email: string): Promise<void> {
-    const user = await this.usersRepository.findByEmailOrLogin(email);
-
-    if (!user) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        message: 'User not found',
-        extensions: [
-          {
-            field: 'email',
-            message: 'User not found',
-          },
-        ],
-      });
-    }
-
-    const isConfirmed = user.isEmailConfirmed;
-
-    if (isConfirmed) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'User already confirmed',
-        extensions: [
-          {
-            field: 'email',
-            message: 'User already confirmed',
-          },
-        ],
-      });
-    }
-
-    const confirmationCode = randomUUID();
-
-    user.updateConfirmationInformation(confirmationCode);
-
-    await this.usersRepository.save(user);
-
-    this.emailService
-      .sendConfirmationEmail(user.email, confirmationCode)
-      .catch((err) => console.log('Error sending email', err));
-  }
-
   async passwordRecovery(email: string): Promise<void> {
     const user = await this.usersRepository.findByEmailOrLogin(email);
 
