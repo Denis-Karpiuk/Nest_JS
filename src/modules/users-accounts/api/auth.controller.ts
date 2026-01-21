@@ -8,36 +8,34 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import type { Response } from 'express';
 import { CommandBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { AuthService } from '../application/services/auth.service';
-import { UsersService } from '../application/services/users.service';
+import type { Response } from 'express';
+import { Types } from 'mongoose';
+import {
+  LoginUserCommand,
+  LoginUserCommandResult,
+} from '../application/usecases/login-user.usecase';
+import { ConfirmationRegisterUserCommand } from '../application/usecases/users/confirmation-register-user.usecase';
+import { CreateNewPasswordUserCommand } from '../application/usecases/users/create-new-password-user.usecase';
+import { PasswordRecoveryUserCommand } from '../application/usecases/users/password-recovery-user.usecase';
+import { RegisterUserCommand } from '../application/usecases/users/register-user.usecase';
+import { ResendRegistrationEmailUserCommand } from '../application/usecases/users/resend-registration-email-user';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from '../guards/dto/user-context.dto';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { AuthQueryRepository } from './../infrastructure/query/auth.query-repository';
-import {
-  LoginUserCommand,
-  LoginUserCommandResult,
-} from '../application/usecases/login-user.usecase';
 import { CreateNewPasswordInputDto } from './input-dto/create-new-password.input-dto';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
 import { RegistrationEmailResendingInputDto } from './input-dto/registration-email-resending.input-dto';
 import { MeViewDto } from './view-dto/users.view-dto';
-import { Types } from 'mongoose';
-import { RegisterUserCommand } from '../application/usecases/users/register-user.usecase';
-import { ConfirmationRegisterUserCommand } from '../application/usecases/users/confirmation-register-user.usecase';
-import { ResendRegistrationEmailUserCommand } from '../application/usecases/users/resend-registration-email-user';
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly usersService: UsersService,
-    private readonly authService: AuthService,
     private readonly authQueryRepository: AuthQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}
@@ -90,23 +88,23 @@ export class AuthController {
     return { accessToken };
   }
 
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  me(@ExtractUserFromRequest() user: UserContextDto): Promise<MeViewDto> {
-    return this.authQueryRepository.me(new Types.ObjectId(user.id));
-  }
-
   @Post('password-recovery')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   passwordRecovery(@Body() body: PasswordRecoveryInputDto) {
-    return this.usersService.passwordRecovery(body.email);
+    return this.commandBus.execute(new PasswordRecoveryUserCommand(body.email));
   }
 
   @Post('new-password')
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   createNewPassword(@Body() body: CreateNewPasswordInputDto) {
-    return this.usersService.createNewPassword(body);
+    return this.commandBus.execute(new CreateNewPasswordUserCommand(body));
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  me(@ExtractUserFromRequest() user: UserContextDto): Promise<MeViewDto> {
+    return this.authQueryRepository.me(new Types.ObjectId(user.id));
   }
 }

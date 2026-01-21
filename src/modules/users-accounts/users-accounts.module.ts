@@ -10,7 +10,6 @@ import { GetUserByIdQueryHandler } from './application/queries/get-user-by-id.qu
 import { AuthService } from './application/services/auth.service';
 import { CryptoService } from './application/services/crypto.service';
 import { UsersExternalService } from './application/services/users.external-service';
-import { UsersService } from './application/services/users.service';
 import { CreateUserUseCase } from './application/usecases/admin/create-user.usecase';
 import { DeleteUserUseCase } from './application/usecases/admin/delete-user.usecase';
 import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
@@ -30,6 +29,8 @@ import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
 import { RegisterUserUseCase } from './application/usecases/users/register-user.usecase';
 import { ConfirmationRegisterUserUseCase } from './application/usecases/users/confirmation-register-user.usecase';
 import { ResendRegistrationEmailUserUseCase } from './application/usecases/users/resend-registration-email-user';
+import { CreateNewPasswordUserUseCase } from './application/usecases/users/create-new-password-user.usecase';
+import { PasswordRecoveryUserUseCase } from './application/usecases/users/password-recovery-user.usecase';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -39,6 +40,8 @@ const commandHandlers = [
   RegisterUserUseCase,
   ConfirmationRegisterUserUseCase,
   ResendRegistrationEmailUserUseCase,
+  CreateNewPasswordUserUseCase,
+  PasswordRecoveryUserUseCase,
 ];
 
 const queryHandlers = [GetUserByIdQueryHandler, GetAllUsersQueryHandler];
@@ -60,7 +63,6 @@ const queryHandlers = [GetUserByIdQueryHandler, GetAllUsersQueryHandler];
     // },
     UsersFactory,
     AuthService,
-    UsersService,
     UsersRepository,
     UsersQueryRepository,
     SecurityDevicesQueryRepository,

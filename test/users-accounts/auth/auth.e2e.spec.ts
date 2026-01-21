@@ -214,4 +214,41 @@ describe('Auth Controller (e2e)', () => {
 
     expect(sendEmailMethod).toHaveBeenCalled();
   }, 30000);
+
+  it('should send recovery email', async () => {
+    await delay(11000);
+    await userTestManger.registration(createUserBody);
+
+    const sendEmailMethod = (app.get(EmailService).sendPasswordRecoveryEmail =
+      jest.fn().mockImplementation(() => Promise.resolve()));
+
+    const response = await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/auth/password-recovery`)
+      .send({ email: createUserBody.email });
+
+    expect(response.status).toBe(HttpStatus.NO_CONTENT);
+    expect(sendEmailMethod).toHaveBeenCalled();
+  }, 30000);
+
+  it('should create new password', async () => {
+    await delay(11000);
+    await userTestManger.registration(createUserBody);
+
+    // Trigger password recovery to generate recovery code
+    await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/auth/password-recovery`)
+      .send({ email: createUserBody.email })
+      .expect(HttpStatus.NO_CONTENT);
+
+    // Get the recovery code from the database
+    const user = await userTestManger.findByEmailOrLogin(createUserBody.email);
+    const recoveryCode = user?.passwordRecoveryInformation.recoveryCode;
+
+    // Create new password with recovery code
+    const response = await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/auth/new-password`)
+      .send({ recoveryCode: recoveryCode, newPassword: 'newPassword' });
+
+    expect(response.status).toBe(HttpStatus.NO_CONTENT);
+  }, 30000);
 });
