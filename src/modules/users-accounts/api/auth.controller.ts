@@ -29,6 +29,7 @@ import { RegistrationConfirmationInputDto } from './input-dto/registration-confi
 import { RegistrationEmailResendingInputDto } from './input-dto/registration-email-resending.input-dto';
 import { MeViewDto } from './view-dto/users.view-dto';
 import { Types } from 'mongoose';
+import { RegisterUserCommand } from '../application/usecases/users/register-user.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -43,7 +44,7 @@ export class AuthController {
   @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   registration(@Body() body: CreateUserInputDto): Promise<void> {
-    return this.usersService.registerUser(body);
+    return this.commandBus.execute(new RegisterUserCommand(body));
   }
 
   @Post('registration-confirmation')

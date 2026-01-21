@@ -27,15 +27,17 @@ import { UsersRepository } from './infrastructure/users.repository';
 import { throttleModule } from './modules/throttle-module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
+import { RegisterUserUseCase } from './application/usecases/users/register-user.usecase';
 
 const commandHandlers = [
   CreateUserUseCase,
   UpdateUserUseCase,
   DeleteUserUseCase,
   LoginUserUseCase,
-  GetAllUsersQueryHandler,
-  GetUserByIdQueryHandler,
+  RegisterUserUseCase,
 ];
+
+const queryHandlers = [GetUserByIdQueryHandler, GetAllUsersQueryHandler];
 
 @Module({
   imports: [
@@ -47,7 +49,7 @@ const commandHandlers = [
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
     ...commandHandlers,
-
+    ...queryHandlers,
     // {
     //   provide: APP_GUARD,
     //   useClass: ThrottlerGuard,

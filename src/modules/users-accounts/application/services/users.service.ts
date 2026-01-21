@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { randomUUID } from 'crypto';
+import { Types } from 'mongoose';
+import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { EmailService } from 'src/modules/notifications/application/email.service';
-import { uuid } from 'uuidv4';
 import { User, type UserModelType } from '../../domain/user.entity';
+import { CreateNewPasswordDto } from '../../dto/create-new-password.dto';
 import { CreateUserDto, UpdateUserDto } from '../../dto/create-user.dto';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
-import { DomainException } from 'src/core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
-import { randomUUID } from 'crypto';
-import { CreateNewPasswordDto } from '../../dto/create-new-password.dto';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -76,24 +75,6 @@ export class UsersService {
     await this.usersRepository.save(user);
 
     return user._id.toString();
-  }
-
-  async registerUser(dto: CreateUserDto) {
-    const createdUserId = await this.createUser(dto);
-
-    const confirmationCode = uuid();
-
-    const user = await this.usersRepository.findOrNotFoundFail(
-      new Types.ObjectId(createdUserId),
-    );
-
-    user.setConfirmationCode(confirmationCode);
-
-    await this.usersRepository.save(user);
-
-    this.emailService
-      .sendConfirmationEmail(dto.email, confirmationCode)
-      .catch(console.error);
   }
 
   async registrationConfirmation(confirmationCode: string): Promise<void> {
