@@ -53,4 +53,10 @@ describe('Blogs Controller (e2e)', () => {
       isMembership: true,
     });
   });
+
+  it('should update blog and return 204 status code', async () => {
+    const blog = await blogTestManger.createBlog(createBlogBody);
+
+    await blogTestManger.updateBlog(createBlogBody, blog.id);
+  });
 });

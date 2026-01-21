@@ -6,7 +6,9 @@ export class BlogsExternalQueryRepository {
   constructor(private blogsQueryRepository: BlogsQueryRepository) {}
 
   async getBlogNameByBlogId(id: string): Promise<string> {
-    const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
+    const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(
+      id as any,
+    );
 
     return blog.name;
   }

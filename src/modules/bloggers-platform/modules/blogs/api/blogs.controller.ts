@@ -27,6 +27,7 @@ import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
 import { Types } from 'mongoose';
 import { GetBlogByIdQuery } from '../application/queries/get-blog-by-id';
 import { ObjectIdValidationPipe } from 'src/core/pipes/object-id-validation-transformation-pipe.service';
+import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 
 @Controller('blogs')
 export class BlogsController {
@@ -70,7 +71,9 @@ export class BlogsController {
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlog(@Param('id') id: string, @Body() dto: CreateBlogInputDto) {
-    return this.blogsService.updateBlog(id, dto);
+    return this.commandBus.execute<UpdateBlogCommand, void>(
+      new UpdateBlogCommand(id, dto),
+    );
   }
 
   @Delete(':id')
@@ -94,7 +97,7 @@ export class BlogsController {
     @Param('id') id: string,
     @Query() query: GetBlogsPostsQueryParamsDto,
   ) {
-    const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
+    await this.blogsQueryRepository.getByIdOrNotFoundFail(id as any);
 
     return this.postsExternalQueryRepository.getAllPostsByBlogId(id, query);
   }

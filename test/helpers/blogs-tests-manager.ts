@@ -20,4 +20,16 @@ export class BlogsTestManager {
 
     return response.body as BlogViewDto;
   }
+
+  async updateBlog(
+    dto: CreateBlogInputDto,
+    blogId: string,
+    statusCode: number = HttpStatus.NO_CONTENT,
+  ): Promise<any> {
+    await request(this.app.getHttpServer() as Server)
+      .put(`/${GLOBAL_PREFIX}/blogs/${blogId}`)
+      .send(dto)
+      .auth('admin', 'qwerty')
+      .expect(statusCode);
+  }
 }
