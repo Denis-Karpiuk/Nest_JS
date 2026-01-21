@@ -39,7 +39,7 @@ export class Blog {
     blog.name = dto.name;
     blog.description = dto.description;
     blog.websiteUrl = dto.websiteUrl;
-    blog.isMembership = false;
+    blog.isMembership = true;
 
     return blog as BlogDocument;
   }

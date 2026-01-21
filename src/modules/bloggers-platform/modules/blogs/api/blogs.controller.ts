@@ -22,6 +22,11 @@ import { PostsExternalService } from '../../posts/application/posts.external-ser
 import { PostsExternalQueryRepository } from '../../posts/infrastructure/external-query/posts.external-query-repository';
 import { GetBlogsPostsQueryParamsDto } from './input-dto/get-blogs-posts-query-params';
 import { BasicAuthGuard } from 'src/modules/users-accounts/guards/basic/basic-auth.guard';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
+import { Types } from 'mongoose';
+import { GetBlogByIdQuery } from '../application/queries/get-blog-by-id';
+import { ObjectIdValidationPipe } from 'src/core/pipes/object-id-validation-transformation-pipe.service';
 
 @Controller('blogs')
 export class BlogsController {
@@ -30,6 +35,9 @@ export class BlogsController {
     private readonly postsExternalService: PostsExternalService,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsExternalQueryRepository: PostsExternalQueryRepository,
+
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
   ) {}
 
   @Get()
@@ -40,16 +48,23 @@ export class BlogsController {
   }
 
   @Get(':id')
-  async getBlogById(@Param('id') id: string): Promise<BlogViewDto> {
+  async getBlogById(
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+  ): Promise<BlogViewDto> {
     return this.blogsQueryRepository.getByIdOrNotFoundFail(id);
   }
 
   @UseGuards(BasicAuthGuard)
   @Post()
   async createBlog(@Body() dto: CreateBlogInputDto) {
-    const blogId = await this.blogsService.createBlog(dto);
+    const blogId = await this.commandBus.execute<
+      CreateBlogCommand,
+      Types.ObjectId
+    >(new CreateBlogCommand(dto));
 
-    return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+    return this.queryBus.execute<GetBlogByIdQuery, BlogViewDto>(
+      new GetBlogByIdQuery(blogId),
+    );
   }
 
   @Put(':id')

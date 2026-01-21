@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException, Query } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { QueryFilter, Types } from 'mongoose';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { GetBlogsQueryParamsDto } from '../api/input-dto/get-blogs-query-params.input.dto';
 import { BlogViewDto } from '../api/view-dto/blogs.view-dto';
 import { Blog, type BlogModelType } from '../domain/blog.entity';
-import { QueryFilter } from 'mongoose';
-import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -12,7 +12,7 @@ export class BlogsQueryRepository {
     @InjectModel(Blog.name) private readonly BlogModel: BlogModelType,
   ) {}
 
-  async getByIdOrNotFoundFail(id: string): Promise<BlogViewDto> {
+  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<BlogViewDto> {
     const blog = await this.BlogModel.findOne({
       _id: id,
     });
