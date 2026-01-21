@@ -251,4 +251,19 @@ describe('Auth Controller (e2e)', () => {
 
     expect(response.status).toBe(HttpStatus.NO_CONTENT);
   }, 30000);
+
+  it('should return me information', async () => {
+    await delay(11000);
+    await userTestManger.registration(createUserBody);
+    const { accessToken } = await userTestManger.login(
+      createUserBody.login,
+      createUserBody.password,
+    );
+    const response = await userTestManger.me(accessToken);
+    expect(response).toEqual({
+      userId: expect.any(String) as string,
+      login: createUserBody.login,
+      email: createUserBody.email,
+    });
+  }, 30000);
 });

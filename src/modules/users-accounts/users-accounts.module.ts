@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AuthController } from './api/auth.controller';
@@ -6,14 +7,20 @@ import { SecurityDevicesController } from './api/security-devices.controller';
 import { UsersController } from './api/users.controller';
 import { UsersFactory } from './application/factories/users.factory';
 import { GetAllUsersQueryHandler } from './application/queries/get-all-users.query';
+import { GetMeQueryHandler } from './application/queries/get-me.query';
 import { GetUserByIdQueryHandler } from './application/queries/get-user-by-id.query';
 import { AuthService } from './application/services/auth.service';
 import { CryptoService } from './application/services/crypto.service';
 import { UsersExternalService } from './application/services/users.external-service';
 import { CreateUserUseCase } from './application/usecases/admin/create-user.usecase';
 import { DeleteUserUseCase } from './application/usecases/admin/delete-user.usecase';
-import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
 import { LoginUserUseCase } from './application/usecases/login-user.usecase';
+import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
+import { ConfirmationRegisterUserUseCase } from './application/usecases/users/confirmation-register-user.usecase';
+import { CreateNewPasswordUserUseCase } from './application/usecases/users/create-new-password-user.usecase';
+import { PasswordRecoveryUserUseCase } from './application/usecases/users/password-recovery-user.usecase';
+import { RegisterUserUseCase } from './application/usecases/users/register-user.usecase';
+import { ResendRegistrationEmailUserUseCase } from './application/usecases/users/resend-registration-email-user';
 import { AuthConfig } from './config/auth.config';
 import { User, UserSchema } from './domain/user.entity';
 import { JwtStrategy } from './guards/bearer/jwt.strategy';
@@ -23,14 +30,8 @@ import { AuthQueryRepository } from './infrastructure/query/auth.query-repositor
 import { SecurityDevicesQueryRepository } from './infrastructure/query/security-devices.query-repository';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 import { UsersRepository } from './infrastructure/users.repository';
-import { throttleModule } from './modules/throttle-module';
-import { JwtModule } from '@nestjs/jwt';
 import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
-import { RegisterUserUseCase } from './application/usecases/users/register-user.usecase';
-import { ConfirmationRegisterUserUseCase } from './application/usecases/users/confirmation-register-user.usecase';
-import { ResendRegistrationEmailUserUseCase } from './application/usecases/users/resend-registration-email-user';
-import { CreateNewPasswordUserUseCase } from './application/usecases/users/create-new-password-user.usecase';
-import { PasswordRecoveryUserUseCase } from './application/usecases/users/password-recovery-user.usecase';
+import { throttleModule } from './modules/throttle-module';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -44,7 +45,11 @@ const commandHandlers = [
   PasswordRecoveryUserUseCase,
 ];
 
-const queryHandlers = [GetUserByIdQueryHandler, GetAllUsersQueryHandler];
+const queryHandlers = [
+  GetUserByIdQueryHandler,
+  GetAllUsersQueryHandler,
+  GetMeQueryHandler,
+];
 
 @Module({
   imports: [

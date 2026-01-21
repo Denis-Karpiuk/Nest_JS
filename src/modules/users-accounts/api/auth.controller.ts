@@ -8,7 +8,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { Types } from 'mongoose';
@@ -25,18 +25,18 @@ import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from '../guards/dto/user-context.dto';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
-import { AuthQueryRepository } from './../infrastructure/query/auth.query-repository';
 import { CreateNewPasswordInputDto } from './input-dto/create-new-password.input-dto';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
 import { RegistrationEmailResendingInputDto } from './input-dto/registration-email-resending.input-dto';
 import { MeViewDto } from './view-dto/users.view-dto';
+import { GetMeQuery } from '../application/queries/get-me.query';
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly authQueryRepository: AuthQueryRepository,
+    private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
   ) {}
 
@@ -105,6 +105,6 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@ExtractUserFromRequest() user: UserContextDto): Promise<MeViewDto> {
-    return this.authQueryRepository.me(new Types.ObjectId(user.id));
+    return this.queryBus.execute(new GetMeQuery(new Types.ObjectId(user.id)));
   }
 }
