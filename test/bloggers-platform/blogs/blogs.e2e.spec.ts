@@ -142,4 +142,58 @@ describe('Blogs Controller (e2e)', () => {
       },
     });
   });
+
+  it('should get posts by blog id and return correct response', async () => {
+    const blog = await blogTestManger.createBlog(createBlogBody);
+
+    // Create 5 posts
+    const createdPosts = [];
+    for (let i = 1; i <= 5; i++) {
+      const post = await blogTestManger.createPost(
+        new Types.ObjectId(blog.id),
+        {
+          title: `post_${i}`,
+          shortDescription: `post_short_description_${i}`,
+          content: `post_content_${i}`,
+        },
+      );
+      createdPosts.push(post);
+    }
+
+    // Get all posts by blog ID
+    const response = await blogTestManger.getPostsByBlogId(
+      new Types.ObjectId(blog.id),
+    );
+
+    // Verify response structure
+    expect(response.pagesCount).toBe(1);
+    expect(response.page).toBe(1);
+    expect(response.pageSize).toBe(10);
+    expect(response.totalCount).toBe(5);
+    expect(response.items).toHaveLength(5);
+
+    // Verify all created posts are in the response
+    const createdPostIds = new Set(createdPosts.map((post) => post.id));
+    const responsePostIds = new Set(response.items.map((post) => post.id));
+    expect(responsePostIds).toEqual(createdPostIds);
+
+    // Verify each post has correct structure
+    for (const post of response.items) {
+      expect(post).toMatchObject({
+        id: expect.any(String) as string,
+        title: expect.any(String) as string,
+        content: expect.any(String) as string,
+        blogId: blog.id,
+        shortDescription: expect.any(String) as string,
+        blogName: blog.name,
+        createdAt: expect.any(String) as string,
+        extendedLikesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          myStatus: 'None',
+          newestLikes: [],
+        },
+      });
+    }
+  });
 });

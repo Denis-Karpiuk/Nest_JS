@@ -1,14 +1,13 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { Types } from 'mongoose';
 import type { Server } from 'http';
+import { Types } from 'mongoose';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
+import { CreateBlogPostDto } from 'src/modules/bloggers-platform/modules/blogs/api/input-dto/creat-blog-post.dto';
 import { CreateBlogInputDto } from 'src/modules/bloggers-platform/modules/blogs/api/input-dto/create-blog.input.dto';
 import { BlogViewDto } from 'src/modules/bloggers-platform/modules/blogs/api/view-dto/blogs.view-dto';
-import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
+import { PostsViewDto } from 'src/modules/bloggers-platform/modules/posts/api/view-dto/posts.view-dto';
 import { GLOBAL_PREFIX } from 'src/setup/global-prefix.setup';
 import request from 'supertest';
-import { CreatePostInputDto } from 'src/modules/bloggers-platform/modules/posts/api/input-dto/create-post.input.dto';
-import { PostsViewDto } from 'src/modules/bloggers-platform/modules/posts/api/view-dto/posts.view-dto';
-import { CreateBlogPostDto } from 'src/modules/bloggers-platform/modules/blogs/api/input-dto/creat-blog-post.dto';
 
 export class BlogsTestManager {
   constructor(private readonly app: INestApplication) {}
@@ -71,5 +70,18 @@ export class BlogsTestManager {
       .expect(HttpStatus.CREATED);
 
     return response.body as PostsViewDto;
+  }
+
+  async getPostsByBlogId(
+    blogId: Types.ObjectId,
+    query?: Record<string, any>,
+    statusCode: number = HttpStatus.OK,
+  ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+    const response = await request(this.app.getHttpServer() as Server)
+      .get(`/${GLOBAL_PREFIX}/blogs/${blogId.toString()}/posts`)
+      .query(query || {})
+      .expect(statusCode);
+
+    return response.body as PaginatedViewDto<PostsViewDto[]>;
   }
 }
