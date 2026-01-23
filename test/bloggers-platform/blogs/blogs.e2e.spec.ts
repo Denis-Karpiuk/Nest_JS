@@ -5,6 +5,7 @@ import { BlogViewDto } from 'src/modules/bloggers-platform/modules/blogs/api/vie
 import { BlogsTestManager } from 'test/helpers/blogs-tests-manager';
 import { deleteAllData } from 'test/helpers/delete-all-data';
 import { initSettings } from 'test/helpers/init-settings';
+import { CreateBlogPostDto } from 'src/modules/bloggers-platform/modules/blogs/api/input-dto/creat-blog-post.dto';
 
 describe('Blogs Controller (e2e)', () => {
   let app: INestApplication;
@@ -109,5 +110,36 @@ describe('Blogs Controller (e2e)', () => {
 
   it('should not delete blog if it not found', async () => {
     await blogTestManger.deleteBlog(new Types.ObjectId(), HttpStatus.NOT_FOUND);
+  });
+
+  it('should create post and return correct response', async () => {
+    const blog = await blogTestManger.createBlog(createBlogBody);
+
+    const createPostBody: CreateBlogPostDto = {
+      title: 'post',
+      shortDescription: 'post_short_description',
+      content: 'post_content',
+    };
+
+    const response = await blogTestManger.createPost(
+      new Types.ObjectId(blog.id),
+      createPostBody,
+    );
+
+    expect(response).toMatchObject({
+      title: createPostBody.title,
+      shortDescription: createPostBody.shortDescription,
+      content: createPostBody.content,
+      blogId: blog.id,
+      blogName: blog.name,
+      id: expect.any(String) as string,
+      createdAt: expect.any(String) as string,
+      extendedLikesInfo: {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: 'None',
+        newestLikes: [],
+      },
+    });
   });
 });

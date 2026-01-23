@@ -6,6 +6,9 @@ import { BlogViewDto } from 'src/modules/bloggers-platform/modules/blogs/api/vie
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { GLOBAL_PREFIX } from 'src/setup/global-prefix.setup';
 import request from 'supertest';
+import { CreatePostInputDto } from 'src/modules/bloggers-platform/modules/posts/api/input-dto/create-post.input.dto';
+import { PostsViewDto } from 'src/modules/bloggers-platform/modules/posts/api/view-dto/posts.view-dto';
+import { CreateBlogPostDto } from 'src/modules/bloggers-platform/modules/blogs/api/input-dto/creat-blog-post.dto';
 
 export class BlogsTestManager {
   constructor(private readonly app: INestApplication) {}
@@ -55,5 +58,18 @@ export class BlogsTestManager {
       .expect(statusCode);
 
     return response.body as PaginatedViewDto<BlogViewDto[]>;
+  }
+
+  async createPost(
+    blogId: Types.ObjectId,
+    createPostBody: CreateBlogPostDto,
+  ): Promise<PostsViewDto> {
+    const response = await request(this.app.getHttpServer() as Server)
+      .post(`/${GLOBAL_PREFIX}/blogs/${blogId.toString()}/posts`)
+      .send(createPostBody)
+      .auth('admin', 'qwerty')
+      .expect(HttpStatus.CREATED);
+
+    return response.body as PostsViewDto;
   }
 }
