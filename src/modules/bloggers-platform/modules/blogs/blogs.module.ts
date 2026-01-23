@@ -9,6 +9,7 @@ import { Blog, BlogSchema } from './domain/blog.entity';
 import { BlogsQueryRepository } from './infrastructure/blogs.query-repository';
 import { BlogsRepository } from './infrastructure/blogs.repository';
 import { DeleteBlogUseCase } from './application/usecases/delete-blog.usecase';
+import { GetBlogsQueryHandler } from './application/queries/get-blogs';
 
 const commandHandlers = [
   CreateBlogUseCase,
@@ -16,7 +17,7 @@ const commandHandlers = [
   DeleteBlogUseCase,
 ];
 
-const queryHandlers = [GetBlogByIdQueryHandler];
+const queryHandlers = [GetBlogByIdQueryHandler, GetBlogsQueryHandler];
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),

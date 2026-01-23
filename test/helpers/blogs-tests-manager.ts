@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import type { Server } from 'http';
 import { CreateBlogInputDto } from 'src/modules/bloggers-platform/modules/blogs/api/input-dto/create-blog.input.dto';
 import { BlogViewDto } from 'src/modules/bloggers-platform/modules/blogs/api/view-dto/blogs.view-dto';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { GLOBAL_PREFIX } from 'src/setup/global-prefix.setup';
 import request from 'supertest';
 
@@ -42,5 +43,17 @@ export class BlogsTestManager {
       .delete(`/${GLOBAL_PREFIX}/blogs/${blogId.toString()}`)
       .auth('admin', 'qwerty')
       .expect(statusCode);
+  }
+
+  async getAllBlogs(
+    query?: Record<string, any>,
+    statusCode: number = HttpStatus.OK,
+  ): Promise<PaginatedViewDto<BlogViewDto[]>> {
+    const response = await request(this.app.getHttpServer() as Server)
+      .get(`/${GLOBAL_PREFIX}/blogs`)
+      .query(query || {})
+      .expect(statusCode);
+
+    return response.body as PaginatedViewDto<BlogViewDto[]>;
   }
 }

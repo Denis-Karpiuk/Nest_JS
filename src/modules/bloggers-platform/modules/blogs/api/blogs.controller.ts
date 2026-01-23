@@ -28,6 +28,7 @@ import { GetBlogByIdQuery } from '../application/queries/get-blog-by-id';
 import { ObjectIdValidationPipe } from 'src/core/pipes/object-id-validation-transformation-pipe.service';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
+import { GetBlogBlogsQuery } from '../application/queries/get-blogs';
 
 @Controller('blogs')
 export class BlogsController {
@@ -44,14 +45,19 @@ export class BlogsController {
   async getAllBlogs(
     @Query() query: GetBlogsQueryParamsDto,
   ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-    return this.blogsQueryRepository.getAllBlogs(query);
+    return this.queryBus.execute<
+      GetBlogBlogsQuery,
+      PaginatedViewDto<BlogViewDto[]>
+    >(new GetBlogBlogsQuery(query));
   }
 
   @Get(':id')
   async getBlogById(
     @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
   ): Promise<BlogViewDto> {
-    return this.blogsQueryRepository.getByIdOrNotFoundFail(id);
+    return this.queryBus.execute<GetBlogByIdQuery, BlogViewDto>(
+      new GetBlogByIdQuery(id),
+    );
   }
 
   @UseGuards(BasicAuthGuard)

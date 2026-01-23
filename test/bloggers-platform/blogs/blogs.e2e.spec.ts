@@ -1,24 +1,19 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CreateBlogDto } from 'src/modules/bloggers-platform/modules/blogs/dto/create-blog.dto';
+import { BlogViewDto } from 'src/modules/bloggers-platform/modules/blogs/api/view-dto/blogs.view-dto';
 import { BlogsTestManager } from 'test/helpers/blogs-tests-manager';
 import { deleteAllData } from 'test/helpers/delete-all-data';
 import { initSettings } from 'test/helpers/init-settings';
 
 describe('Blogs Controller (e2e)', () => {
   let app: INestApplication;
-  // let userTestManger: UsersTestManager;
   let blogTestManger: BlogsTestManager;
 
   beforeAll(async () => {
-    const {
-      app: application,
-      // userTestManager,
-      blogsTestManager,
-    } = await initSettings();
+    const { app: application, blogsTestManager } = await initSettings();
 
     app = application;
-    // userTestManger = userTestManager;
     blogTestManger = blogsTestManager;
   });
 
@@ -29,12 +24,6 @@ describe('Blogs Controller (e2e)', () => {
   beforeEach(async () => {
     await deleteAllData(app);
   });
-
-  // const createUserBody: CreateUserDto = {
-  //   login: 'user',
-  //   password: 'user_pass',
-  //   email: 'user@email.em',
-  // };
 
   const createBlogBody: CreateBlogDto = {
     name: 'blog',
@@ -53,6 +42,46 @@ describe('Blogs Controller (e2e)', () => {
       createdAt: expect.any(String) as string,
       isMembership: true,
     });
+  });
+
+  it('should get all blogs and return correct response', async () => {
+    // Create 10 blogs
+    const createdBlogs: BlogViewDto[] = [];
+    for (let i = 1; i <= 10; i++) {
+      const blog = await blogTestManger.createBlog({
+        name: `blog_${i}`,
+        description: `blog_description_${i}`,
+        websiteUrl: `https://blog${i}.com`,
+      });
+      createdBlogs.push(blog);
+    }
+
+    // Get all blogs
+    const response = await blogTestManger.getAllBlogs();
+
+    // Verify response structure
+    expect(response.pagesCount).toBe(1);
+    expect(response.page).toBe(1);
+    expect(response.pageSize).toBe(10);
+    expect(response.totalCount).toBe(10);
+    expect(response.items).toHaveLength(10);
+
+    // Verify all created blogs are in the response
+    const createdBlogIds = new Set(createdBlogs.map((blog) => blog.id));
+    const responseBlogIds = new Set(response.items.map((blog) => blog.id));
+    expect(responseBlogIds).toEqual(createdBlogIds);
+
+    // Verify each blog has correct structure
+    for (const blog of response.items) {
+      expect(blog).toMatchObject({
+        id: expect.any(String) as string,
+        name: expect.any(String) as string,
+        description: expect.any(String) as string,
+        websiteUrl: expect.any(String) as string,
+        createdAt: expect.any(String) as string,
+        isMembership: true,
+      });
+    }
   });
 
   it('should update blog and return 204 status code', async () => {
