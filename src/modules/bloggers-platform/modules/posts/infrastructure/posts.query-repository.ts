@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Post, type PostModelType } from '../domain/post.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { PostsViewDto } from '../api/view-dto/posts.view-dto';
@@ -8,6 +8,8 @@ import { BlogsExternalQueryRepository } from '../../blogs/infrastructure/blogs.e
 import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
 import { PostsSortBy } from '../api/input-dto/posts-sort-by';
 import { Types } from 'mongoose';
+import { DomainException } from 'src/core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -22,7 +24,16 @@ export class PostsQueryRepository {
     });
 
     if (!post) {
-      throw new NotFoundException('post not found');
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Post not found',
+        extensions: [
+          {
+            field: 'postId',
+            message: 'Post not found',
+          },
+        ],
+      });
     }
 
     const blogName =
