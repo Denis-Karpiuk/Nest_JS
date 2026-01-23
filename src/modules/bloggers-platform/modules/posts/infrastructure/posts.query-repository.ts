@@ -7,6 +7,7 @@ import { GetPostsQueryParamsDto } from '../api/input-dto/get-posts-query-params.
 import { BlogsExternalQueryRepository } from '../../blogs/infrastructure/blogs.external-query-repository';
 import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
 import { PostsSortBy } from '../api/input-dto/posts-sort-by';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -15,7 +16,7 @@ export class PostsQueryRepository {
     private blogsExternalQueryRepository: BlogsExternalQueryRepository,
   ) {}
 
-  async getByIdOrNotFoundFail(id: string): Promise<PostsViewDto> {
+  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<PostsViewDto> {
     const post = await this.PostModel.findOne({
       _id: id,
     });

@@ -9,6 +9,7 @@ import { AppModule } from '../../src/app.module';
 import { deleteAllData } from './delete-all-data';
 import { UsersTestManager } from './users-tests-manager';
 import { BlogsTestManager } from './blogs-tests-manager';
+import { PostsTestManager } from './posts-tests-manager';
 
 export const initSettings = async (
   addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
@@ -38,6 +39,8 @@ export const initSettings = async (
 
   const blogsTestManager = new BlogsTestManager(app);
 
+  const postsTestManager = new PostsTestManager(app);
+
   await deleteAllData(app);
 
   return {
@@ -46,5 +49,6 @@ export const initSettings = async (
     httpServer,
     userTestManager,
     blogsTestManager,
+    postsTestManager,
   };
 };
