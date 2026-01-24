@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
-import { CommentViewDto } from '../api/view-dto/comment.view-dto';
-import { Comment, type CommentModelType } from '../domain/comment.entity';
+import { Comment, type CommentModelType } from '../../domain/comment.entity';
+import { CommentViewDto } from '../../api/view-dto/comment.view-dto';
 import { Types } from 'mongoose';
 
 @Injectable()
-export class CommentsQueryRepository {
+export class CommentsExternalQueryRepository {
   constructor(
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
   ) {}

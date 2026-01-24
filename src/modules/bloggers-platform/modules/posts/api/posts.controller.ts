@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Types } from 'mongoose';
@@ -25,12 +26,19 @@ import {
 } from './input-dto/create-post.input.dto';
 import { GetPostsQueryParamsDto } from './input-dto/get-posts-query-params.input.dto';
 import { PostsViewDto } from './view-dto/posts.view-dto';
+import { CreatePostCommentInputDto } from './input-dto/create-post-comment.input.dto';
+import { CreatePostCommentCommand } from '../application/usecases/create-post-comment.usecase';
+import { CommentsExternalQueryRepository } from '../../comments/infrastructure/external-query/comments.exteranl-query-repository';
+import { JwtAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-auth.guard';
+import { UserContextDto } from 'src/modules/users-accounts/guards/dto/user-context.dto';
+import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private queryBus: QueryBus,
     private commandBus: CommandBus,
+    private commentsExternalQueryRepository: CommentsExternalQueryRepository,
   ) {}
 
   @Post()
@@ -78,6 +86,23 @@ export class PostsController {
   async deletePost(@Param('id', ObjectIdValidationPipe) id: Types.ObjectId) {
     return this.commandBus.execute<DeletePostCommand, void>(
       new DeletePostCommand(id),
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/comments')
+  async createComment(
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Body() dto: CreatePostCommentInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ) {
+    const commentId = await this.commandBus.execute<
+      CreatePostCommentCommand,
+      Types.ObjectId
+    >(new CreatePostCommentCommand(id, dto, user));
+
+    return this.commentsExternalQueryRepository.getByIdOrNotFoundFail(
+      commentId,
     );
   }
 }

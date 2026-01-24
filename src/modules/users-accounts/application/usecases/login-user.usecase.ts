@@ -12,7 +12,10 @@ export type LoginUserCommandResult = {
 };
 
 export class LoginUserCommand {
-  constructor(public readonly userId: string) {}
+  constructor(
+    public readonly userId: string,
+    public readonly login: string,
+  ) {}
 }
 
 @CommandHandler(LoginUserCommand)
@@ -28,14 +31,14 @@ export class LoginUserUseCase implements ICommandHandler<
     private readonly refreshTokenContext: JwtService,
   ) {}
 
-  async execute({ userId }: LoginUserCommand): Promise<LoginUserCommandResult> {
-    const accessToken = this.accessTokenContext.sign({
-      id: userId,
-    });
+  async execute({
+    userId,
+    login,
+  }: LoginUserCommand): Promise<LoginUserCommandResult> {
+    const payload = { id: userId, login };
 
-    const refreshToken = this.refreshTokenContext.sign({
-      id: userId,
-    });
+    const accessToken = this.accessTokenContext.sign(payload);
+    const refreshToken = this.refreshTokenContext.sign(payload);
 
     return { accessToken, refreshToken };
   }

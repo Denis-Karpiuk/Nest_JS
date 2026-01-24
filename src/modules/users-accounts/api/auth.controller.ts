@@ -76,7 +76,7 @@ export class AuthController {
     const { accessToken, refreshToken } = await this.commandBus.execute<
       LoginUserCommand,
       LoginUserCommandResult
-    >(new LoginUserCommand(user.id.toString()));
+    >(new LoginUserCommand(user.id, user.login));
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,

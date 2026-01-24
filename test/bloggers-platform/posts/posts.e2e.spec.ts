@@ -8,23 +8,28 @@ import { deleteAllData } from 'test/helpers/delete-all-data';
 import { initSettings } from 'test/helpers/init-settings';
 import { PostsTestManager } from 'test/helpers/posts-tests-manager';
 import { BlogsTestManager } from 'test/helpers/blogs-tests-manager';
+import { UsersTestManager } from 'test/helpers/users-tests-manager';
 import { Types } from 'mongoose';
+import { CreatePostCommentInputDto } from 'src/modules/bloggers-platform/modules/posts/api/input-dto/create-post-comment.input.dto';
 
 describe('Posts Controller (e2e)', () => {
   let app: INestApplication;
   let postTestManger: PostsTestManager;
   let blogTestManger: BlogsTestManager;
+  let userTestManger: UsersTestManager;
 
   beforeAll(async () => {
     const {
       app: application,
       postsTestManager,
       blogsTestManager,
+      userTestManager,
     } = await initSettings();
 
     app = application;
     postTestManger = postsTestManager;
     blogTestManger = blogsTestManager;
+    userTestManger = userTestManager;
   });
 
   afterAll(async () => {
@@ -201,5 +206,59 @@ describe('Posts Controller (e2e)', () => {
         },
       });
     }
+  });
+
+  it('should create post comment and return correct response', async () => {
+    const blog = await blogTestManger.createBlog({
+      name: 'blog',
+      description: 'blog_description',
+      websiteUrl: 'https://blog.com',
+    });
+
+    const post = await postTestManger.createPost({
+      title: 'post',
+      content: 'post_content',
+      blogId: blog.id,
+      shortDescription: 'post_short_description',
+    });
+
+    const newUser = {
+      login: 'com_user',
+      password: '123456789',
+      email: 'com_user@test.com',
+    };
+
+    await userTestManger.createUser(newUser);
+
+    const { accessToken } = await userTestManger.login(
+      newUser.login,
+      newUser.password,
+    );
+
+    const createCommentBody: CreatePostCommentInputDto = {
+      content: 'comment_content',
+    };
+
+    const response = await postTestManger.createComment(
+      new Types.ObjectId(post.id),
+      createCommentBody,
+      accessToken,
+    );
+
+    expect(response).toMatchObject({
+      content: createCommentBody.content,
+      postId: post.id,
+      commentatorInfo: {
+        userId: expect.any(String) as string,
+        userLogin: expect.any(String) as string,
+      },
+      id: expect.any(String) as string,
+      createdAt: expect.any(String) as string,
+      likesInfo: {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: 'None',
+      },
+    });
   });
 });

@@ -11,17 +11,23 @@ export class Comment {
   @Prop({ type: String, min: 20, max: 300, required: true })
   content: string;
 
+  @Prop({ type: String, required: true })
+  postId: string;
+
   @Prop({ type: CommentatorInfoSchema })
   commentatorInfo: CommentatorInfo;
 
   createdAt: Date;
   updatedAt: Date;
 
-  static createInstance(dto: CreateCommentDomainDto): Comment {
+  static createInstance(dto: CreateCommentDomainDto): CommentDocument {
     const comment = new this();
 
+    comment.postId = dto.postId;
     comment.content = dto.content;
-    return comment;
+    comment.commentatorInfo = dto.commentatorInfo;
+
+    return comment as CommentDocument;
   }
 }
 

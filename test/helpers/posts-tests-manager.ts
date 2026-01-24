@@ -2,6 +2,8 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { Types } from 'mongoose';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
+import { CommentViewDto } from 'src/modules/bloggers-platform/modules/comments/api/view-dto/comment.view-dto';
+import { CreatePostCommentInputDto } from 'src/modules/bloggers-platform/modules/posts/api/input-dto/create-post-comment.input.dto';
 import {
   CreatePostInputDto,
   UpdatePostInputDto,
@@ -69,5 +71,20 @@ export class PostsTestManager {
       .expect(statusCode);
 
     return response.body as PaginatedViewDto<PostsViewDto[]>;
+  }
+
+  async createComment(
+    postId: Types.ObjectId,
+    createCommentBody: CreatePostCommentInputDto,
+    accessToken: string,
+    statusCode: number = HttpStatus.CREATED,
+  ): Promise<CommentViewDto> {
+    const response = await request(this.app.getHttpServer() as Server)
+      .post(`/${GLOBAL_PREFIX}/posts/${postId.toString()}/comments`)
+      .send(createCommentBody)
+      .auth(accessToken, { type: 'bearer' })
+      .expect(statusCode);
+
+    return response.body as CommentViewDto;
   }
 }

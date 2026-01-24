@@ -1,12 +1,17 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { CommentsQueryRepository } from '../infrastructure/comments.query-repository';
+import { QueryBus } from '@nestjs/cqrs';
+import { GetCommentByIdQuery } from '../application/queries/get-comment-by-id.query-handler';
+import { CommentViewDto } from './view-dto/comment.view-dto';
+import { Types } from 'mongoose';
 
 @Controller('comments')
 export class CommentsController {
-  constructor(private commentsQueryRepository: CommentsQueryRepository) {}
+  constructor(private queryBus: QueryBus) {}
 
   @Get()
   async getCommentById(@Param('id') id: string) {
-    return this.commentsQueryRepository.getByIdOrNotFoundFail(id);
+    return this.queryBus.execute<GetCommentByIdQuery, CommentViewDto>(
+      new GetCommentByIdQuery(new Types.ObjectId(id)),
+    );
   }
 }

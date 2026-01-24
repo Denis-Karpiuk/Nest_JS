@@ -1,21 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
-import { CommentViewDto } from '../api/view-dto/comment.view-dto';
-import { Comment, type CommentModelType } from '../domain/comment.entity';
-import { Types } from 'mongoose';
+import {
+  Comment,
+  CommentDocument,
+  type CommentModelType,
+} from '../domain/comment.entity';
 
 @Injectable()
-export class CommentsQueryRepository {
+export class CommentsRepository {
   constructor(
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
   ) {}
 
-  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<CommentViewDto> {
-    const comment = await this.CommentModel.findOne({
+  async findById(id: Types.ObjectId): Promise<CommentDocument | null> {
+    return this.CommentModel.findOne({
       _id: id,
     });
+  }
+
+  async findOrNotFoundFail(id: Types.ObjectId): Promise<CommentDocument> {
+    const comment = await this.findById(id);
 
     if (!comment) {
       throw new DomainException({
@@ -30,6 +37,16 @@ export class CommentsQueryRepository {
       });
     }
 
-    return CommentViewDto.mapToView(comment);
+    return comment;
+  }
+
+  async deleteBlog(id: Types.ObjectId) {
+    return this.CommentModel.deleteOne({
+      _id: id,
+    });
+  }
+
+  async save(comment: CommentDocument) {
+    await comment.save();
   }
 }

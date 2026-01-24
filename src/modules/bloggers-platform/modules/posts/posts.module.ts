@@ -12,11 +12,14 @@ import { PostsExternalQueryRepository } from './infrastructure/external-query/po
 import { PostsQueryRepository } from './infrastructure/posts.query-repository';
 import { PostsRepository } from './infrastructure/posts.repository';
 import { GetPostsQueryHandler } from './application/queries/get-posts.queries-handler';
+import { CreatePostCommentUseCase } from './application/usecases/create-post-comment.usecase';
+import { CommentsModule } from '../comments/comments.module';
 
 const commandHandlers = [
   CreatePostUseCase,
   UpdatePostUseCase,
   DeletePostUseCase,
+  CreatePostCommentUseCase,
 ];
 
 const queryHandlers = [GetBlogByIdQueryHandler, GetPostsQueryHandler];
@@ -25,6 +28,7 @@ const queryHandlers = [GetBlogByIdQueryHandler, GetPostsQueryHandler];
   imports: [
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     BlogsSharedModule,
+    CommentsModule,
   ],
   controllers: [PostsController],
   providers: [
