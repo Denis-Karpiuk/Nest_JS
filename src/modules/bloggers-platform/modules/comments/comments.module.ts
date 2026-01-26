@@ -9,9 +9,10 @@ import { CommentsExternalService } from './application/external/comments.externa
 import { GetCommentByIdQueryHandler } from './application/queries/get-comment-by-id.query-handler';
 import { CommentsSharedModule } from './comments-shared.module';
 import { DeleteCommentUseCase } from './application/usecases/delete-comment.usecases';
+import { UpdateCommentUseCase } from './application/usecases/update-comment.usecase';
 
 const queryHandlers = [GetCommentByIdQueryHandler];
-const commandHandlers = [DeleteCommentUseCase];
+const commandHandlers = [DeleteCommentUseCase, UpdateCommentUseCase];
 
 @Module({
   imports: [
