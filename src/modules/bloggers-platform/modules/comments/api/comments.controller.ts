@@ -10,20 +10,19 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { GetCommentByIdQuery } from '../application/queries/get-comment-by-id.query-handler';
-import { CommentViewDto } from './view-dto/comment.view-dto';
 import { Types } from 'mongoose';
-import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecases';
 import { ObjectIdValidationPipe } from 'src/core/pipes/object-id-validation-transformation-pipe.service';
 import { JwtAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-auth.guard';
+import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from 'src/modules/users-accounts/guards/dto/user-context.dto';
-import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
-import { UpdateCommentInputDto } from './input-dto/update-comment.input.dto';
 import { AddCommentLikeStatusCommand } from '../../likes/application/usecases/add-comment-like-status.usecase';
-import { LikeStatusEnum } from '../../likes/domain/dto/like-status-enum';
-import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
+import { GetCommentByIdQuery } from '../application/queries/get-comment-by-id.query-handler';
+import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecases';
+import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
 import { LikeCommentInputDto } from './input-dto/like-comment.input.dto';
+import { UpdateCommentInputDto } from './input-dto/update-comment.input.dto';
+import { CommentViewDto } from './view-dto/comment.view-dto';
 
 @Controller('comments')
 export class CommentsController {
