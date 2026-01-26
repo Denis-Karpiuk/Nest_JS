@@ -27,7 +27,7 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
         message: 'User not found',
         extensions: [
           {
-            field: 'confirmationCode',
+            field: 'user',
             message: 'User not found',
           },
         ],
@@ -42,7 +42,7 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
         message: 'User already confirmed',
         extensions: [
           {
-            field: 'confirmationCode',
+            field: 'code',
             message: 'User already confirmed',
           },
         ],
@@ -57,7 +57,7 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
         message: 'Confirmation code expired',
         extensions: [
           {
-            field: 'confirmationCode',
+            field: 'code',
             message: 'Confirmation code expired',
           },
         ],

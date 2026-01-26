@@ -1,4 +1,4 @@
-import { IsEmail, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, Matches } from 'class-validator';
 import { emailConstraints } from '../../domain/user.entity';
 import { Trim } from 'src/core/decorators/transform/trim';
 
@@ -6,5 +6,6 @@ export class UserEmailDto {
   @Trim()
   @IsEmail()
   @Matches(emailConstraints.match)
+  @IsNotEmpty()
   email: string;
 }

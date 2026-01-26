@@ -85,7 +85,7 @@ export class UsersTestManager {
   ): Promise<{ accessToken: string; refreshTokenCookie?: string }> {
     const response = await request(this.app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/auth/login`)
-      .send({ login, password })
+      .send({ loginOrEmail: login, password })
       .expect(statusCode);
 
     const body = response.body as { accessToken: string };
