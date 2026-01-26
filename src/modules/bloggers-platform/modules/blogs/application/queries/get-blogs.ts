@@ -3,7 +3,10 @@ import { GetBlogsQueryParamsDto } from '../../api/input-dto/get-blogs-query-para
 import { BlogsQueryRepository } from '../../infrastructure/blogs.query-repository';
 
 export class GetBlogBlogsQuery {
-  constructor(public params: GetBlogsQueryParamsDto) {}
+  constructor(
+    public params: GetBlogsQueryParamsDto,
+    public userId?: string,
+  ) {}
 }
 
 @QueryHandler(GetBlogBlogsQuery)

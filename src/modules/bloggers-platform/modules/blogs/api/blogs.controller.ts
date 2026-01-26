@@ -29,6 +29,9 @@ import { ObjectIdValidationPipe } from 'src/core/pipes/object-id-validation-tran
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
 import { GetBlogBlogsQuery } from '../application/queries/get-blogs';
+import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
+import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
+import { UserContextDto } from 'src/modules/users-accounts/guards/dto/user-context.dto';
 
 @Controller('blogs')
 export class BlogsController {
@@ -73,6 +76,7 @@ export class BlogsController {
     );
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlog(
@@ -84,6 +88,7 @@ export class BlogsController {
     );
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(
@@ -94,6 +99,7 @@ export class BlogsController {
     );
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post(':id/posts')
   async createPost(@Param('id') id: string, @Body() dto: CreateBlogPostDto) {
     const postId = await this.postsExternalService.createPost({
@@ -104,16 +110,19 @@ export class BlogsController {
     return this.postsExternalQueryRepository.getByIdOrNotFoundFail(postId);
   }
 
+  @UseGuards(JwtOptionalAuthGuard)
   @Get(':id/posts')
   async getPostsByBlogId(
     @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
     @Query() query: GetBlogsPostsQueryParamsDto,
+    @ExtractUserFromRequest() user: UserContextDto | null,
   ) {
     await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
 
     return this.postsExternalQueryRepository.getAllPostsByBlogId(
       id.toString(),
       query,
+      user?.id,
     );
   }
 }
