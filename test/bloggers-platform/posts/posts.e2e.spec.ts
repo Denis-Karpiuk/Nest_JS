@@ -11,6 +11,7 @@ import { BlogsTestManager } from 'test/helpers/blogs-tests-manager';
 import { UsersTestManager } from 'test/helpers/users-tests-manager';
 import { Types } from 'mongoose';
 import { CreatePostCommentInputDto } from 'src/modules/bloggers-platform/modules/posts/api/input-dto/create-post-comment.input.dto';
+import { LikeStatusEnum } from 'src/modules/bloggers-platform/modules/likes/domain/dto/like-status-enum';
 
 describe('Posts Controller (e2e)', () => {
   let app: INestApplication;
@@ -259,6 +260,61 @@ describe('Posts Controller (e2e)', () => {
         dislikesCount: 0,
         myStatus: 'None',
       },
+    });
+  });
+
+  it('should add like to post and return correct response', async () => {
+    const blog = await blogTestManger.createBlog({
+      name: 'blog',
+      description: 'blog_description',
+      websiteUrl: 'https://blog.com',
+    });
+
+    const post = await postTestManger.createPost({
+      title: 'post',
+      content: 'post_content',
+      blogId: blog.id,
+      shortDescription: 'post_short_description',
+    });
+
+    const newUser = {
+      login: 'like_user',
+      password: '123456789',
+      email: 'like_user@test.com',
+    };
+
+    await userTestManger.createUser(newUser);
+
+    const { accessToken } = await userTestManger.login(
+      newUser.login,
+      newUser.password,
+    );
+
+    await postTestManger.addLikeToPost(
+      new Types.ObjectId(post.id),
+      LikeStatusEnum.Like,
+      accessToken,
+    );
+
+    // Verify that the like was added by getting the post and checking likesInfo
+    const updatedPost = await postTestManger.getPost(
+      new Types.ObjectId(post.id),
+      HttpStatus.OK,
+      accessToken,
+    );
+
+    expect(updatedPost.extendedLikesInfo.likesCount).toBe(1);
+    expect(updatedPost.extendedLikesInfo.dislikesCount).toBe(0);
+    expect(updatedPost.extendedLikesInfo.myStatus).toBe(LikeStatusEnum.Like);
+    expect(updatedPost.extendedLikesInfo.newestLikes).toHaveLength(1);
+    const newestLike = updatedPost.extendedLikesInfo.newestLikes[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    expect(newestLike).toMatchObject({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      userId: expect.any(String),
+      login: newUser.login,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      addedAt: expect.any(String),
     });
   });
 });

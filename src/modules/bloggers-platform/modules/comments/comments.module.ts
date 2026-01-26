@@ -8,8 +8,10 @@ import { CommentsExternalQueryRepository } from './infrastructure/external-query
 import { CommentsExternalService } from './application/external/comments.external-service';
 import { GetCommentByIdQueryHandler } from './application/queries/get-comment-by-id.query-handler';
 import { CommentsSharedModule } from './comments-shared.module';
+import { DeleteCommentUseCase } from './application/usecases/delete-comment.usecases';
 
 const queryHandlers = [GetCommentByIdQueryHandler];
+const commandHandlers = [DeleteCommentUseCase];
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ const queryHandlers = [GetCommentByIdQueryHandler];
     CommentsExternalService,
     CommentsExternalQueryRepository,
     ...queryHandlers,
+    ...commandHandlers,
   ],
   exports: [CommentsExternalQueryRepository, CommentsExternalService],
 })

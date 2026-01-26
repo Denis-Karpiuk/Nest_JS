@@ -3,6 +3,7 @@ import type { Server } from 'http';
 import { Types } from 'mongoose';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { CommentViewDto } from 'src/modules/bloggers-platform/modules/comments/api/view-dto/comment.view-dto';
+import { LikeStatusEnum } from 'src/modules/bloggers-platform/modules/likes/domain/dto/like-status-enum';
 import { CreatePostCommentInputDto } from 'src/modules/bloggers-platform/modules/posts/api/input-dto/create-post-comment.input.dto';
 import {
   CreatePostInputDto,
@@ -43,10 +44,17 @@ export class PostsTestManager {
   async getPost(
     postId: Types.ObjectId,
     statusCode: number = HttpStatus.OK,
+    accessToken?: string,
   ): Promise<PostsViewDto> {
-    const response = await request(this.app.getHttpServer() as Server)
-      .get(`/${GLOBAL_PREFIX}/posts/${postId.toString()}`)
-      .expect(statusCode);
+    const req = request(this.app.getHttpServer() as Server).get(
+      `/${GLOBAL_PREFIX}/posts/${postId.toString()}`,
+    );
+
+    if (accessToken) {
+      req.auth(accessToken, { type: 'bearer' });
+    }
+
+    const response = await req.expect(statusCode);
 
     return response.body as PostsViewDto;
   }
@@ -86,5 +94,18 @@ export class PostsTestManager {
       .expect(statusCode);
 
     return response.body as CommentViewDto;
+  }
+
+  async addLikeToPost(
+    postId: Types.ObjectId,
+    likeStatus: LikeStatusEnum,
+    accessToken: string,
+    statusCode: number = HttpStatus.NO_CONTENT,
+  ): Promise<void> {
+    await request(this.app.getHttpServer() as Server)
+      .put(`/${GLOBAL_PREFIX}/posts/${postId.toString()}/like-status`)
+      .send({ likeStatus })
+      .auth(accessToken, { type: 'bearer' })
+      .expect(statusCode);
   }
 }

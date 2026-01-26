@@ -40,7 +40,7 @@ export class CommentsRepository {
     return comment;
   }
 
-  async deleteBlog(id: Types.ObjectId) {
+  async deleteComment(id: Types.ObjectId) {
     return this.CommentModel.deleteOne({
       _id: id,
     });
