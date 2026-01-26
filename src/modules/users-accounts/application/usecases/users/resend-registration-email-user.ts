@@ -21,12 +21,12 @@ export class ResendRegistrationEmailUserUseCase implements ICommandHandler<Resen
 
     if (!user) {
       throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        message: 'User not found',
+        code: DomainExceptionCode.BadRequest,
+        message: 'Email is invalid or does not exist',
         extensions: [
           {
             field: 'email',
-            message: 'User not found',
+            message: 'Email is invalid or does not exist',
           },
         ],
       });

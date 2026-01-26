@@ -23,12 +23,12 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
 
     if (!user) {
       throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        message: 'User not found',
+        code: DomainExceptionCode.BadRequest,
+        message: 'Confirmation code is invalid or does not exist',
         extensions: [
           {
-            field: 'user',
-            message: 'User not found',
+            field: 'code',
+            message: 'Confirmation code is invalid or does not exist',
           },
         ],
       });

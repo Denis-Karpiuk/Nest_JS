@@ -192,11 +192,11 @@ describe('Auth Controller (e2e)', () => {
     expect(sendEmailMethod).toHaveBeenCalled();
   }, 30000);
 
-  it('should return 404 if confirmation code is invalid', async () => {
+  it('should return 400 if confirmation code is invalid', async () => {
     await delay(11000);
     await userTestManger.registration(createUserBody);
 
-    await userTestManger.confirmation('confirmationCode', HttpStatus.NOT_FOUND);
+    await userTestManger.confirmation('invalid code', HttpStatus.BAD_REQUEST);
   }, 30000);
 
   it('should resend registration email', async () => {

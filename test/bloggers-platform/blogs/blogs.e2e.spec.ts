@@ -41,7 +41,7 @@ describe('Blogs Controller (e2e)', () => {
       websiteUrl: createBlogBody.websiteUrl,
       id: expect.any(String) as string,
       createdAt: expect.any(String) as string,
-      isMembership: true,
+      isMembership: false,
     });
   });
 
@@ -80,7 +80,7 @@ describe('Blogs Controller (e2e)', () => {
         description: expect.any(String) as string,
         websiteUrl: expect.any(String) as string,
         createdAt: expect.any(String) as string,
-        isMembership: true,
+        isMembership: false,
       });
     }
   });
