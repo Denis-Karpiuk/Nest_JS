@@ -22,4 +22,13 @@ export class UsersExternalQueryRepository {
 
     return UserExternalDto.mapToView(user);
   }
+
+  async getUserLoginById(userId: string): Promise<string | null> {
+    const user = await this.UserModel.findOne({
+      _id: userId,
+      deletedAt: null,
+    }).select('login');
+
+    return user?.login || null;
+  }
 }

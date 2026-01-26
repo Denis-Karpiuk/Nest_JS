@@ -3,17 +3,18 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BlogsSharedModule } from '../blogs/blogs-shared.module';
 import { PostsController } from './api/posts.controller';
 import { PostsExternalService } from './application/posts.external-service';
-import { GetBlogByIdQueryHandler } from './application/queries/get-post-by-id.queries-handler';
+import { GetPostByIdQueryHandler } from './application/queries/get-post-by-id.queries-handler';
 import { CreatePostUseCase } from './application/usecases/create-post.usecase';
 import { DeletePostUseCase } from './application/usecases/delete-post.usecase';
 import { UpdatePostUseCase } from './application/usecases/update-post.usecase';
 import { Post, PostSchema } from './domain/post.entity';
 import { PostsExternalQueryRepository } from './infrastructure/external-query/posts.external-query-repository';
 import { PostsQueryRepository } from './infrastructure/posts.query-repository';
-import { PostsRepository } from './infrastructure/posts.repository';
 import { GetPostsQueryHandler } from './application/queries/get-posts.queries-handler';
 import { CreatePostCommentUseCase } from './application/usecases/create-post-comment.usecase';
 import { CommentsModule } from '../comments/comments.module';
+import { PostsSharedModule } from './posts-shared.module';
+import { LikesModule } from '../likes/likes.module';
 
 const commandHandlers = [
   CreatePostUseCase,
@@ -22,17 +23,18 @@ const commandHandlers = [
   CreatePostCommentUseCase,
 ];
 
-const queryHandlers = [GetBlogByIdQueryHandler, GetPostsQueryHandler];
+const queryHandlers = [GetPostByIdQueryHandler, GetPostsQueryHandler];
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     BlogsSharedModule,
     CommentsModule,
+    PostsSharedModule,
+    LikesModule,
   ],
   controllers: [PostsController],
   providers: [
-    PostsRepository,
     PostsQueryRepository,
     PostsExternalService,
     PostsExternalQueryRepository,

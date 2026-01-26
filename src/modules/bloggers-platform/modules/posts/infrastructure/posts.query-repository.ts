@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Post, type PostModelType } from '../domain/post.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { PostsViewDto } from '../api/view-dto/posts.view-dto';
-import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
-import { GetPostsQueryParamsDto } from '../api/input-dto/get-posts-query-params.input.dto';
-import { BlogsExternalQueryRepository } from '../../blogs/infrastructure/blogs.external-query-repository';
-import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
-import { PostsSortBy } from '../api/input-dto/posts-sort-by';
 import { Types } from 'mongoose';
-import { DomainException } from 'src/core/exceptions/domain-exceptions';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
+import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { DomainException } from 'src/core/exceptions/domain-exceptions';
+import { BlogsExternalQueryRepository } from '../../blogs/infrastructure/blogs.external-query-repository';
+import { GetPostsQueryParamsDto } from '../api/input-dto/get-posts-query-params.input.dto';
+import { PostsSortBy } from '../api/input-dto/posts-sort-by';
+import { PostsViewDto } from '../api/view-dto/posts.view-dto';
+import { Post, PostDocument, type PostModelType } from '../domain/post.entity';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -18,9 +18,9 @@ export class PostsQueryRepository {
     private blogsExternalQueryRepository: BlogsExternalQueryRepository,
   ) {}
 
-  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<PostsViewDto> {
+  async getByIdOrNotFoundFail(postId: Types.ObjectId): Promise<PostDocument> {
     const post = await this.PostModel.findOne({
-      _id: id,
+      _id: postId,
     });
 
     if (!post) {
@@ -36,10 +36,7 @@ export class PostsQueryRepository {
       });
     }
 
-    const blogName =
-      await this.blogsExternalQueryRepository.getBlogNameByBlogId(post.blogId);
-
-    return PostsViewDto.mapToView(post, blogName);
+    return post;
   }
 
   async getAllPosts(
@@ -104,6 +101,7 @@ export class PostsQueryRepository {
           await this.blogsExternalQueryRepository.getBlogNameByBlogId(
             post.blogId,
           );
+
         return PostsViewDto.mapToView(post, blogName);
       }),
     );

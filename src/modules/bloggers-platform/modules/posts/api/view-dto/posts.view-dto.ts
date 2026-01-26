@@ -1,4 +1,18 @@
+import { LikeStatusEnum } from '../../../likes/domain/dto/like-status-enum';
 import { PostDocument } from '../../domain/post.entity';
+
+export class NewestLikeDto {
+  addedAt: Date;
+  userId: string;
+  login: string;
+}
+
+class ExtendedLikesInfoDto {
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: LikeStatusEnum;
+  newestLikes: NewestLikeDto[];
+}
 
 export class PostsViewDto {
   id: string;
@@ -9,14 +23,13 @@ export class PostsViewDto {
   blogName: string;
   createdAt: Date;
 
-  extendedLikesInfo: {
-    likesCount: number;
-    dislikesCount: number;
-    myStatus: 'None';
-    newestLikes: [];
-  };
+  extendedLikesInfo: ExtendedLikesInfoDto;
 
-  static mapToView(post: PostDocument, blogName: string): PostsViewDto {
+  static mapToView(
+    post: PostDocument,
+    blogName?: string,
+    extendedLikesInfo?: ExtendedLikesInfoDto,
+  ): PostsViewDto {
     const dto = new PostsViewDto();
 
     dto.id = post._id.toString();
@@ -25,13 +38,12 @@ export class PostsViewDto {
     dto.content = post.content;
     dto.blogId = post.blogId;
     dto.createdAt = post.createdAt;
+    dto.blogName = blogName || '';
 
-    dto.blogName = blogName;
-
-    dto.extendedLikesInfo = {
+    dto.extendedLikesInfo = extendedLikesInfo || {
       likesCount: 0,
       dislikesCount: 0,
-      myStatus: 'None',
+      myStatus: LikeStatusEnum.None,
       newestLikes: [],
     };
 

@@ -7,12 +7,14 @@ import { CommentsRepository } from './infrastructure/comments.repository';
 import { CommentsExternalQueryRepository } from './infrastructure/external-query/comments.exteranl-query-repository';
 import { CommentsExternalService } from './application/external/comments.external-service';
 import { GetCommentByIdQueryHandler } from './application/queries/get-comment-by-id.query-handler';
+import { CommentsSharedModule } from './comments-shared.module';
 
 const queryHandlers = [GetCommentByIdQueryHandler];
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
+    CommentsSharedModule,
   ],
   controllers: [CommentsController],
   providers: [

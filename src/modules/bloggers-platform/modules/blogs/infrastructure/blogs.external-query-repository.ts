@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BlogsQueryRepository } from './blogs.query-repository';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class BlogsExternalQueryRepository {
@@ -7,7 +8,7 @@ export class BlogsExternalQueryRepository {
 
   async getBlogNameByBlogId(id: string): Promise<string> {
     const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(
-      id as any,
+      new Types.ObjectId(id),
     );
 
     return blog.name;
