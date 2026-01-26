@@ -109,6 +109,17 @@ export class PostsTestManager {
       .expect(statusCode);
   }
 
+  async addLikeToComment(
+    commentId: string,
+    accessToken: string,
+    statusCode: number = HttpStatus.NO_CONTENT,
+  ): Promise<void> {
+    await request(this.app.getHttpServer() as Server)
+      .put(`/${GLOBAL_PREFIX}/comments/${commentId}/like-status`)
+      .auth(accessToken, { type: 'bearer' })
+      .expect(statusCode);
+  }
+
   async getPostComments(
     postId: Types.ObjectId,
     query?: Record<string, string | number>,

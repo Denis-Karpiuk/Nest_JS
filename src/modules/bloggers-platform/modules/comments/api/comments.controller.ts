@@ -22,6 +22,8 @@ import { UpdateCommentCommand } from '../application/usecases/update-comment.use
 import { UpdateCommentInputDto } from './input-dto/update-comment.input.dto';
 import { AddCommentLikeStatusCommand } from '../../likes/application/usecases/add-comment-like-status.usecase';
 import { LikeStatusEnum } from '../../likes/domain/dto/like-status-enum';
+import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
+import { LikeCommentInputDto } from './input-dto/like-comment.input.dto';
 
 @Controller('comments')
 export class CommentsController {
@@ -30,12 +32,14 @@ export class CommentsController {
     private commandBus: CommandBus,
   ) {}
 
-  @Get()
+  @UseGuards(JwtOptionalAuthGuard)
+  @Get(':id')
   async getCommentById(
     @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @ExtractUserFromRequest() user: UserContextDto | null,
   ): Promise<CommentViewDto> {
     return this.queryBus.execute<GetCommentByIdQuery, CommentViewDto>(
-      new GetCommentByIdQuery(id),
+      new GetCommentByIdQuery(id, user?.id),
     );
   }
 
@@ -69,13 +73,14 @@ export class CommentsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async likeComment(
     @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Body() dto: LikeCommentInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
     await this.commandBus.execute<AddCommentLikeStatusCommand, void>(
       new AddCommentLikeStatusCommand(
         id.toString(),
         new Types.ObjectId(user.id).toString(),
-        LikeStatusEnum.Like,
+        dto.likeStatus,
       ),
     );
   }

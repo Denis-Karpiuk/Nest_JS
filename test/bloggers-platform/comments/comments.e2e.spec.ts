@@ -1,12 +1,13 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Server } from 'http';
 import { Types } from 'mongoose';
-import request from 'supertest';
-import { GLOBAL_PREFIX } from 'src/setup/global-prefix.setup';
 import { CommentViewDto } from 'src/modules/bloggers-platform/modules/comments/api/view-dto/comment.view-dto';
+import { LikeStatusEnum } from 'src/modules/bloggers-platform/modules/likes/domain/dto/like-status-enum';
+import { GLOBAL_PREFIX } from 'src/setup/global-prefix.setup';
+import request from 'supertest';
 import { BlogsTestManager } from 'test/helpers/blogs-tests-manager';
-import { deleteAllData } from 'test/helpers/delete-all-data';
 import { delay } from 'test/helpers/delay';
+import { deleteAllData } from 'test/helpers/delete-all-data';
 import { initSettings } from 'test/helpers/init-settings';
 import { PostsTestManager } from 'test/helpers/posts-tests-manager';
 import { UsersTestManager } from 'test/helpers/users-tests-manager';
@@ -142,4 +143,22 @@ describe('Comments Controller (e2e)', () => {
       .send({ content: 'updated_comment_content' })
       .expect(HttpStatus.FORBIDDEN);
   }, 15000);
+
+  it('should add like status to comment and return 204 status code', async () => {
+    await request(app.getHttpServer() as Server)
+      .put(`/${GLOBAL_PREFIX}/comments/${comment.id}/like-status`)
+      .auth(accessToken, { type: 'bearer' })
+      .send({ likeStatus: LikeStatusEnum.Like })
+      .expect(HttpStatus.NO_CONTENT);
+
+    const updatedComment = await request(app.getHttpServer() as Server)
+      .get(`/${GLOBAL_PREFIX}/comments/${comment.id}`)
+      .auth(accessToken, { type: 'bearer' })
+      .expect(HttpStatus.OK);
+
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+    expect(updatedComment.body.likesInfo.likesCount).toBe(1);
+    expect(updatedComment.body.likesInfo.dislikesCount).toBe(0);
+    expect(updatedComment.body.likesInfo.myStatus).toBe('Like');
+  });
 });
