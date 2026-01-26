@@ -108,4 +108,22 @@ export class PostsTestManager {
       .auth(accessToken, { type: 'bearer' })
       .expect(statusCode);
   }
+
+  async getPostComments(
+    postId: Types.ObjectId,
+    query?: Record<string, string | number>,
+    accessToken?: string,
+    statusCode: number = HttpStatus.OK,
+  ): Promise<PaginatedViewDto<CommentViewDto[]>> {
+    const req = request(this.app.getHttpServer() as Server)
+      .get(`/${GLOBAL_PREFIX}/posts/${postId.toString()}/comments`)
+      .query(query ?? {});
+
+    if (accessToken) {
+      req.auth(accessToken, { type: 'bearer' });
+    }
+
+    const response = await req.expect(statusCode);
+    return response.body as PaginatedViewDto<CommentViewDto[]>;
+  }
 }

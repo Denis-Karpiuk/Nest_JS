@@ -7,6 +7,7 @@ import { AddCommentLikeUseCase } from './application/usecases/add-comment-like-s
 import { GetLikesByPostIdQueryHandler } from './application/queries/get-likes-by-postId.query-handler';
 import { LikesPostsQueryRepository } from './infrastructure/likes.posts.query-repository';
 import { UserAccountsModule } from 'src/modules/users-accounts/users-accounts.module';
+import { LikesCommentsQueryRepository } from './infrastructure/likes.comments.query-repository';
 
 const queryHandlers = [GetLikesByPostIdQueryHandler];
 const commandHandlers = [AddPostLikeUseCase, AddCommentLikeUseCase];
@@ -19,9 +20,10 @@ const commandHandlers = [AddPostLikeUseCase, AddCommentLikeUseCase];
   providers: [
     LikesRepository,
     LikesPostsQueryRepository,
+    LikesCommentsQueryRepository,
     ...commandHandlers,
     ...queryHandlers,
   ],
-  exports: [LikesPostsQueryRepository],
+  exports: [LikesPostsQueryRepository, LikesCommentsQueryRepository],
 })
 export class LikesModule {}

@@ -91,13 +91,4 @@ export class LikesPostsQueryRepository {
       userId,
     });
   }
-
-  private async findAllPostsLikes(postId: string): Promise<LikeDocument[]> {
-    return this.LikeModel.find({
-      entityId: postId,
-      entityType: EntityType.Post,
-    })
-      .sort({ createdAt: -1 })
-      .lean();
-  }
 }

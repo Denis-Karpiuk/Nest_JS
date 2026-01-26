@@ -19,6 +19,8 @@ import { JwtAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-auth.
 import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from 'src/modules/users-accounts/guards/dto/user-context.dto';
+import { GetCommentsQueryParamsDto } from '../../comments/api/input-dto/get-comments-query-params.input.dto';
+import { CommentViewDto } from '../../comments/api/view-dto/comment.view-dto';
 import { CommentsExternalQueryRepository } from '../../comments/infrastructure/external-query/comments.exteranl-query-repository';
 import { AddPostLikeStatusCommand } from '../../likes/application/usecases/add-post-like-status.usecase';
 import { GetPostByIdQuery } from '../application/queries/get-post-by-id.queries-handler';
@@ -110,6 +112,20 @@ export class PostsController {
 
     return this.commentsExternalQueryRepository.getByIdOrNotFoundFail(
       commentId,
+    );
+  }
+
+  @UseGuards(JwtOptionalAuthGuard)
+  @Get(':id/comments')
+  async getCommentsByPostId(
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Query() query: GetCommentsQueryParamsDto,
+    @ExtractUserFromRequest() user: UserContextDto | null,
+  ): Promise<PaginatedViewDto<CommentViewDto[]>> {
+    return this.commentsExternalQueryRepository.getAllCommentsByPostId(
+      id,
+      query,
+      user?.id,
     );
   }
 

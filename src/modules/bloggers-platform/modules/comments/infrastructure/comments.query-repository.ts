@@ -2,8 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
-import { CommentViewDto } from '../api/view-dto/comment.view-dto';
-import { Comment, type CommentModelType } from '../domain/comment.entity';
+import {
+  Comment,
+  CommentDocument,
+  type CommentModelType,
+} from '../domain/comment.entity';
 import { Types } from 'mongoose';
 
 @Injectable()
@@ -12,7 +15,7 @@ export class CommentsQueryRepository {
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
   ) {}
 
-  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<CommentViewDto> {
+  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<CommentDocument> {
     const comment = await this.CommentModel.findOne({
       _id: id,
     });
@@ -30,6 +33,6 @@ export class CommentsQueryRepository {
       });
     }
 
-    return CommentViewDto.mapToView(comment);
+    return comment;
   }
 }

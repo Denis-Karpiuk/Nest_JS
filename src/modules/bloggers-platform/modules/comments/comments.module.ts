@@ -10,6 +10,7 @@ import { GetCommentByIdQueryHandler } from './application/queries/get-comment-by
 import { CommentsSharedModule } from './comments-shared.module';
 import { DeleteCommentUseCase } from './application/usecases/delete-comment.usecases';
 import { UpdateCommentUseCase } from './application/usecases/update-comment.usecase';
+import { LikesModule } from '../likes/likes.module';
 
 const queryHandlers = [GetCommentByIdQueryHandler];
 const commandHandlers = [DeleteCommentUseCase, UpdateCommentUseCase];
@@ -18,6 +19,7 @@ const commandHandlers = [DeleteCommentUseCase, UpdateCommentUseCase];
   imports: [
     MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
     CommentsSharedModule,
+    LikesModule,
   ],
   controllers: [CommentsController],
   providers: [

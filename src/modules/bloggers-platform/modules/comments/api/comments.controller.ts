@@ -20,6 +20,8 @@ import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decora
 import { UserContextDto } from 'src/modules/users-accounts/guards/dto/user-context.dto';
 import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
 import { UpdateCommentInputDto } from './input-dto/update-comment.input.dto';
+import { AddCommentLikeStatusCommand } from '../../likes/application/usecases/add-comment-like-status.usecase';
+import { LikeStatusEnum } from '../../likes/domain/dto/like-status-enum';
 
 @Controller('comments')
 export class CommentsController {
@@ -29,9 +31,11 @@ export class CommentsController {
   ) {}
 
   @Get()
-  async getCommentById(@Param('id') id: string) {
+  async getCommentById(
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+  ): Promise<CommentViewDto> {
     return this.queryBus.execute<GetCommentByIdQuery, CommentViewDto>(
-      new GetCommentByIdQuery(new Types.ObjectId(id)),
+      new GetCommentByIdQuery(id),
     );
   }
 
@@ -57,6 +61,22 @@ export class CommentsController {
   ): Promise<void> {
     await this.commandBus.execute<UpdateCommentCommand, void>(
       new UpdateCommentCommand(id, dto.content, new Types.ObjectId(user.id)),
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/like-status')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async likeComment(
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    await this.commandBus.execute<AddCommentLikeStatusCommand, void>(
+      new AddCommentLikeStatusCommand(
+        id.toString(),
+        new Types.ObjectId(user.id).toString(),
+        LikeStatusEnum.Like,
+      ),
     );
   }
 }

@@ -106,11 +106,14 @@ export class BlogsController {
 
   @Get(':id/posts')
   async getPostsByBlogId(
-    @Param('id') id: string,
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
     @Query() query: GetBlogsPostsQueryParamsDto,
   ) {
-    await this.blogsQueryRepository.getByIdOrNotFoundFail(id as any);
+    await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
 
-    return this.postsExternalQueryRepository.getAllPostsByBlogId(id, query);
+    return this.postsExternalQueryRepository.getAllPostsByBlogId(
+      id.toString(),
+      query,
+    );
   }
 }

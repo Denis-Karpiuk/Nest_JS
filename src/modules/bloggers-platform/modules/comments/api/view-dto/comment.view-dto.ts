@@ -1,13 +1,30 @@
 import { CommentDocument } from '../../domain/comment.entity';
+import { LikeStatusEnum } from '../../../likes/domain/dto/like-status-enum';
+
+class LikesInfo {
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: LikeStatusEnum;
+}
+
+class CommentatorInfo {
+  userId: string;
+  userLogin: string;
+}
 
 export class CommentViewDto {
   id: string;
   content: string;
   postId: string;
-  commentatorInfo: { userId: string; userLogin: string };
+  commentatorInfo: CommentatorInfo;
   createdAt: Date;
 
-  static mapToView(dto: CommentDocument): CommentViewDto {
+  likesInfo: LikesInfo;
+
+  static mapToView(
+    dto: CommentDocument,
+    likesInfo?: LikesInfo,
+  ): CommentViewDto {
     const viewDto = new CommentViewDto();
 
     viewDto.id = dto._id.toString();
@@ -19,6 +36,12 @@ export class CommentViewDto {
       userLogin: dto.commentatorInfo.userLogin,
     };
     viewDto.createdAt = dto.createdAt;
+
+    viewDto.likesInfo = likesInfo || {
+      likesCount: 0,
+      dislikesCount: 0,
+      myStatus: LikeStatusEnum.None,
+    };
 
     return viewDto;
   }
