@@ -30,7 +30,6 @@ export class CommentViewDto {
     viewDto.id = dto._id.toString();
 
     viewDto.content = dto.content;
-    viewDto.postId = dto.postId;
     viewDto.commentatorInfo = {
       userId: dto.commentatorInfo.userId,
       userLogin: dto.commentatorInfo.userLogin,
