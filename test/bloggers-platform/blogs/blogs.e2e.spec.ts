@@ -45,6 +45,17 @@ describe('Blogs Controller (e2e)', () => {
     });
   });
 
+  it('should not create blog if passed body is incorrect', async () => {
+    await blogTestManger.createBlog(
+      {
+        nam: 'blog',
+        description: 'blog_description',
+        websiteUrl: 'https://blog.com',
+      } as any,
+      HttpStatus.BAD_REQUEST,
+    );
+  });
+
   it('should get all blogs and return correct response', async () => {
     // Create 10 blogs
     const createdBlogs: BlogViewDto[] = [];
