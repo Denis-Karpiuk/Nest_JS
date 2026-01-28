@@ -133,12 +133,15 @@ export class PostsController {
   @Put(':id/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
   async likePost(
-    @Param('id') id: string,
+    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
     @Body() dto: LikePostInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
+    await this.queryBus.execute<GetPostByIdQuery, PostsViewDto>(
+      new GetPostByIdQuery(id),
+    );
     await this.commandBus.execute<AddPostLikeStatusCommand, void>(
-      new AddPostLikeStatusCommand(id, user.id, dto.likeStatus),
+      new AddPostLikeStatusCommand(id.toString(), user.id, dto.likeStatus),
     );
   }
 }

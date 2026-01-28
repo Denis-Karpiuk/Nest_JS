@@ -302,10 +302,8 @@ describe('Posts Controller (e2e)', () => {
       accessToken,
     );
 
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
     const response: PaginatedViewDto<CommentViewDto[]> =
       await postTestManger.getPostComments(new Types.ObjectId(post.id));
-    /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
 
     expect(response.pagesCount).toBe(1);
     expect(response.page).toBe(1);
@@ -382,5 +380,42 @@ describe('Posts Controller (e2e)', () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       addedAt: expect.any(String),
     });
+  });
+
+  it('should not add like to post if post id is not found', async () => {
+    const blog = await blogTestManger.createBlog({
+      name: 'blog',
+      description: 'blog_description',
+      websiteUrl: 'https://blog.com',
+    });
+
+    await postTestManger.createPost({
+      title: 'post',
+      content: 'post_content',
+      blogId: blog.id,
+      shortDescription: 'post_short_description',
+    });
+
+    const newUser = {
+      login: 'like_user',
+      password: '123456789',
+      email: 'like_user@test.com',
+    };
+
+    await userTestManger.createUser(newUser);
+
+    const { accessToken } = await userTestManger.login(
+      newUser.login,
+      newUser.password,
+    );
+
+    const nonExistentPostId = new Types.ObjectId();
+
+    await postTestManger.addLikeToPost(
+      nonExistentPostId,
+      LikeStatusEnum.Like,
+      accessToken,
+      HttpStatus.NOT_FOUND,
+    );
   });
 });
