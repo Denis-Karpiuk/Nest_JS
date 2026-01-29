@@ -75,6 +75,9 @@ export class CommentsController {
     @Body() dto: LikeCommentInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
+    await this.queryBus.execute<GetCommentByIdQuery, CommentViewDto>(
+      new GetCommentByIdQuery(id),
+    );
     await this.commandBus.execute<AddCommentLikeStatusCommand, void>(
       new AddCommentLikeStatusCommand(
         id.toString(),
