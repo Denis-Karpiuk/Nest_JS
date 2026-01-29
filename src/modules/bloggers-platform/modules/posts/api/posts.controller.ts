@@ -111,6 +111,9 @@ export class PostsController {
     @Body() dto: CreatePostCommentInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
+    await this.queryBus.execute<GetPostByIdQuery, PostsViewDto>(
+      new GetPostByIdQuery(id),
+    );
     const commentId = await this.commandBus.execute<
       CreatePostCommentCommand,
       Types.ObjectId
@@ -128,6 +131,9 @@ export class PostsController {
     @Query() query: GetCommentsQueryParamsDto,
     @ExtractUserFromRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
+    await this.queryBus.execute<GetPostByIdQuery, PostsViewDto>(
+      new GetPostByIdQuery(id),
+    );
     return this.commentsExternalQueryRepository.getAllCommentsByPostId(
       id,
       query,
