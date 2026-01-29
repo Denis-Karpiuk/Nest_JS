@@ -15,6 +15,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Types } from 'mongoose';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { ObjectIdValidationPipe } from 'src/core/pipes/object-id-validation-transformation-pipe.service';
+import { BasicAuthGuard } from 'src/modules/users-accounts/guards/basic/basic-auth.guard';
 import { JwtAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-auth.guard';
 import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
@@ -46,6 +47,7 @@ export class PostsController {
     private commentsExternalQueryRepository: CommentsExternalQueryRepository,
   ) {}
 
+  @UseGuards(BasicAuthGuard)
   @Post()
   async createPost(@Body() dto: CreatePostInputDto) {
     const postId = await this.commandBus.execute<
@@ -81,6 +83,7 @@ export class PostsController {
     >(new GetPostsQuery(query, user?.id));
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
@@ -92,6 +95,7 @@ export class PostsController {
     );
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(@Param('id', ObjectIdValidationPipe) id: Types.ObjectId) {
