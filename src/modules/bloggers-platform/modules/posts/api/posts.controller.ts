@@ -69,14 +69,16 @@ export class PostsController {
     );
   }
 
+  @UseGuards(JwtOptionalAuthGuard)
   @Get()
   async getPosts(
     @Query() query: GetPostsQueryParamsDto,
+    @ExtractUserFromRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
     return this.queryBus.execute<
       GetPostsQuery,
       PaginatedViewDto<PostsViewDto[]>
-    >(new GetPostsQuery(query));
+    >(new GetPostsQuery(query, user?.id));
   }
 
   @Put(':id')

@@ -6,6 +6,7 @@ import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { BlogsExternalQueryRepository } from '../../blogs/infrastructure/blogs.external-query-repository';
+import { LikesPostsQueryRepository } from '../../likes/infrastructure/likes.posts.query-repository';
 import { GetPostsQueryParamsDto } from '../api/input-dto/get-posts-query-params.input.dto';
 import { PostsSortBy } from '../api/input-dto/posts-sort-by';
 import { PostsViewDto } from '../api/view-dto/posts.view-dto';
@@ -16,6 +17,7 @@ export class PostsQueryRepository {
   constructor(
     @InjectModel(Post.name) private PostModel: PostModelType,
     private blogsExternalQueryRepository: BlogsExternalQueryRepository,
+    private likesPostsQueryRepository: LikesPostsQueryRepository,
   ) {}
 
   async getByIdOrNotFoundFail(postId: Types.ObjectId): Promise<PostDocument> {
@@ -41,6 +43,7 @@ export class PostsQueryRepository {
 
   async getAllPosts(
     query: GetPostsQueryParamsDto,
+    userId?: string,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
     const totalCount = await this.PostModel.countDocuments();
 
@@ -77,8 +80,15 @@ export class PostsQueryRepository {
         query.calculateSkip() + query.pageSize,
       );
 
-      const items = paginatedPosts.map(({ post, blogName }) =>
-        PostsViewDto.mapToView(post, blogName),
+      const items = await Promise.all(
+        paginatedPosts.map(async ({ post, blogName }) => {
+          const extendedLikesInfo =
+            await this.likesPostsQueryRepository.getPostsLikesInfo(
+              post._id.toString(),
+              userId,
+            );
+          return PostsViewDto.mapToView(post, blogName, extendedLikesInfo);
+        }),
       );
 
       return PaginatedViewDto.mapToView({
@@ -101,8 +111,13 @@ export class PostsQueryRepository {
           await this.blogsExternalQueryRepository.getBlogNameByBlogId(
             post.blogId,
           );
+        const extendedLikesInfo =
+          await this.likesPostsQueryRepository.getPostsLikesInfo(
+            post._id.toString(),
+            userId,
+          );
 
-        return PostsViewDto.mapToView(post, blogName);
+        return PostsViewDto.mapToView(post, blogName, extendedLikesInfo);
       }),
     );
 
