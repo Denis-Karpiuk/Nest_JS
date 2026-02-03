@@ -36,6 +36,7 @@ import { GetSecureDevicesQueryHandler } from './application/queries/get-secure-d
 import { SecurityService } from './application/services/security.service';
 import { DeleteSecurityDeviceUseCase } from './application/usecases/security/delete-security-device';
 import { DeleteSecurityAllDevicesUseCase } from './application/usecases/security/delete-security-all-devices';
+import { RefreshTokenUseCase } from './application/usecases/refresh-token.usecase';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -49,6 +50,7 @@ const commandHandlers = [
   PasswordRecoveryUserUseCase,
   DeleteSecurityDeviceUseCase,
   DeleteSecurityAllDevicesUseCase,
+  RefreshTokenUseCase,
 ];
 
 const queryHandlers = [

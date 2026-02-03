@@ -33,6 +33,10 @@ import { RegistrationConfirmationInputDto } from './input-dto/registration-confi
 import { RegistrationEmailResendingInputDto } from './input-dto/registration-email-resending.input-dto';
 import { MeViewDto } from './view-dto/users.view-dto';
 import { GetMeQuery } from '../application/queries/get-me.query';
+import {
+  RefreshTokenCommand,
+  RefreshTokenCommandResult,
+} from '../application/usecases/refresh-token.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -113,6 +117,30 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   createNewPassword(@Body() body: CreateNewPasswordInputDto) {
     return this.commandBus.execute(new CreateNewPasswordUserCommand(body));
+  }
+
+  @Post('refresh-token')
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, refreshToken } = await this.commandBus.execute<
+      RefreshTokenCommand,
+      RefreshTokenCommandResult
+    >(new RefreshTokenCommand(req.cookies.refreshToken as string));
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    return {
+      accessToken,
+    };
   }
 
   @Get('me')
