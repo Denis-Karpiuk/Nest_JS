@@ -32,6 +32,10 @@ import { UsersQueryRepository } from './infrastructure/query/users.query-reposit
 import { UsersRepository } from './infrastructure/users.repository';
 import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
 import { throttleModule } from './modules/throttle-module';
+import { GetSecureDevicesQueryHandler } from './application/queries/get-secure-devices.query';
+import { SecurityService } from './application/services/security.service';
+import { DeleteSecurityDeviceUseCase } from './application/usecases/security/delete-security-device';
+import { DeleteSecurityAllDevicesUseCase } from './application/usecases/security/delete-security-all-devices';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -43,12 +47,15 @@ const commandHandlers = [
   ResendRegistrationEmailUserUseCase,
   CreateNewPasswordUserUseCase,
   PasswordRecoveryUserUseCase,
+  DeleteSecurityDeviceUseCase,
+  DeleteSecurityAllDevicesUseCase,
 ];
 
 const queryHandlers = [
   GetUserByIdQueryHandler,
   GetAllUsersQueryHandler,
   GetMeQueryHandler,
+  GetSecureDevicesQueryHandler,
 ];
 
 @Module({
@@ -80,6 +87,7 @@ const queryHandlers = [
     AuthConfig,
     jwtAccessModule,
     jwtRefreshModule,
+    SecurityService,
   ],
   exports: [UsersExternalQueryRepository, UsersExternalService],
 })

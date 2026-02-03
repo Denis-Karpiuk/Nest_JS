@@ -5,12 +5,13 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import {
   LoginUserCommand,
@@ -72,11 +73,23 @@ export class AuthController {
   async login(
     @ExtractUserFromRequest() user: UserContextDto,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
   ): Promise<{ accessToken: string }> {
+    const ipAddress =
+      req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const deviceName = req.headers['user-agent'] ?? 'Unknown device name';
+
     const { accessToken, refreshToken } = await this.commandBus.execute<
       LoginUserCommand,
       LoginUserCommandResult
-    >(new LoginUserCommand(user.id, user.login));
+    >(
+      new LoginUserCommand(
+        new Types.ObjectId(user.id),
+        user.login,
+        deviceName,
+        String(ipAddress),
+      ),
+    );
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,

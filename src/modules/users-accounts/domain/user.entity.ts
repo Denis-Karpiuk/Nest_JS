@@ -10,7 +10,8 @@ import {
 import {
   PasswordRecoveryInformation,
   PasswordRecoveryInformationSchema,
-} from './password-recovery.schema copy';
+} from './password-recovery.schema';
+import { DeviceSchema, DeviceType } from './devices.schema';
 
 export const loginConstraints = {
   minLength: 3,
@@ -92,6 +93,9 @@ export class User {
   @Prop({ type: Date, nullable: true })
   deletedAt: Date | null;
 
+  @Prop({ type: [DeviceSchema], default: [] })
+  devices: DeviceType[];
+
   /**
    * Virtual property to get the stringified ObjectId
    * @returns {string} The string representation of the ID
@@ -115,6 +119,7 @@ export class User {
     user.login = dto.login;
     user.isEmailConfirmed = false; // пользователь ВСЕГДА должен после регистрации подтверждить свой Email
     user.deletedAt = null;
+    user.devices = [];
 
     user.name = {
       firstName: 'firstName xxx',
@@ -183,6 +188,10 @@ export class User {
       recoveryCode,
       expirationDate: new Date(Date.now() + 2 * 60 * 1000),
     };
+  }
+
+  addDevice(device: DeviceType) {
+    (this.devices ??= []).push(device);
   }
 }
 
