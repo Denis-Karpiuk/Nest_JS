@@ -105,6 +105,24 @@ export class UsersRepository {
 
     return device ?? null;
   }
+  async findDevicesByIat(
+    userId: Types.ObjectId,
+    iat: number,
+  ): Promise<DeviceType[] | null> {
+    const devices = await this.UserModel.aggregate<DeviceType>([
+      { $match: { _id: userId } },
+      { $unwind: '$devices' },
+      {
+        $match: {
+          'devices.iat': iat,
+        },
+      },
+      { $replaceRoot: { newRoot: '$devices' } },
+      { $limit: 1 },
+    ]);
+
+    return devices;
+  }
 
   async deleteUserDevice(
     userId: Types.ObjectId,

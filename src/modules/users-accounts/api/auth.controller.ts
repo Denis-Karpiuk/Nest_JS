@@ -37,6 +37,7 @@ import {
   RefreshTokenCommand,
   RefreshTokenCommandResult,
 } from '../application/usecases/refresh-token.usecase';
+import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -141,6 +142,15 @@ export class AuthController {
     return {
       accessToken,
     };
+  }
+
+  @Post('logout')
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  logout(@Req() req: Request) {
+    return this.commandBus.execute(
+      new LogoutUserCommand(req.cookies.refreshToken as string),
+    );
   }
 
   @Get('me')
