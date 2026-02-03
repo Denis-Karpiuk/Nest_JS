@@ -134,11 +134,13 @@ export class UsersRepository {
     );
   }
 
-  async deleteAllUserDevices(userId: Types.ObjectId): Promise<void> {
-    await this.UserModel.updateOne({ _id: userId }, { $set: { devices: [] } });
-  }
-
-  async save(user: UserDocument) {
-    await user.save();
+  async deleteAllUserDevicesExcludeCurrentDevice(
+    userId: Types.ObjectId,
+    deviceId: string,
+  ): Promise<void> {
+    await this.UserModel.updateOne(
+      { _id: userId },
+      { $pull: { devices: { deviceId: { $ne: deviceId } } } },
+    );
   }
 }

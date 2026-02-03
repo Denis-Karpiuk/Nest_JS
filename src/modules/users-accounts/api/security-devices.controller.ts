@@ -1,13 +1,14 @@
-import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import type { Request } from 'express';
+import { Types } from 'mongoose';
+import { GetSecureDevicesQuery } from '../application/queries/get-secure-devices.query';
+import { DeleteSecurityAllDevicesCommand } from '../application/usecases/security/delete-security-all-devices';
+import { DeleteSecurityDeviceCommand } from '../application/usecases/security/delete-security-device';
+import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from '../guards/dto/user-context.dto';
-import { GetSecureDevicesQuery } from '../application/queries/get-secure-devices.query';
 import { SecureDevicesViewDto } from './view-dto/secure-devices.view-dto';
-import { Types } from 'mongoose';
-import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
-import { DeleteSecurityDeviceCommand } from '../application/usecases/security/delete-security-device';
-import { DeleteSecurityAllDevicesCommand } from '../application/usecases/security/delete-security-all-devices';
 
 @Controller('security/devices')
 export class SecurityDevicesController {
@@ -39,9 +40,13 @@ export class SecurityDevicesController {
   @UseGuards(JwtAuthGuard)
   async deleteAllSecurityDevices(
     @ExtractUserFromRequest() user: UserContextDto,
+    @Req() req: Request,
   ) {
     return this.commandBus.execute<DeleteSecurityAllDevicesCommand, void>(
-      new DeleteSecurityAllDevicesCommand(new Types.ObjectId(user.id)),
+      new DeleteSecurityAllDevicesCommand(
+        new Types.ObjectId(user.id),
+        req.cookies.refreshToken as string,
+      ),
     );
   }
 }
