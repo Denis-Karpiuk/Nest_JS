@@ -75,14 +75,14 @@ export class LogoutUserUseCase implements ICommandHandler<
         iat,
       );
 
-      if (!devicesByIatResult) {
+      if (!devicesByIatResult?.length) {
         throw new DomainException({
           code: DomainExceptionCode.Unauthorized,
-          message: 'Device not found',
+          message: 'Invalid refresh token',
           extensions: [
             {
-              field: 'iat',
-              message: 'Device not found',
+              field: 'refreshToken',
+              message: 'Invalid refresh token',
             },
           ],
         });
