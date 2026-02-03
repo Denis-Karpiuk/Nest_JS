@@ -30,6 +30,19 @@ export class LogoutUserUseCase implements ICommandHandler<
   ) {}
 
   async execute({ refreshToken }: LogoutUserCommand): Promise<void> {
+    if (!refreshToken || typeof refreshToken !== 'string') {
+      throw new DomainException({
+        code: DomainExceptionCode.Unauthorized,
+        message: 'Invalid refresh token',
+        extensions: [
+          {
+            field: 'refreshToken',
+            message: 'Invalid refresh token',
+          },
+        ],
+      });
+    }
+
     const isTokenValid = refreshToken.split('.').length === 3;
 
     if (!isTokenValid) {

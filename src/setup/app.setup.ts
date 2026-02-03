@@ -5,7 +5,11 @@ import { swaggerSetup } from './swagger.setup';
 import { pipesSetup } from './pipes.setup';
 
 export function appSetup(app: INestApplication) {
-  app.set('trust proxy', 1);
+  const httpAdapter = app.getHttpAdapter();
+  const instance = httpAdapter.getInstance();
+  if (typeof instance.set === 'function') {
+    instance.set('trust proxy', 1);
+  }
   app.use(cookieParser());
   pipesSetup(app);
   globalPrefixSetup(app);
