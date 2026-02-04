@@ -29,12 +29,12 @@ export class DeleteSecurityDeviceUseCase implements ICommandHandler<
 
     if (!device) {
       throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        message: 'Device not found',
+        code: DomainExceptionCode.Forbidden,
+        message: 'Device is not owned by the current user',
         extensions: [
           {
             field: 'deviceId',
-            message: 'Device not found',
+            message: 'Device is not owned by the current user',
           },
         ],
       });
