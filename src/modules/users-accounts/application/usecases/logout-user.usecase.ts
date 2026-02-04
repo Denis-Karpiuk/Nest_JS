@@ -93,8 +93,9 @@ export class LogoutUserUseCase implements ICommandHandler<
         deviceId,
       );
     } catch (error) {
-      console.error(error);
-
+      if (error instanceof DomainException) {
+        throw error;
+      }
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
         message: 'Invalid refresh token',

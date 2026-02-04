@@ -43,7 +43,13 @@ export class SecurityService {
     await this.usersRepository.deleteUserDevice(userId, deviceId);
   }
 
-  async deleteAllUserDevices(userId: Types.ObjectId): Promise<void> {
-    await this.usersRepository.deleteAllUserDevices(userId);
+  async deleteAllUserDevicesExcludeCurrentDevice(
+    userId: Types.ObjectId,
+    deviceId: string,
+  ): Promise<void> {
+    await this.usersRepository.deleteAllUserDevicesExcludeCurrentDevice(
+      userId,
+      deviceId,
+    );
   }
 }

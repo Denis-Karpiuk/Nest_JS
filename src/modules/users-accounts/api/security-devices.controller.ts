@@ -5,9 +5,9 @@ import { Types } from 'mongoose';
 import { GetSecureDevicesQuery } from '../application/queries/get-secure-devices.query';
 import { DeleteSecurityAllDevicesCommand } from '../application/usecases/security/delete-security-all-devices';
 import { DeleteSecurityDeviceCommand } from '../application/usecases/security/delete-security-device';
-import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from '../guards/dto/user-context.dto';
+import { JwtRefreshAuthGuard } from '../guards/refresh/jwt-refresh-auth.guard';
 import { SecureDevicesViewDto } from './view-dto/secure-devices.view-dto';
 
 @Controller('security/devices')
@@ -18,15 +18,17 @@ export class SecurityDevicesController {
   ) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRefreshAuthGuard)
   async getSecurityDevices(@ExtractUserFromRequest() user: UserContextDto) {
-    return this.queryBus.execute<GetSecureDevicesQuery, SecureDevicesViewDto>(
-      new GetSecureDevicesQuery(new Types.ObjectId(user.id)),
-    );
+    const result = await this.queryBus.execute<
+      GetSecureDevicesQuery,
+      SecureDevicesViewDto
+    >(new GetSecureDevicesQuery(new Types.ObjectId(user.id)));
+    return result.devices;
   }
 
   @Delete(':deviceId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRefreshAuthGuard)
   async deleteSecurityDevice(
     @ExtractUserFromRequest() user: UserContextDto,
     @Param('deviceId') deviceId: string,
@@ -37,7 +39,7 @@ export class SecurityDevicesController {
   }
 
   @Delete()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRefreshAuthGuard)
   async deleteAllSecurityDevices(
     @ExtractUserFromRequest() user: UserContextDto,
     @Req() req: Request,

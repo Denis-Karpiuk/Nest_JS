@@ -30,6 +30,7 @@ import { ResendRegistrationEmailUserUseCase } from './application/usecases/users
 import { AuthConfig } from './config/auth.config';
 import { User, UserSchema } from './domain/user.entity';
 import { JwtStrategy } from './guards/bearer/jwt.strategy';
+import { JwtRefreshStrategy } from './guards/refresh/jwt-refresh.strategy';
 import { LocalStrategy } from './guards/local/local.strategy';
 import { UsersExternalQueryRepository } from './infrastructure/external-query/users.external-query-repository';
 import { AuthQueryRepository } from './infrastructure/query/auth.query-repository';
@@ -88,6 +89,7 @@ const queryHandlers = [
     CryptoService,
     LocalStrategy,
     JwtStrategy,
+    JwtRefreshStrategy,
     AuthConfig,
     jwtAccessModule,
     jwtRefreshModule,

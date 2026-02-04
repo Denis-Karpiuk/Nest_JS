@@ -38,6 +38,19 @@ export class RefreshTokenUseCase implements ICommandHandler<
     accessToken: string;
     refreshToken: string;
   }> {
+    if (!refreshToken || typeof refreshToken !== 'string') {
+      throw new DomainException({
+        code: DomainExceptionCode.Unauthorized,
+        message: 'Invalid refresh token',
+        extensions: [
+          {
+            field: 'refreshToken',
+            message: 'Invalid refresh token',
+          },
+        ],
+      });
+    }
+
     const isTokenValid = refreshToken.split('.').length === 3;
 
     if (!isTokenValid) {
@@ -125,8 +138,9 @@ export class RefreshTokenUseCase implements ICommandHandler<
 
       return { accessToken, refreshToken: newRefreshToken };
     } catch (error) {
-      console.error(error);
-
+      if (error instanceof DomainException) {
+        throw error;
+      }
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
         message: 'Invalid refresh token',

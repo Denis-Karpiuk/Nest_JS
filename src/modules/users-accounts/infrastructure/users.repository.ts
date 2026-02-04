@@ -143,4 +143,8 @@ export class UsersRepository {
       { $pull: { devices: { deviceId: { $ne: deviceId } } } },
     );
   }
+
+  async save(user: UserDocument): Promise<void> {
+    await user.save();
+  }
 }
