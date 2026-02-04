@@ -27,7 +27,13 @@ export class DeleteSecurityDeviceUseCase implements ICommandHandler<
       deviceId,
     );
 
-    if (!device) {
+    if (device) {
+      await this.usersRepository.deleteUserDevice(userId, deviceId);
+      return;
+    }
+
+    const ownerId = await this.usersRepository.findUserIdByDeviceId(deviceId);
+    if (ownerId && !ownerId.equals(userId)) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         message: 'Device is not owned by the current user',
@@ -40,6 +46,15 @@ export class DeleteSecurityDeviceUseCase implements ICommandHandler<
       });
     }
 
-    await this.usersRepository.deleteUserDevice(userId, deviceId);
+    throw new DomainException({
+      code: DomainExceptionCode.NotFound,
+      message: 'Device not found',
+      extensions: [
+        {
+          field: 'deviceId',
+          message: 'Device not found',
+        },
+      ],
+    });
   }
 }

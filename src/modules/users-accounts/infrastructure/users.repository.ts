@@ -105,6 +105,15 @@ export class UsersRepository {
 
     return device ?? null;
   }
+
+  async findUserIdByDeviceId(deviceId: string): Promise<Types.ObjectId | null> {
+    const [doc] = await this.UserModel.aggregate<{ _id: Types.ObjectId }>([
+      { $match: { 'devices.deviceId': deviceId } },
+      { $project: { _id: 1 } },
+      { $limit: 1 },
+    ]);
+    return doc?._id ?? null;
+  }
   async findDevicesByIat(
     userId: Types.ObjectId,
     iat: number,
