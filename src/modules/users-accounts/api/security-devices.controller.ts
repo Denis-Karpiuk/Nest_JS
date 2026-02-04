@@ -1,4 +1,13 @@
-import { Controller, Delete, Get, Param, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import type { Request } from 'express';
 import { Types } from 'mongoose';
@@ -28,6 +37,7 @@ export class SecurityDevicesController {
   }
 
   @Delete(':deviceId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtRefreshAuthGuard)
   async deleteSecurityDevice(
     @ExtractUserFromRequest() user: UserContextDto,
@@ -39,6 +49,7 @@ export class SecurityDevicesController {
   }
 
   @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtRefreshAuthGuard)
   async deleteAllSecurityDevices(
     @ExtractUserFromRequest() user: UserContextDto,
