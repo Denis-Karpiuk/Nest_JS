@@ -9,6 +9,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
 import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
 import { mongooseModule } from './mongoose-module';
+import { postgresModule } from './postgres-module';
 import { ThrottleHttpExceptionsFilter } from './core/exceptions/filters/throttle-exceptions.filter';
 import { CoreModule } from './core/core.module';
 
@@ -16,6 +17,7 @@ import { CoreModule } from './core/core.module';
   imports: [
     configModule,
     mongooseModule,
+    postgresModule,
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
