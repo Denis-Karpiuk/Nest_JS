@@ -10,7 +10,9 @@ export const jwtAccessModule = {
   useFactory: (configService: ConfigService): JwtService => {
     return new JwtService({
       secret: configService.get('ACCESS_TOKEN_SECRET'),
-      signOptions: { expiresIn: configService.get('ACCESS_JWT_EXPIRES_IN') },
+      signOptions: {
+        expiresIn: configService.get('ACCESS_JWT_EXPIRES_IN'),
+      },
     });
   },
   inject: [ConfigService],
