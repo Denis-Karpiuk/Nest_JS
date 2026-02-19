@@ -24,10 +24,7 @@ export class CreatePostCommentUseCase implements ICommandHandler<
     return await this.commentsExternalService.createComment({
       postId: command.postId,
       content: command.dto.content,
-      commentatorInfo: {
-        userId: command.user.id,
-        userLogin: command.user.login,
-      },
+      commentatorId: command.user.id,
     });
   }
 }

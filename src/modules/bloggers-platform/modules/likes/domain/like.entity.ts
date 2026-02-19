@@ -1,53 +1,48 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { LikeStatusEnum } from './dto/like-status-enum';
 import { CreateLikeDto } from './dto/create-like.dto';
-import { HydratedDocument, Model } from 'mongoose';
 import { EntityType } from './dto/entity-type.enum';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Schema({ timestamps: true })
+@Entity()
 export class Like {
-  @Prop({ type: String, required: true })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
   entityId: string;
 
-  @Prop({ type: String, enum: EntityType, required: true })
+  @Column()
   entityType: EntityType;
 
-  @Prop({
-    type: String,
-    enum: LikeStatusEnum,
-    default: LikeStatusEnum.None,
-    required: true,
-  })
+  @Column()
   likeStatus: LikeStatusEnum;
 
-  @Prop({ type: String, required: true })
+  @Column()
   userId: string;
 
+  @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
   updatedAt: Date;
 
-  static createInstance(dto: CreateLikeDto): LikeDocument {
+  static createInstance(dto: CreateLikeDto): Like {
     const like = new this();
     like.entityId = dto.entityId;
     like.entityType = dto.entityType;
     like.likeStatus = dto.likeStatus;
     like.userId = dto.userId;
 
-    return like as LikeDocument;
+    return like;
   }
 
   update(likeStatus: LikeStatusEnum) {
     this.likeStatus = likeStatus;
   }
 }
-
-export const LikeSchema = SchemaFactory.createForClass(Like);
-
-//регистрирует методы сущности в схеме
-LikeSchema.loadClass(Like);
-
-//Типизация документа
-export type LikeDocument = HydratedDocument<Like>;
-
-//Типизация модели + статические методы
-export type LikeModelType = Model<LikeDocument> & typeof Like;

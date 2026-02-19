@@ -1,19 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { Like, LikeDocument, type LikeModelType } from '../domain/like.entity';
-import { InjectModel } from '@nestjs/mongoose';
+import { Like } from '../domain/like.entity';
 import { EntityType } from '../domain/dto/entity-type.enum';
 import { LikeStatusEnum } from '../domain/dto/like-status-enum';
 import { UsersExternalQueryRepository } from 'src/modules/users-accounts/infrastructure/external-query/users.external-query-repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class LikesPostsQueryRepository {
   constructor(
-    @InjectModel(Like.name) private readonly LikeModel: LikeModelType,
+    @InjectRepository(Like) private readonly likesRepository: Repository<Like>,
     private readonly usersExternalQueryRepository: UsersExternalQueryRepository,
   ) {}
 
   async getPostsLikesInfo(postId: string, userId?: string) {
-    const newestLikes = await this.getNewestPostLikesByPostId(postId);
+    const newestLikes = await this.likesRepository.find({
+      where: {
+        entityId: postId,
+        entityType: EntityType.Post,
+        likeStatus: LikeStatusEnum.Like,
+      },
+      take: 3,
+      skip: 0,
+    });
 
     const newestLikesWithUserInfo = await Promise.all(
       newestLikes.map(async (like) => {
@@ -30,8 +39,20 @@ export class LikesPostsQueryRepository {
     );
 
     const result = {
-      likesCount: await this.getPostsLikesCount(postId),
-      dislikesCount: await this.getPostDislikesCount(postId),
+      likesCount: await this.likesRepository.count({
+        where: {
+          entityId: postId,
+          entityType: EntityType.Post,
+          likeStatus: LikeStatusEnum.Like,
+        },
+      }),
+      dislikesCount: await this.likesRepository.count({
+        where: {
+          entityId: postId,
+          entityType: EntityType.Post,
+          likeStatus: LikeStatusEnum.Dislike,
+        },
+      }),
       myStatus: LikeStatusEnum.None,
       newestLikes: newestLikesWithUserInfo,
     };
@@ -51,44 +72,47 @@ export class LikesPostsQueryRepository {
   }
 
   private async getPostsLikesCount(postId: string) {
-    return await this.LikeModel.countDocuments({
-      entityId: postId,
-      entityType: EntityType.Post,
-      likeStatus: LikeStatusEnum.Like,
-    }).lean();
+    return await this.likesRepository.count({
+      where: {
+        entityId: postId,
+        entityType: EntityType.Post,
+        likeStatus: LikeStatusEnum.Like,
+      },
+    });
   }
 
   private async getPostDislikesCount(postId: string) {
-    return await this.LikeModel.countDocuments({
-      entityId: postId,
-      entityType: EntityType.Post,
-      likeStatus: LikeStatusEnum.Dislike,
-    }).lean();
+    return await this.likesRepository.count({
+      where: {
+        entityId: postId,
+        entityType: EntityType.Post,
+        likeStatus: LikeStatusEnum.Dislike,
+      },
+    });
   }
 
   private async getNewestPostLikesByPostId(
     postId: string,
     size = 3,
-  ): Promise<LikeDocument[]> {
-    return await this.LikeModel.find({
-      entityId: postId,
-      entityType: EntityType.Post,
-      likeStatus: LikeStatusEnum.Like,
-    })
-      .skip(0)
-      .limit(size)
-      .sort({ createdAt: -1 })
-      .lean();
+  ): Promise<Like[]> {
+    return await this.likesRepository.find({
+      where: {
+        entityId: postId,
+        entityType: EntityType.Post,
+        likeStatus: LikeStatusEnum.Like,
+      },
+      take: size,
+      skip: 0,
+      order: { createdAt: -1 },
+    });
   }
 
   private async findPostLikeByPostIdAndUserId(
     postId: string,
     userId: string,
-  ): Promise<LikeDocument | null> {
-    return this.LikeModel.findOne({
-      entityId: postId,
-      entityType: EntityType.Post,
-      userId,
+  ): Promise<Like | null> {
+    return this.likesRepository.findOne({
+      where: { entityId: postId, entityType: EntityType.Post, userId },
     });
   }
 }

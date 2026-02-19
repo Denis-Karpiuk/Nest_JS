@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
+import { UsersExternalQueryRepository } from 'src/modules/users-accounts/infrastructure/external-query/users.external-query-repository';
 import { CommentViewDto } from '../../api/view-dto/comment.view-dto';
 import { GetCommentsQueryParamsDto } from '../../api/input-dto/get-comments-query-params.input.dto';
 import { Comment } from '../../domain/comment.entity';
@@ -15,6 +16,7 @@ export class CommentsExternalQueryRepository {
     @InjectRepository(Comment)
     private readonly commentsRepository: Repository<Comment>,
     private readonly likesCommentsQueryRepository: LikesCommentsQueryRepository,
+    private readonly usersExternalQueryRepository: UsersExternalQueryRepository,
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<CommentViewDto> {
@@ -33,7 +35,15 @@ export class CommentsExternalQueryRepository {
       });
     }
 
-    return CommentViewDto.mapToView(comment);
+    const commentator =
+      await this.usersExternalQueryRepository.getByIdOrNotFoundFail(
+        comment.commentatorId,
+      );
+
+    return CommentViewDto.mapToView(comment, undefined, {
+      userId: commentator.id,
+      userLogin: commentator.login,
+    });
   }
 
   async getAllCommentsByPostId(
@@ -47,12 +57,19 @@ export class CommentsExternalQueryRepository {
 
     const items = await Promise.all(
       comments.map(async (comment) => {
-        const likesInfo =
-          await this.likesCommentsQueryRepository.getCommentsLikesInfo(
+        const [likesInfo, commentator] = await Promise.all([
+          this.likesCommentsQueryRepository.getCommentsLikesInfo(
             comment.id,
             userId,
-          );
-        return CommentViewDto.mapToView(comment, likesInfo);
+          ),
+          this.usersExternalQueryRepository.getByIdOrNotFoundFail(
+            comment.commentatorId,
+          ),
+        ]);
+        return CommentViewDto.mapToView(comment, likesInfo, {
+          userId: commentator.id,
+          userLogin: commentator.login,
+        });
       }),
     );
 

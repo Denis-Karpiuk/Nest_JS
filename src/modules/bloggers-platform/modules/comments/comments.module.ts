@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Comment, CommentSchema } from './domain/comment.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserAccountsModule } from 'src/modules/users-accounts/users-accounts.module';
+import { Comment } from './domain/comment.entity';
 import { CommentsController } from './api/comments.controller';
 import { CommentsQueryRepository } from './infrastructure/comments.query-repository';
 import { CommentsRepository } from './infrastructure/comments.repository';
@@ -17,9 +18,10 @@ const commandHandlers = [DeleteCommentUseCase, UpdateCommentUseCase];
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
+    TypeOrmModule.forFeature([Comment]),
     CommentsSharedModule,
     LikesModule,
+    UserAccountsModule,
   ],
   controllers: [CommentsController],
   providers: [

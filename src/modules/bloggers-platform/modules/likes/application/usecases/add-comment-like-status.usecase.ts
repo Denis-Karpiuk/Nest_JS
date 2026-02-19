@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { LikesRepository } from '../../infrastructure/likes.repository';
-import { InjectModel } from '@nestjs/mongoose';
-import { Like, type LikeModelType } from '../../domain/like.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Like } from '../../domain/like.entity';
 import { EntityType } from '../../domain/dto/entity-type.enum';
 import { LikeStatusEnum } from '../../domain/dto/like-status-enum';
+import { Repository } from 'typeorm';
 
 export class AddCommentLikeStatusCommand {
   constructor(
@@ -19,17 +19,18 @@ export class AddCommentLikeUseCase implements ICommandHandler<
   void
 > {
   constructor(
-    @InjectModel(Like.name)
-    private readonly LikeModel: LikeModelType,
-    private readonly likesRepository: LikesRepository,
+    @InjectRepository(Like)
+    private readonly likesRepository: Repository<Like>,
   ) {}
 
   async execute(command: AddCommentLikeStatusCommand): Promise<void> {
-    const existingLike = await this.likesRepository.findByEntityAndUser(
-      command.commentId,
-      EntityType.Comment,
-      command.userId,
-    );
+    const existingLike = await this.likesRepository.findOne({
+      where: {
+        entityId: command.commentId,
+        entityType: EntityType.Comment,
+        userId: command.userId,
+      },
+    });
 
     if (existingLike) {
       existingLike.update(command.likeStatus);
@@ -37,7 +38,7 @@ export class AddCommentLikeUseCase implements ICommandHandler<
     }
 
     if (!existingLike) {
-      const like = this.LikeModel.createInstance({
+      const like = Like.createInstance({
         entityId: command.commentId,
         entityType: EntityType.Comment,
         likeStatus: command.likeStatus,

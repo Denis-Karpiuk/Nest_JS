@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Like, LikeSchema } from './domain/like.entity';
+import { Like } from './domain/like.entity';
 import { LikesRepository } from './infrastructure/likes.repository';
 import { AddPostLikeUseCase } from './application/usecases/add-post-like-status.usecase';
 import { AddCommentLikeUseCase } from './application/usecases/add-comment-like-status.usecase';
@@ -8,15 +7,13 @@ import { GetLikesByPostIdQueryHandler } from './application/queries/get-likes-by
 import { LikesPostsQueryRepository } from './infrastructure/likes.posts.query-repository';
 import { UserAccountsModule } from 'src/modules/users-accounts/users-accounts.module';
 import { LikesCommentsQueryRepository } from './infrastructure/likes.comments.query-repository';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 const queryHandlers = [GetLikesByPostIdQueryHandler];
 const commandHandlers = [AddPostLikeUseCase, AddCommentLikeUseCase];
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Like.name, schema: LikeSchema }]),
-    UserAccountsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Like]), UserAccountsModule],
   providers: [
     LikesRepository,
     LikesPostsQueryRepository,

@@ -1,44 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Like, type LikeModelType, LikeDocument } from '../domain/like.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Like } from '../domain/like.entity';
 import { EntityType } from '../domain/dto/entity-type.enum';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class LikesRepository {
   constructor(
-    @InjectModel(Like.name) private readonly LikeModel: LikeModelType,
+    @InjectRepository(Like) private readonly likesRepository: Repository<Like>,
   ) {}
 
   async findAllByEntityIdAndType(
     entityId: string,
     entityType: EntityType,
-  ): Promise<LikeDocument[]> {
-    return this.LikeModel.find({ entityId, entityType })
-      .sort({ createdAt: -1 })
-      .lean();
+  ): Promise<Like[]> {
+    return this.likesRepository.find({
+      where: { entityId, entityType },
+      order: { createdAt: -1 },
+    });
   }
 
-  async findAllPostsLikes(postId: string): Promise<LikeDocument[]> {
+  async findAllPostsLikes(postId: string): Promise<Like[]> {
     return this.findAllByEntityIdAndType(postId, EntityType.Post);
   }
 
-  async findById(id: string): Promise<LikeDocument | null> {
-    return this.LikeModel.findOne({ _id: id });
+  async findById(id: string): Promise<Like | null> {
+    return this.likesRepository.findOne({ where: { id } });
   }
 
   async findByEntityAndUser(
     entityId: string,
     entityType: EntityType,
     userId: string,
-  ): Promise<LikeDocument | null> {
-    return this.LikeModel.findOne({
-      entityId,
-      entityType,
-      userId,
+  ): Promise<Like | null> {
+    return this.likesRepository.findOne({
+      where: { entityId, entityType, userId },
     });
   }
 
-  async save(like: LikeDocument) {
-    await like.save();
+  async save(like: Like) {
+    await this.likesRepository.save(like);
   }
 }

@@ -1,30 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { EntityType } from '../domain/dto/entity-type.enum';
 import { LikeStatusEnum } from '../domain/dto/like-status-enum';
-import { Like, LikeDocument, type LikeModelType } from '../domain/like.entity';
+import { Like } from '../domain/like.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class LikesCommentsQueryRepository {
   constructor(
-    @InjectModel(Like.name) private readonly LikeModel: LikeModelType,
+    @InjectRepository(Like) private readonly likesRepository: Repository<Like>,
   ) {}
 
   async getCommentsLikesInfo(commentId: string, userId?: string) {
-    const likesCount = await this.getCommentsLikesCount(commentId);
-    const dislikesCount = await this.getCommentsDislikesCount(commentId);
+    const likesCount = await this.likesRepository.count({
+      where: {
+        entityId: commentId,
+        entityType: EntityType.Comment,
+        likeStatus: LikeStatusEnum.Like,
+      },
+    });
+
+    const dislikesCount = await this.likesRepository.count({
+      where: {
+        entityId: commentId,
+        entityType: EntityType.Comment,
+        likeStatus: LikeStatusEnum.Dislike,
+      },
+    });
 
     const result = {
-      likesCount: likesCount,
-      dislikesCount: dislikesCount,
+      likesCount,
+      dislikesCount,
       myStatus: LikeStatusEnum.None,
     };
 
     if (userId) {
-      const userLikeStatus = await this.findCommentLikeByCommentIdAndUserId(
-        commentId,
-        userId,
-      );
+      const userLikeStatus = await this.likesRepository.findOne({
+        where: { entityId: commentId, entityType: EntityType.Comment, userId },
+      });
 
       if (userLikeStatus) {
         result.myStatus = userLikeStatus.likeStatus;
@@ -35,29 +48,31 @@ export class LikesCommentsQueryRepository {
   }
 
   private async getCommentsLikesCount(commentId: string) {
-    return await this.LikeModel.countDocuments({
-      entityId: commentId,
-      entityType: EntityType.Comment,
-      likeStatus: LikeStatusEnum.Like,
-    }).lean();
+    return await this.likesRepository.count({
+      where: {
+        entityId: commentId,
+        entityType: EntityType.Comment,
+        likeStatus: LikeStatusEnum.Like,
+      },
+    });
   }
 
   private async getCommentsDislikesCount(commentId: string) {
-    return await this.LikeModel.countDocuments({
-      entityId: commentId,
-      entityType: EntityType.Comment,
-      likeStatus: LikeStatusEnum.Dislike,
-    }).lean();
+    return await this.likesRepository.count({
+      where: {
+        entityId: commentId,
+        entityType: EntityType.Comment,
+        likeStatus: LikeStatusEnum.Dislike,
+      },
+    });
   }
 
   private async findCommentLikeByCommentIdAndUserId(
     commentId: string,
     userId: string,
-  ): Promise<LikeDocument | null> {
-    return this.LikeModel.findOne({
-      entityId: commentId,
-      entityType: EntityType.Comment,
-      userId,
+  ): Promise<Like | null> {
+    return this.likesRepository.findOne({
+      where: { entityId: commentId, entityType: EntityType.Comment, userId },
     });
   }
 }

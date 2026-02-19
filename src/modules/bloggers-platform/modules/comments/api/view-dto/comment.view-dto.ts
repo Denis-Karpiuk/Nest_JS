@@ -21,16 +21,19 @@ export class CommentViewDto {
 
   likesInfo: LikesInfo;
 
-  static mapToView(dto: Comment, likesInfo?: LikesInfo): CommentViewDto {
+  static mapToView(
+    dto: Comment,
+    likesInfo?: LikesInfo,
+    commentatorInfo?: CommentatorInfo,
+  ): CommentViewDto {
     const viewDto = new CommentViewDto();
 
     viewDto.id = dto.id;
-
     viewDto.content = dto.content;
-    // viewDto.commentatorInfo = {
-    //   userId: dto.commentatorInfo.userId,
-    //   userLogin: dto.commentatorInfo.userLogin,
-    // };
+    viewDto.commentatorInfo = commentatorInfo ?? {
+      userId: '',
+      userLogin: '',
+    };
     viewDto.createdAt = dto.createdAt;
 
     viewDto.likesInfo = likesInfo || {
