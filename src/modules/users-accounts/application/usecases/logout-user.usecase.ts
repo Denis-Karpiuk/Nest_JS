@@ -1,7 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { Types } from 'mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import {
@@ -70,12 +69,12 @@ export class LogoutUserUseCase implements ICommandHandler<
         iat: number;
       }>(refreshToken);
 
-      const devicesByIatResult = await this.usersDevicesRepository.findDevicesByIat(
+      const device = await this.usersDevicesRepository.findDeviceByDeviceId(
         id,
-        iat,
+        deviceId,
       );
 
-      if (!devicesByIatResult?.length) {
+      if (!device || device.iat !== iat) {
         throw new DomainException({
           code: DomainExceptionCode.Unauthorized,
           message: 'Invalid refresh token',
