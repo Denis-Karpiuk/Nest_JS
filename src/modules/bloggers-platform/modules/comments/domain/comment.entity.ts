@@ -1,47 +1,36 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CreateCommentDomainDto } from './dto/create-comment.domain.dto';
-import { HydratedDocument, Model } from 'mongoose';
-import {
-  CommentatorInfo,
-  CommentatorInfoSchema,
-} from './commentatorInfo.schema';
+import { Column, CreateDateColumn, Entity, UpdateDateColumn } from 'typeorm';
+import { PrimaryGeneratedColumn } from 'typeorm';
 
-@Schema({ timestamps: true })
+@Entity()
 export class Comment {
-  @Prop({ type: String, min: 20, max: 300, required: true })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
   content: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   postId: string;
 
-  @Prop({ type: CommentatorInfoSchema })
-  commentatorInfo: CommentatorInfo;
+  @Column()
+  commentatorId: string;
 
+  @CreateDateColumn()
   createdAt: Date;
-  updatedAt: Date;
 
-  static createInstance(dto: CreateCommentDomainDto): CommentDocument {
+  @UpdateDateColumn()
+  static createInstance(dto: CreateCommentDomainDto): Comment {
     const comment = new this();
 
     comment.postId = dto.postId;
     comment.content = dto.content;
-    comment.commentatorInfo = dto.commentatorInfo;
+    comment.commentatorId = dto.commentatorId;
 
-    return comment as CommentDocument;
+    return comment;
   }
 
   update(content: string) {
     this.content = content;
   }
 }
-
-export const CommentSchema = SchemaFactory.createForClass(Comment);
-
-//регистрирует методы сущности в схеме
-CommentSchema.loadClass(Comment);
-
-//Типизация документа
-export type CommentDocument = HydratedDocument<Comment>;
-
-//Типизация модели + статические методы
-export type CommentModelType = Model<CommentDocument> & typeof Comment;

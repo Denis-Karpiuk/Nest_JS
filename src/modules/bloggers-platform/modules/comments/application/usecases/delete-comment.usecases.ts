@@ -1,13 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 
 export class DeleteCommentCommand {
   constructor(
-    public readonly userId: Types.ObjectId,
-    public readonly commentId: Types.ObjectId,
+    public readonly userId: string,
+    public readonly commentId: string,
   ) {}
 }
 
@@ -20,7 +19,7 @@ export class DeleteCommentUseCase implements ICommandHandler<DeleteCommentComman
       command.commentId,
     );
 
-    if (comment.commentatorInfo.userId !== command.userId.toString()) {
+    if (comment.commentatorId !== command.userId) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         message: 'You are not allowed to delete this comment',

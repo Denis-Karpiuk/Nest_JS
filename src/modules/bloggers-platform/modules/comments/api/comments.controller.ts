@@ -10,8 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
-import { ObjectIdValidationPipe } from 'src/core/pipes/object-id-validation-transformation-pipe.service';
 import { JwtAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-auth.guard';
 import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
@@ -34,7 +32,7 @@ export class CommentsController {
   @UseGuards(JwtOptionalAuthGuard)
   @Get(':id')
   async getCommentById(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Param('id') id: string,
     @ExtractUserFromRequest() user: UserContextDto | null,
   ): Promise<CommentViewDto> {
     return this.queryBus.execute<GetCommentByIdQuery, CommentViewDto>(
@@ -46,11 +44,11 @@ export class CommentsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteComment(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Param('id') id: string,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
     await this.commandBus.execute<DeleteCommentCommand, void>(
-      new DeleteCommentCommand(new Types.ObjectId(user.id), id),
+      new DeleteCommentCommand(user.id, id),
     );
   }
 
@@ -58,12 +56,12 @@ export class CommentsController {
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateComment(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Param('id') id: string,
     @Body() dto: UpdateCommentInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
     await this.commandBus.execute<UpdateCommentCommand, void>(
-      new UpdateCommentCommand(id, dto.content, new Types.ObjectId(user.id)),
+      new UpdateCommentCommand(id, dto.content, user.id),
     );
   }
 
@@ -71,19 +69,15 @@ export class CommentsController {
   @Put(':id/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
   async likeComment(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Param('id') id: string,
     @Body() dto: LikeCommentInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
     await this.queryBus.execute<GetCommentByIdQuery, CommentViewDto>(
-      new GetCommentByIdQuery(id),
+      new GetCommentByIdQuery(id, user?.id),
     );
     await this.commandBus.execute<AddCommentLikeStatusCommand, void>(
-      new AddCommentLikeStatusCommand(
-        id.toString(),
-        new Types.ObjectId(user.id).toString(),
-        dto.likeStatus,
-      ),
+      new AddCommentLikeStatusCommand(id, user.id, dto.likeStatus),
     );
   }
 }

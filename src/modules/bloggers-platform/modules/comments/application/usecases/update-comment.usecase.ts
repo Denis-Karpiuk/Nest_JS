@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
@@ -6,9 +5,9 @@ import { DomainException } from 'src/core/exceptions/domain-exceptions';
 
 export class UpdateCommentCommand {
   constructor(
-    public readonly commentId: Types.ObjectId,
+    public readonly commentId: string,
     public readonly content: string,
-    public readonly userId: Types.ObjectId,
+    public readonly userId: string,
   ) {}
 }
 
@@ -21,7 +20,7 @@ export class UpdateCommentUseCase implements ICommandHandler<UpdateCommentComman
       command.commentId,
     );
 
-    if (comment.commentatorInfo.userId !== command.userId.toString()) {
+    if (comment.commentatorId !== command.userId) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         message: 'You are not allowed to update this comment',

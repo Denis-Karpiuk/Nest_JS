@@ -1,11 +1,10 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { LikesCommentsQueryRepository } from '../../../likes/infrastructure/likes.comments.query-repository';
 import { CommentViewDto } from '../../api/view-dto/comment.view-dto';
 import { CommentsQueryRepository } from '../../infrastructure/comments.query-repository';
 export class GetCommentByIdQuery {
   constructor(
-    public id: Types.ObjectId,
+    public id: string,
     public userId?: string,
   ) {}
 }
@@ -24,7 +23,7 @@ export class GetCommentByIdQueryHandler implements IQueryHandler<GetCommentByIdQ
 
     const likesInfo =
       await this.likesCommentsQueryRepository.getCommentsLikesInfo(
-        comment._id.toString(),
+        comment.id,
         query.userId,
       );
 

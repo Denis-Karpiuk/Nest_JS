@@ -1,24 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
-import {
-  Comment,
-  CommentDocument,
-  type CommentModelType,
-} from '../domain/comment.entity';
-import { Types } from 'mongoose';
+import { Comment } from '../domain/comment.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
-    @InjectModel(Comment.name) private CommentModel: CommentModelType,
+    @InjectRepository(Comment)
+    private readonly commentsRepository: Repository<Comment>,
   ) {}
 
-  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<CommentDocument> {
-    const comment = await this.CommentModel.findOne({
-      _id: id,
-    });
+  async getByIdOrNotFoundFail(id: string): Promise<Comment> {
+    const comment = await this.commentsRepository.findOne({ where: { id } });
 
     if (!comment) {
       throw new DomainException({
