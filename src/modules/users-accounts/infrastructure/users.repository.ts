@@ -19,15 +19,25 @@ export class UsersRepository {
   }
 
   async findByConfirmationCode(confirmationCode: string): Promise<User | null> {
-    return await this.userRepository.findOne({
-      where: { emailConfirmation: { confirmationCode } },
-    });
+    return this.userRepository
+      .createQueryBuilder('u')
+      .where(
+        'u."emailConfirmation"->>\'confirmationCode\' = :confirmationCode',
+        {
+          confirmationCode,
+        },
+      )
+      .getOne();
   }
 
   async findByRecoveryCode(recoveryCode: string): Promise<User | null> {
-    return await this.userRepository.findOne({
-      where: { passwordRecoveryInformation: { recoveryCode } },
-    });
+    return this.userRepository
+      .createQueryBuilder('u')
+      .where(
+        'u."passwordRecoveryInformation"->>\'recoveryCode\' = :recoveryCode',
+        { recoveryCode },
+      )
+      .getOne();
   }
 
   async findByEmailOrLogin(loginOrEmail: string): Promise<User | null> {

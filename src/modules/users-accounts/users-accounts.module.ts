@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AuthController } from './api/auth.controller';
+import { SaUsersController } from './api/sa-users.controller';
 import { SecurityDevicesController } from './api/security-devices.controller';
 import { UsersController } from './api/users.controller';
 import { UsersFactory } from './application/factories/users.factory';
@@ -73,7 +74,12 @@ const queryHandlers = [
     throttleModule,
     JwtModule,
   ],
-  controllers: [UsersController, AuthController, SecurityDevicesController],
+  controllers: [
+    UsersController,
+    SaUsersController,
+    AuthController,
+    SecurityDevicesController,
+  ],
   providers: [
     ...commandHandlers,
     ...queryHandlers,
