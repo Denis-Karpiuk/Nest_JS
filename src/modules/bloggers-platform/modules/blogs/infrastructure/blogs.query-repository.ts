@@ -6,7 +6,8 @@ import { Blog } from '../domain/blog.entity';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { BlogsSortBy } from '../api/input-dto/blogs-sort-by';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -39,24 +40,27 @@ export class BlogsQueryRepository {
   async getAllBlogs(
     query: GetBlogsQueryParamsDto,
   ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-    const filter: FindOptionsWhere<Blog> = {};
+    const qb = this.blogsRepository
+      .createQueryBuilder('blog')
+      .skip(query.calculateSkip())
+      .take(query.pageSize);
 
     const searchNameTerm = query.searchNameTerm;
-
     if (searchNameTerm) {
-      filter.name = ILike(`%${searchNameTerm}%`);
+      qb.andWhere('blog.name ILIKE :name', {
+        name: `%${searchNameTerm}%`,
+      });
     }
 
-    const blogs = await this.blogsRepository.find({
-      where: filter,
-      order: { [query.sortBy]: query.sortDirection },
-      skip: query.calculateSkip(),
-      take: query.pageSize,
-    });
+    const sortDir = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
+    if (query.sortBy === BlogsSortBy.Name) {
+      qb.orderBy('blog.name COLLATE "C"', sortDir);
+    } else {
+      qb.orderBy(`blog.${query.sortBy}`, sortDir);
+    }
 
+    const [blogs, totalCount] = await qb.getManyAndCount();
     const items = blogs.map(BlogViewDto.mapToView);
-
-    const totalCount = await this.blogsRepository.count({ where: filter });
 
     return PaginatedViewDto.mapToView({
       items,
