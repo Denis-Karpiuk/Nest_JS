@@ -1,9 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreatePostDto } from '../../dto/create-post.dto';
 import { PostsRepository } from '../../infrastructure/posts.repository';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, type PostModelType } from '../../domain/post.entity';
-import { Types } from 'mongoose';
+import { Post } from '../../domain/post.entity';
 
 export class CreatePostCommand {
   constructor(public readonly dto: CreatePostDto) {}
@@ -12,18 +10,14 @@ export class CreatePostCommand {
 @CommandHandler(CreatePostCommand)
 export class CreatePostUseCase implements ICommandHandler<
   CreatePostCommand,
-  Types.ObjectId
+  string
 > {
-  constructor(
-    @InjectModel(Post.name)
-    private readonly PostModel: PostModelType,
-    private readonly postsRepository: PostsRepository,
-  ) {}
-  async execute(command: CreatePostCommand): Promise<Types.ObjectId> {
-    const post = this.PostModel.createInstance(command.dto);
+  constructor(private readonly postsRepository: PostsRepository) {}
+  async execute(command: CreatePostCommand): Promise<string> {
+    const post = Post.createInstance(command.dto);
 
     await this.postsRepository.save(post);
 
-    return post._id;
+    return post.id;
   }
 }

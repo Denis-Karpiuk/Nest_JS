@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PostsModule } from '../posts/posts.module';
 import { BlogsController } from './api/blogs.controller';
+import { SaBlogsController } from './api/sa-blogs.controller';
 import { GetBlogByIdQueryHandler } from './application/queries/get-blog-by-id';
 import { CreateBlogUseCase } from './application/usecases/create-blog.usecase';
 import { UpdateBlogUseCase } from './application/usecases/update-blog.usecase';
@@ -20,7 +21,7 @@ const commandHandlers = [
 const queryHandlers = [GetBlogByIdQueryHandler, GetBlogsQueryHandler];
 @Module({
   imports: [TypeOrmModule.forFeature([Blog]), PostsModule],
-  controllers: [BlogsController],
+  controllers: [BlogsController, SaBlogsController],
   providers: [
     BlogsRepository,
     BlogsQueryRepository,

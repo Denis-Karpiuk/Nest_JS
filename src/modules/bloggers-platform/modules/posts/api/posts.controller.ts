@@ -12,9 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
-import { ObjectIdValidationPipe } from 'src/core/pipes/object-id-validation-transformation-pipe.service';
 import { BasicAuthGuard } from 'src/modules/users-accounts/guards/basic/basic-auth.guard';
 import { JwtAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-auth.guard';
 import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
@@ -50,10 +48,9 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @Post()
   async createPost(@Body() dto: CreatePostInputDto) {
-    const postId = await this.commandBus.execute<
-      CreatePostCommand,
-      Types.ObjectId
-    >(new CreatePostCommand(dto));
+    const postId = await this.commandBus.execute<CreatePostCommand, string>(
+      new CreatePostCommand(dto),
+    );
 
     return this.queryBus.execute<GetPostByIdQuery, PostsViewDto>(
       new GetPostByIdQuery(postId),
@@ -63,7 +60,7 @@ export class PostsController {
   @UseGuards(JwtOptionalAuthGuard)
   @Get(':id')
   async getPost(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Param('id') id: string,
     @ExtractUserFromRequest() user: UserContextDto | null,
   ) {
     return this.queryBus.execute<GetPostByIdQuery, PostsViewDto>(
@@ -86,11 +83,8 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePost(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
-    @Body() dto: UpdatePostInputDto,
-  ) {
-    return this.commandBus.execute<UpdatePostCommand, Types.ObjectId>(
+  async updatePost(@Param('id') id: string, @Body() dto: UpdatePostInputDto) {
+    return this.commandBus.execute<UpdatePostCommand, string>(
       new UpdatePostCommand(id, dto),
     );
   }
@@ -98,7 +92,7 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(@Param('id', ObjectIdValidationPipe) id: Types.ObjectId) {
+  async deletePost(@Param('id') id: string) {
     return this.commandBus.execute<DeletePostCommand, void>(
       new DeletePostCommand(id),
     );
@@ -107,7 +101,7 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/comments')
   async createComment(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Param('id') id: string,
     @Body() dto: CreatePostCommentInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
@@ -116,7 +110,7 @@ export class PostsController {
     );
     const commentId = await this.commandBus.execute<
       CreatePostCommentCommand,
-      Types.ObjectId
+      string
     >(new CreatePostCommentCommand(id, dto, user));
 
     return this.commentsExternalQueryRepository.getByIdOrNotFoundFail(
@@ -127,7 +121,7 @@ export class PostsController {
   @UseGuards(JwtOptionalAuthGuard)
   @Get(':id/comments')
   async getCommentsByPostId(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Param('id') id: string,
     @Query() query: GetCommentsQueryParamsDto,
     @ExtractUserFromRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
@@ -145,7 +139,7 @@ export class PostsController {
   @Put(':id/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
   async likePost(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Param('id') id: string,
     @Body() dto: LikePostInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {

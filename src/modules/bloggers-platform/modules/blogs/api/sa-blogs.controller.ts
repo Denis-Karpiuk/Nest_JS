@@ -32,7 +32,7 @@ import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decora
 import { UserContextDto } from 'src/modules/users-accounts/guards/dto/user-context.dto';
 
 @Controller('sa/blogs')
-export class BlogsController {
+export class SaBlogsController {
   constructor(
     private readonly postsExternalService: PostsExternalService,
     private readonly blogsQueryRepository: BlogsQueryRepository,

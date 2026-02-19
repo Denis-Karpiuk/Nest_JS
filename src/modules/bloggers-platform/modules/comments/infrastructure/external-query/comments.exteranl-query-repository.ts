@@ -16,9 +16,9 @@ export class CommentsExternalQueryRepository {
     private readonly likesCommentsQueryRepository: LikesCommentsQueryRepository,
   ) {}
 
-  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<CommentViewDto> {
+  async getByIdOrNotFoundFail(id: string): Promise<CommentViewDto> {
     const comment = await this.CommentModel.findOne({
-      _id: id,
+      _id: new Types.ObjectId(id),
     });
 
     if (!comment) {
@@ -38,7 +38,7 @@ export class CommentsExternalQueryRepository {
   }
 
   async getAllCommentsByPostId(
-    postId: Types.ObjectId,
+    postId: string,
     query: GetCommentsQueryParamsDto,
     userId?: string,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {

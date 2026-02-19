@@ -1,21 +1,17 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { PostsRepository } from './../infrastructure/posts.repository';
 import { Injectable } from '@nestjs/common';
-import { Post, type PostModelType } from '../domain/post.entity';
+import { Post } from '../domain/post.entity';
 import { CreatePostDto } from '../dto/create-post.dto';
+import { PostsRepository } from './../infrastructure/posts.repository';
 
 @Injectable()
 export class PostsExternalService {
-  constructor(
-    @InjectModel(Post.name) private PostModel: PostModelType,
-    private PostsRepository: PostsRepository,
-  ) {}
+  constructor(private readonly postsRepository: PostsRepository) {}
 
   async createPost(dto: CreatePostDto) {
-    const post = this.PostModel.createInstance(dto);
+    const post = Post.createInstance(dto);
 
-    await this.PostsRepository.save(post);
+    await this.postsRepository.save(post);
 
-    return post._id.toString();
+    return post.id;
   }
 }

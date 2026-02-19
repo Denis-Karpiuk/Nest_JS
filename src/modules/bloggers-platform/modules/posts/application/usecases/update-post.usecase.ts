@@ -1,11 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { UpdatePostDto } from '../../dto/create-post.dto';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 
 export class UpdatePostCommand {
   constructor(
-    public readonly postId: Types.ObjectId,
+    public readonly postId: string,
     public readonly dto: UpdatePostDto,
   ) {}
 }
@@ -13,16 +12,16 @@ export class UpdatePostCommand {
 @CommandHandler(UpdatePostCommand)
 export class UpdatePostUseCase implements ICommandHandler<
   UpdatePostCommand,
-  Types.ObjectId
+  string
 > {
   constructor(private readonly postsRepository: PostsRepository) {}
-  async execute(command: UpdatePostCommand): Promise<Types.ObjectId> {
+  async execute(command: UpdatePostCommand): Promise<string> {
     const post = await this.postsRepository.findOrNotFoundFail(command.postId);
 
     post.update(command.dto);
 
     await this.postsRepository.save(post);
 
-    return post._id;
+    return post.id;
   }
 }

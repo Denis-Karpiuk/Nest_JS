@@ -4,7 +4,6 @@ import { Comment, type CommentModelType } from '../../domain/comment.entity';
 import { CommentsQueryRepository } from '../../infrastructure/comments.query-repository';
 import { CreateCommentDomainDto } from '../../domain/dto/create-comment.domain.dto';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class CommentsExternalService {
@@ -15,11 +14,11 @@ export class CommentsExternalService {
     private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
-  async createComment(dto: CreateCommentDomainDto): Promise<Types.ObjectId> {
+  async createComment(dto: CreateCommentDomainDto): Promise<string> {
     const comment = this.commentsModel.createInstance(dto);
 
     await this.commentsRepository.save(comment);
 
-    return comment._id;
+    return comment._id.toString();
   }
 }

@@ -1,32 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, type PostModelType } from '../../domain/post.entity';
-
+import { Injectable } from '@nestjs/common';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
-import { GetPostsQueryParamsDto } from '../../api/input-dto/get-posts-query-params.input.dto';
+import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { BlogsExternalQueryRepository } from '../../../blogs/infrastructure/blogs.external-query-repository';
-import { PostsExternalViewDto } from './external-dto/posts.external-dto';
 import { LikesPostsQueryRepository } from '../../../likes/infrastructure/likes.posts.query-repository';
+import { GetPostsQueryParamsDto } from '../../api/input-dto/get-posts-query-params.input.dto';
+import { PostsRepository } from '../posts.repository';
+import { PostsExternalViewDto } from './external-dto/posts.external-dto';
 
 @Injectable()
 export class PostsExternalQueryRepository {
   constructor(
-    @InjectModel(Post.name)
-    private PostModel: PostModelType,
+    private postsRepository: PostsRepository,
     private blogsExternalQueryRepository: BlogsExternalQueryRepository,
     private likesPostsQueryRepository: LikesPostsQueryRepository,
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<PostsExternalViewDto> {
-    const post = await this.PostModel.findOne({
-      _id: id,
-      deletedAt: null,
-    });
+    const post = await this.postsRepository.findById(id);
 
     if (!post) {
-      throw new NotFoundException('post not found');
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Post not found',
+        extensions: [
+          {
+            field: 'postId',
+            message: 'Post not found',
+          },
+        ],
+      });
     }
-
     const blogName =
       await this.blogsExternalQueryRepository.getBlogNameByBlogId(post.blogId);
 
@@ -41,16 +45,18 @@ export class PostsExternalQueryRepository {
     const blogName =
       await this.blogsExternalQueryRepository.getBlogNameByBlogId(blogId);
 
-    const posts = await this.PostModel.find({ blogId: blogId })
-      .sort({ [query.sortBy]: query.sortDirection })
-      .skip(query.calculateSkip())
-      .limit(query.pageSize);
+    const sortOrder = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
+    const posts = await this.postsRepository.findPaginated({
+      order: { [query.sortBy]: sortOrder },
+      skip: query.calculateSkip(),
+      take: query.pageSize,
+    });
 
     const items = await Promise.all(
       posts.map(async (post) => {
         const extendedLikesInfo =
           await this.likesPostsQueryRepository.getPostsLikesInfo(
-            post._id.toString(),
+            post.id,
             userId,
           );
 
@@ -62,7 +68,7 @@ export class PostsExternalQueryRepository {
       }),
     );
 
-    const totalCount = await this.PostModel.countDocuments({ blogId: blogId });
+    const totalCount = await this.postsRepository.countPostsByBlogId(blogId);
 
     return PaginatedViewDto.mapToView({
       items,

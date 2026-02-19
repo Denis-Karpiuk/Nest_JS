@@ -1,5 +1,5 @@
 import { LikeStatusEnum } from '../../../likes/domain/dto/like-status-enum';
-import { PostDocument } from '../../domain/post.entity';
+import { Post } from '../../domain/post.entity';
 
 export class NewestLikeDto {
   addedAt: Date;
@@ -26,13 +26,13 @@ export class PostsViewDto {
   extendedLikesInfo: ExtendedLikesInfoDto;
 
   static mapToView(
-    post: PostDocument,
+    post: Post,
     blogName?: string,
     extendedLikesInfo?: ExtendedLikesInfoDto,
   ): PostsViewDto {
     const dto = new PostsViewDto();
 
-    dto.id = post._id.toString();
+    dto.id = post.id;
     dto.title = post.title;
     dto.shortDescription = post.shortDescription;
     dto.content = post.content;

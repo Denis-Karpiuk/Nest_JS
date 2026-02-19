@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
@@ -10,20 +8,19 @@ import { LikesPostsQueryRepository } from '../../likes/infrastructure/likes.post
 import { GetPostsQueryParamsDto } from '../api/input-dto/get-posts-query-params.input.dto';
 import { PostsSortBy } from '../api/input-dto/posts-sort-by';
 import { PostsViewDto } from '../api/view-dto/posts.view-dto';
-import { Post, PostDocument, type PostModelType } from '../domain/post.entity';
+import { Post } from '../domain/post.entity';
+import { PostsRepository } from './posts.repository';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @InjectModel(Post.name) private PostModel: PostModelType,
+    private readonly postsRepository: PostsRepository,
     private blogsExternalQueryRepository: BlogsExternalQueryRepository,
     private likesPostsQueryRepository: LikesPostsQueryRepository,
   ) {}
 
-  async getByIdOrNotFoundFail(postId: Types.ObjectId): Promise<PostDocument> {
-    const post = await this.PostModel.findOne({
-      _id: postId,
-    });
+  async getByIdOrNotFoundFail(postId: string): Promise<Post> {
+    const post = await this.postsRepository.findOrNotFoundFail(postId);
 
     if (!post) {
       throw new DomainException({
@@ -45,13 +42,14 @@ export class PostsQueryRepository {
     query: GetPostsQueryParamsDto,
     userId?: string,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
-    const totalCount = await this.PostModel.countDocuments();
+    const totalCount = await this.postsRepository.countPosts();
+
+    const sortOrder = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
     // Если сортировка по blogName, нужно загрузить все посты и отсортировать в памяти
     if (query.sortBy === PostsSortBy.BlogName) {
-      const allPosts = await this.PostModel.find();
+      const allPosts = await this.postsRepository.findAll();
 
-      // Добавляем blogName к каждому посту
       const postsWithBlogName = await Promise.all(
         allPosts.map(async (post) => {
           const blogName =
@@ -65,7 +63,6 @@ export class PostsQueryRepository {
         }),
       );
 
-      // Сортируем по blogName
       postsWithBlogName.sort((a, b) => {
         if (query.sortDirection === SortDirection.Asc) {
           return a.blogName.localeCompare(b.blogName);
@@ -74,7 +71,6 @@ export class PostsQueryRepository {
         }
       });
 
-      // Применяем пагинацию
       const paginatedPosts = postsWithBlogName.slice(
         query.calculateSkip(),
         query.calculateSkip() + query.pageSize,
@@ -84,7 +80,7 @@ export class PostsQueryRepository {
         paginatedPosts.map(async ({ post, blogName }) => {
           const extendedLikesInfo =
             await this.likesPostsQueryRepository.getPostsLikesInfo(
-              post._id.toString(),
+              post.id,
               userId,
             );
           return PostsViewDto.mapToView(post, blogName, extendedLikesInfo);
@@ -99,11 +95,11 @@ export class PostsQueryRepository {
       });
     }
 
-    // Обычная сортировка по полям из БД
-    const posts = await this.PostModel.find()
-      .sort({ [query.sortBy]: query.sortDirection })
-      .skip(query.calculateSkip())
-      .limit(query.pageSize);
+    const posts = await this.postsRepository.findPaginated({
+      order: { [query.sortBy]: sortOrder },
+      skip: query.calculateSkip(),
+      take: query.pageSize,
+    });
 
     const items = await Promise.all(
       posts.map(async (post) => {
@@ -113,7 +109,7 @@ export class PostsQueryRepository {
           );
         const extendedLikesInfo =
           await this.likesPostsQueryRepository.getPostsLikesInfo(
-            post._id.toString(),
+            post.id,
             userId,
           );
 

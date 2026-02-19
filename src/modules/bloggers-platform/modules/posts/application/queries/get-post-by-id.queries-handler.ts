@@ -1,5 +1,4 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { PostsQueryRepository } from '../../infrastructure/posts.query-repository';
 import { LikesPostsQueryRepository } from '../../../likes/infrastructure/likes.posts.query-repository';
 import { BlogsExternalQueryRepository } from '../../../blogs/infrastructure/blogs.external-query-repository';
@@ -7,7 +6,7 @@ import { PostsViewDto } from '../../api/view-dto/posts.view-dto';
 
 export class GetPostByIdQuery {
   constructor(
-    public id: Types.ObjectId,
+    public id: string,
     public userId?: string,
   ) {}
 }
@@ -30,7 +29,7 @@ export class GetPostByIdQueryHandler implements IQueryHandler<GetPostByIdQuery> 
 
     const extendedLikesInfo =
       await this.likesPostsQueryRepository.getPostsLikesInfo(
-        post._id.toString(),
+        post.id,
         query?.userId,
       );
 

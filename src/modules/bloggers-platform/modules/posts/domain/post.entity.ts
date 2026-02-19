@@ -1,26 +1,38 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CreatePostDomainDto } from './dto/create-post-domain.dto';
-import { HydratedDocument, Model } from 'mongoose';
-import { UpdatePostDto } from '../dto/create-post.dto';
 
-@Schema({ timestamps: true })
+import { UpdatePostDto } from '../dto/create-post.dto';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+@Entity()
 export class Post {
-  @Prop({ type: String, max: 30, required: true })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
   title: string;
 
-  @Prop({ type: String, max: 100, required: true })
+  @Column()
   shortDescription: string;
 
-  @Prop({ type: String, max: 1000, required: true })
+  @Column()
   content: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   blogId: string;
 
+  @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
   updatedAt: Date;
 
-  static createInstance(dto: CreatePostDomainDto) {
+  static createInstance(dto: CreatePostDomainDto): Post {
     const post = new this();
 
     post.title = dto.title;
@@ -28,7 +40,7 @@ export class Post {
     post.content = dto.content;
     post.blogId = dto.blogId;
 
-    return post as PostDocument;
+    return post;
   }
 
   update(dto: UpdatePostDto) {
@@ -38,14 +50,3 @@ export class Post {
     this.blogId = dto.blogId;
   }
 }
-
-export const PostSchema = SchemaFactory.createForClass(Post);
-
-//регистрирует методы сущности в схеме
-PostSchema.loadClass(Post);
-
-//Типизация документа
-export type PostDocument = HydratedDocument<Post>;
-
-//Типизация модели + статические методы
-export type PostModelType = Model<PostDocument> & typeof Post;

@@ -1,9 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 
 export class DeletePostCommand {
-  constructor(public readonly postId: Types.ObjectId) {}
+  constructor(public readonly postId: string) {}
 }
 
 @CommandHandler(DeletePostCommand)
