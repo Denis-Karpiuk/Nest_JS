@@ -29,6 +29,8 @@ import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
 import { GetBlogBlogsQuery } from '../application/queries/get-blogs';
 import { UpdatePostCommand } from '../../posts/application/usecases/update-post.usecase';
 import { DeletePostCommand } from '../../posts/application/usecases/delete-post.usecase';
+import { DomainException } from 'src/core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from 'src/modules/users-accounts/guards/dto/user-context.dto';
@@ -104,6 +106,8 @@ export class SaBlogsController {
   @UseGuards(BasicAuthGuard)
   @Post(':id/posts')
   async createPost(@Param('id') id: string, @Body() dto: CreateBlogPostDto) {
+    await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
+
     const postId = await this.postsExternalService.createPost({
       blogId: id,
       ...dto,
@@ -120,6 +124,22 @@ export class SaBlogsController {
     @Param('postId') postId: string,
     @Body() dto: CreateBlogPostDto,
   ) {
+    const post =
+      await this.postsExternalQueryRepository.getByIdOrNotFoundFail(postId);
+
+    if (post.blogId !== blogId) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Post not found',
+        extensions: [
+          {
+            field: 'postId',
+            message: 'Post not found',
+          },
+        ],
+      });
+    }
+
     return this.commandBus.execute<UpdatePostCommand, string>(
       new UpdatePostCommand(postId, { ...dto, blogId }),
     );
@@ -129,9 +149,25 @@ export class SaBlogsController {
   @Delete(':id/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(
-    @Param('id') _blogId: string,
+    @Param('id') blogId: string,
     @Param('postId') postId: string,
   ): Promise<void> {
+    const post =
+      await this.postsExternalQueryRepository.getByIdOrNotFoundFail(postId);
+
+    if (post.blogId !== blogId) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Post not found',
+        extensions: [
+          {
+            field: 'postId',
+            message: 'Post not found',
+          },
+        ],
+      });
+    }
+
     return this.commandBus.execute<DeletePostCommand, void>(
       new DeletePostCommand(postId),
     );

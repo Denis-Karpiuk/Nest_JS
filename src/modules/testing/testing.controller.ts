@@ -22,5 +22,7 @@ export class TestingController {
 
     await this.dataSource.query('TRUNCATE TABLE "user_device" CASCADE');
     await this.dataSource.query('TRUNCATE TABLE "user" CASCADE');
+    await this.dataSource.query('TRUNCATE TABLE "post" CASCADE');
+    await this.dataSource.query('TRUNCATE TABLE "blog" CASCADE');
   }
 }
