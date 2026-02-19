@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AuthController } from './api/auth.controller';
 import { SecurityDevicesController } from './api/security-devices.controller';
@@ -28,7 +27,7 @@ import { PasswordRecoveryUserUseCase } from './application/usecases/users/passwo
 import { RegisterUserUseCase } from './application/usecases/users/register-user.usecase';
 import { ResendRegistrationEmailUserUseCase } from './application/usecases/users/resend-registration-email-user';
 import { AuthConfig } from './config/auth.config';
-import { User, UserSchema } from './domain/user.entity';
+import { User } from './domain/user.entity';
 import { JwtStrategy } from './guards/bearer/jwt.strategy';
 import { JwtRefreshStrategy } from './guards/refresh/jwt-refresh.strategy';
 import { LocalStrategy } from './guards/local/local.strategy';
@@ -37,8 +36,11 @@ import { AuthQueryRepository } from './infrastructure/query/auth.query-repositor
 import { SecurityDevicesQueryRepository } from './infrastructure/query/security-devices.query-repository';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 import { UsersRepository } from './infrastructure/users.repository';
+import { UsersDevicesRepository } from './infrastructure/users-devices.repository';
 import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
 import { throttleModule } from './modules/throttle-module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserDevice } from './domain/devices.entity';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -66,7 +68,8 @@ const queryHandlers = [
 @Module({
   imports: [
     NotificationsModule,
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    // MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    TypeOrmModule.forFeature([User, UserDevice]),
     throttleModule,
     JwtModule,
   ],
@@ -81,6 +84,7 @@ const queryHandlers = [
     UsersFactory,
     AuthService,
     UsersRepository,
+    UsersDevicesRepository,
     UsersQueryRepository,
     SecurityDevicesQueryRepository,
     AuthQueryRepository,

@@ -1,19 +1,20 @@
-import { User, type UserModelType } from '../../domain/user.entity';
-import { InjectModel } from '@nestjs/mongoose';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../../domain/user.entity';
 import { UserExternalDto } from './external-dto/users.external-dto';
 
 @Injectable()
 export class UsersExternalQueryRepository {
   constructor(
-    @InjectModel(User.name)
-    private readonly UserModel: UserModelType,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<UserExternalDto> {
-    const user = await this.UserModel.findOne({
-      _id: id,
-      deletedAt: null,
+    const user = await this.userRepository.findOne({
+      where: { id },
+      withDeleted: true,
     });
 
     if (!user) {
@@ -24,10 +25,10 @@ export class UsersExternalQueryRepository {
   }
 
   async getUserLoginById(userId: string): Promise<string | null> {
-    const user = await this.UserModel.findOne({
-      _id: userId,
-      deletedAt: null,
-    }).select('login');
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      withDeleted: true,
+    });
 
     return user?.login || null;
   }

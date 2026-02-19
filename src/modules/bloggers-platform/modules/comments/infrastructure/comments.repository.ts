@@ -40,7 +40,9 @@ export class CommentsRepository {
     return comment;
   }
 
-  async deleteComment(id: Types.ObjectId) {
+  async deleteComment(
+    id: Types.ObjectId,
+  ): Promise<{ acknowledged: boolean; deletedCount: number }> {
     return this.CommentModel.deleteOne({
       _id: id,
     });

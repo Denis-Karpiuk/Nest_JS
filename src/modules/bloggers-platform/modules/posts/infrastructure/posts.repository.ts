@@ -34,7 +34,9 @@ export class PostsRepository {
     return blog;
   }
 
-  async deletePost(id: Types.ObjectId) {
+  async deletePost(
+    id: Types.ObjectId,
+  ): Promise<{ acknowledged: boolean; deletedCount: number }> {
     return this.PostModel.deleteOne({
       _id: id,
     });

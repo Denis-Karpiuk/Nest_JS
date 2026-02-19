@@ -34,7 +34,9 @@ export class BlogsRepository {
     return blog;
   }
 
-  async deleteBlog(id: Types.ObjectId) {
+  async deleteBlog(
+    id: Types.ObjectId,
+  ): Promise<{ acknowledged: boolean; deletedCount: number }> {
     return this.BlogModel.deleteOne({
       _id: id,
     });

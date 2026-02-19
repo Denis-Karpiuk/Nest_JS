@@ -2,7 +2,6 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateUserDto } from 'src/modules/users-accounts/dto/create-user.dto';
 import { UsersRepository } from 'src/modules/users-accounts/infrastructure/users.repository';
 import { UsersFactory } from '../../factories/users.factory';
-import { Types } from 'mongoose';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 
@@ -13,14 +12,14 @@ export class CreateUserCommand {
 @CommandHandler(CreateUserCommand)
 export class CreateUserUseCase implements ICommandHandler<
   CreateUserCommand,
-  Types.ObjectId
+  string
 > {
   constructor(
     private readonly usersFactory: UsersFactory,
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async execute(command: CreateUserCommand): Promise<Types.ObjectId> {
+  async execute(command: CreateUserCommand): Promise<string> {
     const { login, email } = command.createUserDto;
 
     await this.checkIfUserWithTheSameLoginOrEmailExists(login, 'login');
@@ -32,7 +31,7 @@ export class CreateUserUseCase implements ICommandHandler<
 
     await this.usersRepository.save(user);
 
-    return user._id;
+    return user.id;
   }
 
   private async checkIfUserWithTheSameLoginOrEmailExists(

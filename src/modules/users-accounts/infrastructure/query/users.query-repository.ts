@@ -1,24 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import type { QueryFilter, Types } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
+import { FindOptionsWhere, IsNull, Like, Repository } from 'typeorm';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users-query-params.input-dto';
 import { UserViewDto } from '../../api/view-dto/users.view-dto';
-import { User, type UserModelType } from '../../domain/user.entity';
+import { User } from '../../domain/user.entity';
 
 @Injectable()
 export class UsersQueryRepository {
   constructor(
-    @InjectModel(User.name)
-    private readonly UserModel: UserModelType,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
-  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<UserViewDto> {
-    const user = await this.UserModel.findOne({
-      _id: id,
-      deletedAt: null,
+  async getByIdOrNotFoundFail(id: string): Promise<UserViewDto> {
+    const user = await this.userRepository.findOne({
+      where: { id },
     });
 
     if (!user) {
@@ -34,30 +33,29 @@ export class UsersQueryRepository {
   async getAll(
     query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UserViewDto[]>> {
-    const filter: QueryFilter<User> = {
-      deletedAt: null,
+    const where: FindOptionsWhere<User> = {
+      deletedAt: IsNull(),
     };
-
     if (query.searchLoginTerm) {
-      filter.$or = filter.$or || [];
-      filter.$or.push({
-        login: { $regex: query.searchLoginTerm, $options: 'i' },
-      });
+      where.login = Like(`%${query.searchLoginTerm}%`);
     }
 
     if (query.searchEmailTerm) {
-      filter.$or = filter.$or || [];
-      filter.$or.push({
-        email: { $regex: query.searchEmailTerm, $options: 'i' },
-      });
+      where.email = Like(`%${query.searchEmailTerm}%`);
     }
 
-    const users = await this.UserModel.find(filter)
-      .sort({ [query.sortBy]: query.sortDirection })
-      .skip(query.calculateSkip())
-      .limit(query.pageSize);
+    const users = await this.userRepository.find({
+      where,
+      skip: query.calculateSkip(),
+      take: query.pageSize,
+      order: {
+        [query.sortBy]: query.sortDirection,
+      },
+    });
 
-    const totalCount = await this.UserModel.countDocuments(filter);
+    const totalCount = await this.userRepository.count({
+      where: { deletedAt: IsNull() },
+    });
 
     const items = users.map(UserViewDto.mapToView);
 

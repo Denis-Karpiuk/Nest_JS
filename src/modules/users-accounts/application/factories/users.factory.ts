@@ -1,22 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { CryptoService } from '../services/crypto.service';
-import {
-  User,
-  UserDocument,
-  type UserModelType,
-} from '../../domain/user.entity';
+import { User } from '../../domain/user.entity';
 import { CreateUserDto } from '../../dto/create-user.dto';
 
 @Injectable()
 export class UsersFactory {
-  constructor(
-    @InjectModel(User.name)
-    private readonly UserModel: UserModelType,
-    private readonly cryptoService: CryptoService,
-  ) {}
+  constructor(private readonly cryptoService: CryptoService) {}
 
-  async create(dto: CreateUserDto): Promise<UserDocument> {
+  async create(dto: CreateUserDto): Promise<User> {
     const passwordHash = await this.createPasswordHash(dto);
     const user = this.createUserInstance(dto, passwordHash);
 
@@ -31,11 +22,12 @@ export class UsersFactory {
   }
 
   private createUserInstance(dto: CreateUserDto, passwordHash: string) {
-    const user = this.UserModel.createInstance({
+    const user = User.createInstance({
       email: dto.email,
       login: dto.login,
       passwordHash: passwordHash,
     });
+
     return user;
   }
 }

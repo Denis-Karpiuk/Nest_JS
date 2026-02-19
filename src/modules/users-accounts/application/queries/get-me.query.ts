@@ -1,10 +1,9 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { MeViewDto } from '../../api/view-dto/users.view-dto';
 import { AuthQueryRepository } from '../../infrastructure/query/auth.query-repository';
 
 export class GetMeQuery {
-  constructor(public readonly id: Types.ObjectId) {}
+  constructor(public readonly id: string) {}
 }
 
 @QueryHandler(GetMeQuery)

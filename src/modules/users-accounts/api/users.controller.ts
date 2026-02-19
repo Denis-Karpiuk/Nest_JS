@@ -14,9 +14,7 @@ import {
 
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBasicAuth, ApiParam } from '@nestjs/swagger';
-import { Types } from 'mongoose';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
-import { ObjectIdValidationPipe } from '../../../core/pipes/object-id-validation-transformation-pipe.service';
 import { GetAllUsersQuery } from '../application/queries/get-all-users.query';
 import { GetUserByIdQuery } from '../application/queries/get-user-by-id.query';
 import { CreateUserCommand } from '../application/usecases/admin/create-user.usecase';
@@ -41,14 +39,11 @@ export class UsersController {
 
   @Post()
   async createUser(@Body() body: CreateUserInputDto): Promise<UserViewDto> {
-    const userId = await this.commandBus.execute<
-      CreateUserCommand,
-      Types.ObjectId
-    >(new CreateUserCommand(body));
-
-    return this.usersQueryRepository.getByIdOrNotFoundFail(
-      new Types.ObjectId(userId),
+    const userId = await this.commandBus.execute<CreateUserCommand, string>(
+      new CreateUserCommand(body),
     );
+
+    return this.usersQueryRepository.getByIdOrNotFoundFail(userId);
   }
 
   @Get()
@@ -65,17 +60,17 @@ export class UsersController {
   @Get(':id')
   async getById(@Param('id') id: string): Promise<UserViewDto> {
     return this.queryBus.execute<GetUserByIdQuery, UserViewDto>(
-      new GetUserByIdQuery(new Types.ObjectId(id)),
+      new GetUserByIdQuery(id),
     );
   }
 
   @Put(':id')
   async updateUser(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
+    @Param('id') id: string,
     @Body() body: UpdateUserInputDto,
   ): Promise<UserViewDto> {
-    await this.commandBus.execute<UpdateUserCommand, Types.ObjectId>(
-      new UpdateUserCommand(new Types.ObjectId(id), body),
+    await this.commandBus.execute<UpdateUserCommand, string>(
+      new UpdateUserCommand(id, body),
     );
 
     return this.usersQueryRepository.getByIdOrNotFoundFail(id);
@@ -84,9 +79,7 @@ export class UsersController {
   @ApiParam({ name: 'id' })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(
-    @Param('id', ObjectIdValidationPipe) id: Types.ObjectId,
-  ): Promise<void> {
+  async deleteUser(@Param('id') id: string): Promise<void> {
     await this.commandBus.execute<DeleteUserCommand>(new DeleteUserCommand(id));
   }
 }

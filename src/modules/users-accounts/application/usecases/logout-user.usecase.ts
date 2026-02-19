@@ -8,7 +8,7 @@ import {
   ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
 } from '../../constants/auth-tokens.inject-constants';
-import { UsersRepository } from '../../infrastructure/users.repository';
+import { UsersDevicesRepository } from '../../infrastructure/users-devices.repository';
 
 export class LogoutUserCommand {
   constructor(public readonly refreshToken: string) {}
@@ -26,7 +26,7 @@ export class LogoutUserUseCase implements ICommandHandler<
     @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private readonly refreshTokenContext: JwtService,
 
-    private readonly userRepository: UsersRepository,
+    private readonly usersDevicesRepository: UsersDevicesRepository,
   ) {}
 
   async execute({ refreshToken }: LogoutUserCommand): Promise<void> {
@@ -70,8 +70,8 @@ export class LogoutUserUseCase implements ICommandHandler<
         iat: number;
       }>(refreshToken);
 
-      const devicesByIatResult = await this.userRepository.findDevicesByIat(
-        new Types.ObjectId(id),
+      const devicesByIatResult = await this.usersDevicesRepository.findDevicesByIat(
+        id,
         iat,
       );
 
@@ -88,10 +88,7 @@ export class LogoutUserUseCase implements ICommandHandler<
         });
       }
 
-      await this.userRepository.deleteUserDevice(
-        new Types.ObjectId(id),
-        deviceId,
-      );
+      await this.usersDevicesRepository.deleteUserDevice(id, deviceId);
     } catch (error) {
       if (error instanceof DomainException) {
         throw error;

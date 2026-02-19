@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import type { Request } from 'express';
-import { Types } from 'mongoose';
 import { GetSecureDevicesQuery } from '../application/queries/get-secure-devices.query';
 import { DeleteSecurityAllDevicesCommand } from '../application/usecases/security/delete-security-all-devices';
 import { DeleteSecurityDeviceCommand } from '../application/usecases/security/delete-security-device';
@@ -32,7 +31,7 @@ export class SecurityDevicesController {
     const result = await this.queryBus.execute<
       GetSecureDevicesQuery,
       SecureDevicesViewDto
-    >(new GetSecureDevicesQuery(new Types.ObjectId(user.id)));
+    >(new GetSecureDevicesQuery(user.id));
     return result.devices;
   }
 
@@ -44,7 +43,7 @@ export class SecurityDevicesController {
     @Param('deviceId') deviceId: string,
   ) {
     return this.commandBus.execute<DeleteSecurityDeviceCommand, void>(
-      new DeleteSecurityDeviceCommand(new Types.ObjectId(user.id), deviceId),
+      new DeleteSecurityDeviceCommand(user.id, deviceId),
     );
   }
 
@@ -57,7 +56,7 @@ export class SecurityDevicesController {
   ) {
     return this.commandBus.execute<DeleteSecurityAllDevicesCommand, void>(
       new DeleteSecurityAllDevicesCommand(
-        new Types.ObjectId(user.id),
+        user.id,
         req.cookies.refreshToken as string,
       ),
     );

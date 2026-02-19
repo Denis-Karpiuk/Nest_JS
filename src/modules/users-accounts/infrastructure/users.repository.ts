@@ -1,46 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
-import { User, UserDocument, type UserModelType } from '../domain/user.entity';
-import { DeviceType } from '../domain/devices.schema';
-import { Types } from 'mongoose';
+import { User } from '../domain/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersRepository {
-  //инжектирование модели через DI
   constructor(
-    @InjectModel(User.name) private readonly UserModel: UserModelType,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
-  async findById(id: Types.ObjectId): Promise<UserDocument | null> {
-    return this.UserModel.findOne({
-      _id: id,
-      deletedAt: null,
+  async findById(id: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { id },
     });
   }
 
-  async findByConfirmationCode(
-    confirmationCode: string,
-  ): Promise<UserDocument | null> {
-    return await this.UserModel.findOne({
-      'emailConfirmation.confirmationCode': confirmationCode,
+  async findByConfirmationCode(confirmationCode: string): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { emailConfirmation: { confirmationCode } },
     });
   }
 
-  async findByRecoveryCode(recoveryCode: string): Promise<UserDocument | null> {
-    return await this.UserModel.findOne({
-      'passwordRecoveryInformation.recoveryCode': recoveryCode,
+  async findByRecoveryCode(recoveryCode: string): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { passwordRecoveryInformation: { recoveryCode } },
     });
   }
 
-  async findByEmailOrLogin(loginOrEmail: string): Promise<UserDocument | null> {
-    return this.UserModel.findOne({
-      $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
+  async findByEmailOrLogin(loginOrEmail: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: [{ email: loginOrEmail }, { login: loginOrEmail }],
     });
   }
 
-  async findOrNotFoundFail(id: Types.ObjectId): Promise<UserDocument> {
+  async findOrNotFoundFail(id: string): Promise<User> {
     const user = await this.findById(id);
 
     if (!user) {
@@ -53,107 +49,7 @@ export class UsersRepository {
     return user;
   }
 
-  async updateDevice(
-    userId: Types.ObjectId,
-    device: DeviceType,
-  ): Promise<void> {
-    await this.UserModel.updateOne(
-      {
-        _id: userId,
-        'devices.ip': device.ip,
-        'devices.title': device.title,
-      },
-      { $set: { 'devices.$': device } },
-    );
-  }
-
-  async findDeviceByIpAndName(
-    userId: Types.ObjectId,
-    ipAddress: string,
-    deviceName: string,
-  ): Promise<DeviceType | null> {
-    const [device] = await this.UserModel.aggregate<DeviceType>([
-      { $match: { _id: userId } },
-      { $unwind: '$devices' },
-      {
-        $match: {
-          'devices.ip': ipAddress,
-          'devices.title': deviceName,
-        },
-      },
-      { $replaceRoot: { newRoot: '$devices' } },
-      { $limit: 1 },
-    ]);
-
-    return device ?? null;
-  }
-  async findDeviceByDeviceId(
-    userId: Types.ObjectId,
-    deviceId: string,
-  ): Promise<DeviceType | null> {
-    const [device] = await this.UserModel.aggregate<DeviceType>([
-      { $match: { _id: userId } },
-      { $unwind: '$devices' },
-      {
-        $match: {
-          'devices.deviceId': deviceId,
-        },
-      },
-      { $replaceRoot: { newRoot: '$devices' } },
-      { $limit: 1 },
-    ]);
-
-    return device ?? null;
-  }
-
-  async findUserIdByDeviceId(deviceId: string): Promise<Types.ObjectId | null> {
-    const [doc] = await this.UserModel.aggregate<{ _id: Types.ObjectId }>([
-      { $match: { 'devices.deviceId': deviceId } },
-      { $project: { _id: 1 } },
-      { $limit: 1 },
-    ]);
-    return doc?._id ?? null;
-  }
-  async findDevicesByIat(
-    userId: Types.ObjectId,
-    iat: number,
-  ): Promise<DeviceType[] | null> {
-    const devices = await this.UserModel.aggregate<DeviceType>([
-      { $match: { _id: userId } },
-      { $unwind: '$devices' },
-      {
-        $match: {
-          'devices.iat': iat,
-        },
-      },
-      { $replaceRoot: { newRoot: '$devices' } },
-      { $limit: 1 },
-    ]);
-
-    return devices;
-  }
-
-  async deleteUserDevice(
-    userId: Types.ObjectId,
-    deviceId: string,
-  ): Promise<void> {
-    await this.UserModel.updateOne(
-      { _id: userId, 'devices.deviceId': deviceId },
-      { $pull: { devices: { deviceId } } },
-    );
-  }
-
-  async deleteAllUserDevicesExcludeCurrentDevice(
-    userId: Types.ObjectId,
-    deviceId: string,
-  ): Promise<void> {
-    await this.UserModel.updateOne(
-      { _id: userId },
-      { $pull: { devices: { deviceId: { $ne: deviceId } } } },
-    );
-  }
-
-  async save(user: UserDocument): Promise<void> {
-    await user.save();
+  async save(user: User): Promise<void> {
+    await this.userRepository.save(user);
   }
 }

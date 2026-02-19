@@ -29,7 +29,7 @@ export class AuthService {
     }
 
     return {
-      id: user._id.toString(),
+      id: user.id,
       login: user.login,
     };
   }

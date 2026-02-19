@@ -9,6 +9,7 @@ import {
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
 } from '../../constants/auth-tokens.inject-constants';
 import { UsersRepository } from '../../infrastructure/users.repository';
+import { UsersDevicesRepository } from '../../infrastructure/users-devices.repository';
 
 export type RefreshTokenCommandResult = {
   accessToken: string;
@@ -32,6 +33,7 @@ export class RefreshTokenUseCase implements ICommandHandler<
     private readonly refreshTokenContext: JwtService,
 
     private readonly userRepository: UsersRepository,
+    private readonly usersDevicesRepository: UsersDevicesRepository,
   ) {}
 
   async execute({ refreshToken }: RefreshTokenCommand): Promise<{
@@ -74,8 +76,8 @@ export class RefreshTokenUseCase implements ICommandHandler<
       }>(refreshToken);
       const { id, login, deviceId } = refreshTokenPayload;
 
-      const deviceResult = await this.userRepository.findDeviceByDeviceId(
-        new Types.ObjectId(id),
+      const deviceResult = await this.usersDevicesRepository.findDeviceByDeviceId(
+        id,
         deviceId,
       );
 
@@ -126,14 +128,13 @@ export class RefreshTokenUseCase implements ICommandHandler<
         exp: number;
       }>(newRefreshToken);
 
-      await this.userRepository.updateDevice(new Types.ObjectId(id), {
+      await this.usersDevicesRepository.updateDevice(id, {
+        ...deviceResult,
         deviceId,
         iat: newRefreshTokenInfo.iat,
         exp: newRefreshTokenInfo.exp,
         lastActiveDate: new Date(),
         userId: id,
-        ip: deviceResult.ip,
-        title: deviceResult.title,
       });
 
       return { accessToken, refreshToken: newRefreshToken };

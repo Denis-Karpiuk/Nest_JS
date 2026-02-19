@@ -1,4 +1,4 @@
-import { UserDocument } from '../../domain/user.entity';
+import { UserDevice } from '../../domain/devices.entity';
 
 export class SecureDevicesViewDto {
   devices: {
@@ -8,10 +8,10 @@ export class SecureDevicesViewDto {
     deviceId: string;
   }[];
 
-  static mapToView(user: UserDocument): SecureDevicesViewDto {
+  static mapToView(devices: UserDevice[]): SecureDevicesViewDto {
     const dto = new SecureDevicesViewDto();
 
-    dto.devices = user.devices.map((device) => ({
+    dto.devices = devices.map((device) => ({
       ip: device.ip,
       title: device.title,
       lastActiveDate: device.lastActiveDate,

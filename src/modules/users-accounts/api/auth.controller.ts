@@ -12,11 +12,16 @@ import {
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
-import { Types } from 'mongoose';
+import { GetMeQuery } from '../application/queries/get-me.query';
 import {
   LoginUserCommand,
   LoginUserCommandResult,
 } from '../application/usecases/login-user.usecase';
+import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
+import {
+  RefreshTokenCommand,
+  RefreshTokenCommandResult,
+} from '../application/usecases/refresh-token.usecase';
 import { ConfirmationRegisterUserCommand } from '../application/usecases/users/confirmation-register-user.usecase';
 import { CreateNewPasswordUserCommand } from '../application/usecases/users/create-new-password-user.usecase';
 import { PasswordRecoveryUserCommand } from '../application/usecases/users/password-recovery-user.usecase';
@@ -32,12 +37,6 @@ import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dt
 import { RegistrationConfirmationInputDto } from './input-dto/registration-confirmation.input-dto';
 import { RegistrationEmailResendingInputDto } from './input-dto/registration-email-resending.input-dto';
 import { MeViewDto } from './view-dto/users.view-dto';
-import { GetMeQuery } from '../application/queries/get-me.query';
-import {
-  RefreshTokenCommand,
-  RefreshTokenCommandResult,
-} from '../application/usecases/refresh-token.usecase';
-import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -86,14 +85,7 @@ export class AuthController {
     const { accessToken, refreshToken } = await this.commandBus.execute<
       LoginUserCommand,
       LoginUserCommandResult
-    >(
-      new LoginUserCommand(
-        new Types.ObjectId(user.id),
-        user.login,
-        deviceName,
-        String(ipAddress),
-      ),
-    );
+    >(new LoginUserCommand(user.id, user.login, deviceName, String(ipAddress)));
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -155,6 +147,6 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@ExtractUserFromRequest() user: UserContextDto): Promise<MeViewDto> {
-    return this.queryBus.execute(new GetMeQuery(new Types.ObjectId(user.id)));
+    return this.queryBus.execute(new GetMeQuery(user.id));
   }
 }

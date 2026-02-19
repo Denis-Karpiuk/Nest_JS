@@ -5,7 +5,6 @@ import {
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
 } from '../../constants/auth-tokens.inject-constants';
 import { JwtService } from '@nestjs/jwt';
-import { Types } from 'mongoose';
 import { randomUUID } from 'crypto';
 import { SecurityService } from '../services/security.service';
 
@@ -16,7 +15,7 @@ export type LoginUserCommandResult = {
 
 export class LoginUserCommand {
   constructor(
-    public readonly userId: Types.ObjectId,
+    public readonly userId: string,
     public readonly login: string,
     public readonly deviceName: string,
     public readonly ipAddress: string,
@@ -65,7 +64,7 @@ export class LoginUserUseCase implements ICommandHandler<
       title: deviceName,
       lastActiveDate: new Date(),
       deviceId,
-      userId: userId.toString(),
+      userId,
       iat: refreshTokenInfo.iat,
       exp: refreshTokenInfo.exp,
     };

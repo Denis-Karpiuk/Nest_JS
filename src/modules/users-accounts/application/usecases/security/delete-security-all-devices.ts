@@ -1,13 +1,12 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { Types } from 'mongoose';
 import { REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from 'src/modules/users-accounts/constants/auth-tokens.inject-constants';
-import { UsersRepository } from 'src/modules/users-accounts/infrastructure/users.repository';
+import { UsersDevicesRepository } from 'src/modules/users-accounts/infrastructure/users-devices.repository';
 
 export class DeleteSecurityAllDevicesCommand {
   constructor(
-    public readonly userId: Types.ObjectId,
+    public readonly userId: string,
     public readonly refreshToken: string,
   ) {}
 }
@@ -18,7 +17,7 @@ export class DeleteSecurityAllDevicesUseCase implements ICommandHandler<
   void
 > {
   constructor(
-    private readonly usersRepository: UsersRepository,
+    private readonly usersDevicesRepository: UsersDevicesRepository,
     @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private readonly refreshTokenContext: JwtService,
   ) {}
@@ -34,7 +33,7 @@ export class DeleteSecurityAllDevicesUseCase implements ICommandHandler<
 
     const { deviceId } = refreshTokenPayload;
 
-    await this.usersRepository.deleteAllUserDevicesExcludeCurrentDevice(
+    await this.usersDevicesRepository.deleteAllUserDevicesExcludeCurrentDevice(
       userId,
       deviceId,
     );
