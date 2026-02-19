@@ -31,7 +31,7 @@ import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/j
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from 'src/modules/users-accounts/guards/dto/user-context.dto';
 
-@Controller('blogs')
+@Controller('sa/blogs')
 export class BlogsController {
   constructor(
     private readonly postsExternalService: PostsExternalService,
@@ -50,13 +50,6 @@ export class BlogsController {
       GetBlogBlogsQuery,
       PaginatedViewDto<BlogViewDto[]>
     >(new GetBlogBlogsQuery(query));
-  }
-
-  @Get(':id')
-  async getBlogById(@Param('id') id: string): Promise<BlogViewDto> {
-    return this.queryBus.execute<GetBlogByIdQuery, BlogViewDto>(
-      new GetBlogByIdQuery(id),
-    );
   }
 
   @UseGuards(BasicAuthGuard)
@@ -89,17 +82,6 @@ export class BlogsController {
     );
   }
 
-  @UseGuards(BasicAuthGuard)
-  @Post(':id/posts')
-  async createPost(@Param('id') id: string, @Body() dto: CreateBlogPostDto) {
-    const postId = await this.postsExternalService.createPost({
-      blogId: id,
-      ...dto,
-    });
-
-    return this.postsExternalQueryRepository.getByIdOrNotFoundFail(postId);
-  }
-
   @UseGuards(JwtOptionalAuthGuard)
   @Get(':id/posts')
   async getPostsByBlogId(
@@ -114,5 +96,16 @@ export class BlogsController {
       query,
       user?.id,
     );
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Post(':id/posts')
+  async createPost(@Param('id') id: string, @Body() dto: CreateBlogPostDto) {
+    const postId = await this.postsExternalService.createPost({
+      blogId: id,
+      ...dto,
+    });
+
+    return this.postsExternalQueryRepository.getByIdOrNotFoundFail(postId);
   }
 }

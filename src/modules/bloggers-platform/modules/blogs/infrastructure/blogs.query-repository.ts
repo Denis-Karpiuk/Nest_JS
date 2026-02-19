@@ -1,22 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { QueryFilter, Types } from 'mongoose';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { GetBlogsQueryParamsDto } from '../api/input-dto/get-blogs-query-params.input.dto';
 import { BlogViewDto } from '../api/view-dto/blogs.view-dto';
-import { Blog, type BlogModelType } from '../domain/blog.entity';
+import { Blog } from '../domain/blog.entity';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 
 @Injectable()
 export class BlogsQueryRepository {
   constructor(
-    @InjectModel(Blog.name) private readonly BlogModel: BlogModelType,
+    @InjectRepository(Blog)
+    private readonly blogsRepository: Repository<Blog>,
   ) {}
 
-  async getByIdOrNotFoundFail(id: Types.ObjectId): Promise<BlogViewDto> {
-    const blog = await this.BlogModel.findOne({
-      _id: id,
+  async getByIdOrNotFoundFail(id: string): Promise<BlogViewDto> {
+    const blog = await this.blogsRepository.findOne({
+      where: { id },
     });
 
     if (!blog) {
@@ -38,23 +39,24 @@ export class BlogsQueryRepository {
   async getAllBlogs(
     query: GetBlogsQueryParamsDto,
   ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-    const filter: QueryFilter<Blog> = {};
+    const filter: FindOptionsWhere<Blog> = {};
 
-    if (query.searchNameTerm) {
-      filter.$or = filter.$or || [];
-      filter.$or.push({
-        name: { $regex: query.searchNameTerm, $options: 'i' },
-      });
+    const searchNameTerm = query.searchNameTerm;
+
+    if (searchNameTerm) {
+      filter.name = ILike(`%${searchNameTerm}%`);
     }
 
-    const blogs = await this.BlogModel.find(filter)
-      .sort({ [query.sortBy]: query.sortDirection })
-      .skip(query.calculateSkip())
-      .limit(query.pageSize);
+    const blogs = await this.blogsRepository.find({
+      where: filter,
+      order: { [query.sortBy]: query.sortDirection },
+      skip: query.calculateSkip(),
+      take: query.pageSize,
+    });
 
     const items = blogs.map(BlogViewDto.mapToView);
 
-    const totalCount = await this.BlogModel.countDocuments(filter);
+    const totalCount = await this.blogsRepository.count({ where: filter });
 
     return PaginatedViewDto.mapToView({
       items,

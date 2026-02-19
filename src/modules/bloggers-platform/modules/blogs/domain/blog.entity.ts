@@ -1,39 +1,41 @@
-import { HydratedDocument, Model } from 'mongoose';
-import { CreateBlogDomainDto } from './dto/create-blog.domain.dto';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { UpdateBlogDto } from '../dto/create-blog.dto';
+import { CreateBlogDomainDto } from './dto/create-blog.domain.dto';
 
-const WEB_SITE_REG_EXP =
-  /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/;
-
-@Schema({ timestamps: true })
+@Entity()
 export class Blog {
-  @Prop({ type: String, max: 15, required: true })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
   name: string;
 
-  @Prop({ type: String, max: 500, required: true })
+  @Column()
   description: string;
 
-  @Prop({
-    type: String,
-    max: 100,
-    match: WEB_SITE_REG_EXP,
-    required: true,
-  })
+  @Column()
   websiteUrl: string;
 
-  @Prop({ type: Boolean, required: true, default: true })
+  @Column()
   isMembership: boolean;
 
+  @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
   updatedAt: Date;
 
-  get id() {
-    // @ts-ignore
-    return this._id.toString();
-  }
+  @DeleteDateColumn()
+  deletedAt: Date;
 
-  static createInstance(dto: CreateBlogDomainDto): BlogDocument {
+  static createInstance(dto: CreateBlogDomainDto): Blog {
     const blog = new this();
 
     blog.name = dto.name;
@@ -41,23 +43,12 @@ export class Blog {
     blog.websiteUrl = dto.websiteUrl;
     blog.isMembership = false;
 
-    return blog as BlogDocument;
+    return blog;
   }
 
   update(dto: UpdateBlogDto) {
     this.name = dto.name;
     this.description = dto.description;
-    this.websiteUrl;
+    this.websiteUrl = dto.websiteUrl;
   }
 }
-
-export const BlogSchema = SchemaFactory.createForClass(Blog);
-
-//регистрирует методы сущности в схеме
-BlogSchema.loadClass(Blog);
-
-//Типизация документа
-export type BlogDocument = HydratedDocument<Blog>;
-
-//Типизация модели + статические методы
-export type BlogModelType = Model<BlogDocument> & typeof Blog;

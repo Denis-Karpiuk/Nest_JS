@@ -1,9 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
-import { Types } from 'mongoose';
 
 export class DeleteBlogCommand {
-  constructor(public readonly blogId: Types.ObjectId) {}
+  constructor(public readonly blogId: string) {}
 }
 
 @CommandHandler(DeleteBlogCommand)

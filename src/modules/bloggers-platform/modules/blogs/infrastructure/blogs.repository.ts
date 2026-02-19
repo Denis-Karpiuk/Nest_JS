@@ -1,21 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
-import { Blog, BlogDocument, type BlogModelType } from '../domain/blog.entity';
+import { Blog } from '../domain/blog.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class BlogsRepository {
-  constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
+  constructor(
+    @InjectRepository(Blog)
+    private readonly blogsRepository: Repository<Blog>,
+  ) {}
 
-  async findById(id: Types.ObjectId): Promise<BlogDocument | null> {
-    return this.BlogModel.findOne({
-      _id: id,
-    });
+  async findById(id: string): Promise<Blog | null> {
+    return this.blogsRepository.findOne({ where: { id } });
   }
 
-  async findOrNotFoundFail(id: Types.ObjectId): Promise<BlogDocument> {
+  async findOrNotFoundFail(id: string): Promise<Blog> {
     const blog = await this.findById(id);
 
     if (!blog) {
@@ -35,14 +36,16 @@ export class BlogsRepository {
   }
 
   async deleteBlog(
-    id: Types.ObjectId,
+    id: string,
   ): Promise<{ acknowledged: boolean; deletedCount: number }> {
-    return this.BlogModel.deleteOne({
-      _id: id,
-    });
+    const result = await this.blogsRepository.delete({ id });
+    return {
+      acknowledged: true,
+      deletedCount: result.affected ?? 0,
+    };
   }
 
-  async save(blog: BlogDocument) {
-    await blog.save();
+  async save(blog: Blog) {
+    await this.blogsRepository.save(blog);
   }
 }

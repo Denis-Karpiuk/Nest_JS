@@ -1,9 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Types } from 'mongoose';
 import { BlogsQueryRepository } from '../../infrastructure/blogs.query-repository';
 
 export class GetBlogByIdQuery {
-  constructor(public id: Types.ObjectId) {}
+  constructor(public id: string) {}
 }
 
 @QueryHandler(GetBlogByIdQuery)
