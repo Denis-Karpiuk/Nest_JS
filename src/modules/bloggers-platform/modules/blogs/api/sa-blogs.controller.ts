@@ -27,6 +27,8 @@ import { GetBlogByIdQuery } from '../application/queries/get-blog-by-id';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
 import { GetBlogBlogsQuery } from '../application/queries/get-blogs';
+import { UpdatePostCommand } from '../../posts/application/usecases/update-post.usecase';
+import { DeletePostCommand } from '../../posts/application/usecases/delete-post.usecase';
 import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
 import { UserContextDto } from 'src/modules/users-accounts/guards/dto/user-context.dto';
@@ -42,6 +44,7 @@ export class SaBlogsController {
     private readonly commandBus: CommandBus,
   ) {}
 
+  @UseGuards(BasicAuthGuard)
   @Get()
   async getAllBlogs(
     @Query() query: GetBlogsQueryParamsDto,
@@ -107,5 +110,30 @@ export class SaBlogsController {
     });
 
     return this.postsExternalQueryRepository.getByIdOrNotFoundFail(postId);
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Put(':id/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updatePost(
+    @Param('id') blogId: string,
+    @Param('postId') postId: string,
+    @Body() dto: CreateBlogPostDto,
+  ) {
+    return this.commandBus.execute<UpdatePostCommand, string>(
+      new UpdatePostCommand(postId, { ...dto, blogId }),
+    );
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Delete(':id/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePost(
+    @Param('id') _blogId: string,
+    @Param('postId') postId: string,
+  ): Promise<void> {
+    return this.commandBus.execute<DeletePostCommand, void>(
+      new DeletePostCommand(postId),
+    );
   }
 }
