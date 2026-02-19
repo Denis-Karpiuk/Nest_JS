@@ -47,6 +47,7 @@ export class PostsExternalQueryRepository {
 
     const sortOrder = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
     const posts = await this.postsRepository.findPaginated({
+      blogId,
       order: { [query.sortBy]: sortOrder },
       skip: query.calculateSkip(),
       take: query.pageSize,

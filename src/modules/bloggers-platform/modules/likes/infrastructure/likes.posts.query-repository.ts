@@ -20,6 +20,7 @@ export class LikesPostsQueryRepository {
         entityType: EntityType.Post,
         likeStatus: LikeStatusEnum.Like,
       },
+      order: { createdAt: 'DESC' },
       take: 3,
       skip: 0,
     });

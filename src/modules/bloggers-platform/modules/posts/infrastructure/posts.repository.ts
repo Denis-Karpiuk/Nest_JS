@@ -57,8 +57,10 @@ export class PostsRepository {
     order: Record<string, 'ASC' | 'DESC'>;
     skip: number;
     take: number;
+    blogId?: string;
   }): Promise<Post[]> {
     return this.postsRepository.find({
+      where: options.blogId ? { blogId: options.blogId } : undefined,
       order: options.order,
       skip: options.skip,
       take: options.take,
@@ -70,7 +72,6 @@ export class PostsRepository {
   }
 
   async countPostsByBlogId(blogId: string): Promise<number> {
-    return this.postsRepository.count({ where: { blogId } });
     return this.postsRepository.count({ where: { blogId } });
   }
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
+import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { UsersExternalQueryRepository } from 'src/modules/users-accounts/infrastructure/external-query/users.external-query-repository';
@@ -51,8 +52,14 @@ export class CommentsExternalQueryRepository {
     query: GetCommentsQueryParamsDto,
     userId?: string,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
+    const sortOrder =
+      query.sortDirection === SortDirection.Asc ? 'ASC' : 'DESC';
+
     const comments = await this.commentsRepository.find({
       where: { postId },
+      order: { createdAt: sortOrder },
+      skip: query.calculateSkip(),
+      take: query.pageSize,
     });
 
     const items = await Promise.all(
