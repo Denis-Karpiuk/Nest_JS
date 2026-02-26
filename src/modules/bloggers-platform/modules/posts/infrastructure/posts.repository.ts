@@ -13,7 +13,11 @@ export class PostsRepository {
   ) {}
 
   async findById(id: string): Promise<Post | null> {
-    return this.postsRepository.findOne({ where: { id } });
+    return this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.blog', 'blog')
+      .where('post.id = :id', { id })
+      .getOne();
   }
 
   async findOrNotFoundFail(id: string): Promise<Post> {
@@ -60,18 +64,19 @@ export class PostsRepository {
     blogId?: string;
   }): Promise<Post[]> {
     return this.postsRepository.find({
-      where: options.blogId ? { blogId: options.blogId } : undefined,
+      where: options.blogId ? { blog: { id: options.blogId } } : undefined,
       order: options.order,
       skip: options.skip,
       take: options.take,
+      relations: ['blog'],
     });
   }
 
   async findAll(): Promise<Post[]> {
-    return this.postsRepository.find();
+    return this.postsRepository.find({ relations: ['blog'] });
   }
 
   async countPostsByBlogId(blogId: string): Promise<number> {
-    return this.postsRepository.count({ where: { blogId } });
+    return this.postsRepository.count({ where: { blog: { id: blogId } } });
   }
 }

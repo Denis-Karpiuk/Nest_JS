@@ -25,7 +25,9 @@ export class GetPostByIdQueryHandler implements IQueryHandler<GetPostByIdQuery> 
     );
 
     const blogName =
-      await this.blogsExternalQueryRepository.getBlogNameByBlogId(post.blogId);
+      await this.blogsExternalQueryRepository.getBlogNameByBlogId(
+        post.blog?.id ?? '',
+      );
 
     const extendedLikesInfo =
       await this.likesPostsQueryRepository.getPostsLikesInfo(

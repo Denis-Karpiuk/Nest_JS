@@ -32,7 +32,9 @@ export class PostsExternalQueryRepository {
       });
     }
     const blogName =
-      await this.blogsExternalQueryRepository.getBlogNameByBlogId(post.blogId);
+      await this.blogsExternalQueryRepository.getBlogNameByBlogId(
+        post.blog?.id ?? '',
+      );
 
     return PostsExternalViewDto.mapToView(post, blogName);
   }

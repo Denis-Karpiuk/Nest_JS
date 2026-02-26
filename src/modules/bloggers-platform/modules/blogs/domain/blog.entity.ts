@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UpdateBlogDto } from '../dto/create-blog.dto';
 import { CreateBlogDomainDto } from './dto/create-blog.domain.dto';
+import { Post } from '../../posts/domain/post.entity';
 
 @Entity()
 export class Blog {
@@ -34,6 +36,9 @@ export class Blog {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @OneToMany(() => Post, (post) => post.blog)
+  posts: Post[];
 
   static createInstance(dto: CreateBlogDomainDto): Blog {
     const blog = new this();

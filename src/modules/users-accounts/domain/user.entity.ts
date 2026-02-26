@@ -74,8 +74,6 @@ export class User {
       expirationDate: null,
     };
 
-    user.devices = [];
-
     return user;
   }
 

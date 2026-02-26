@@ -5,9 +5,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Blog } from '../../blogs/domain/blog.entity';
 
 @Entity()
 export class Post {
@@ -23,8 +25,8 @@ export class Post {
   @Column()
   content: string;
 
-  @Column()
-  blogId: string;
+  @ManyToOne(() => Blog, (blog) => blog.posts, { onDelete: 'CASCADE' })
+  blog: Blog;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -38,7 +40,7 @@ export class Post {
     post.title = dto.title;
     post.shortDescription = dto.shortDescription;
     post.content = dto.content;
-    post.blogId = dto.blogId;
+    post.blog = { id: dto.blogId } as Blog;
 
     return post;
   }
@@ -47,6 +49,6 @@ export class Post {
     this.title = dto.title;
     this.shortDescription = dto.shortDescription;
     this.content = dto.content;
-    this.blogId = dto.blogId;
+    this.blog = { id: dto.blogId } as Blog;
   }
 }

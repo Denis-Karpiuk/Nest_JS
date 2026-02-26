@@ -36,7 +36,7 @@ export class PostsViewDto {
     dto.title = post.title;
     dto.shortDescription = post.shortDescription;
     dto.content = post.content;
-    dto.blogId = post.blogId;
+    dto.blogId = post.blog?.id ?? '';
     dto.createdAt = post.createdAt;
     dto.blogName = blogName || '';
 

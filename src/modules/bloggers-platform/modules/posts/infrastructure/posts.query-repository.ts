@@ -54,7 +54,7 @@ export class PostsQueryRepository {
         allPosts.map(async (post) => {
           const blogName =
             await this.blogsExternalQueryRepository.getBlogNameByBlogId(
-              post.blogId,
+              post.blog?.id ?? '',
             );
           return {
             post,
@@ -105,7 +105,7 @@ export class PostsQueryRepository {
       posts.map(async (post) => {
         const blogName =
           await this.blogsExternalQueryRepository.getBlogNameByBlogId(
-            post.blogId,
+            post.blog?.id ?? '',
           );
         const extendedLikesInfo =
           await this.likesPostsQueryRepository.getPostsLikesInfo(
