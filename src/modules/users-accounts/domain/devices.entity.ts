@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from './user.entity';
 
 @Entity()
 export class UserDevice {
@@ -17,8 +24,9 @@ export class UserDevice {
   @Column()
   deviceId: string;
 
-  @Column()
-  userId: string;
+  @ManyToOne(() => User, (user) => user.devices, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @Column()
   iat: number;

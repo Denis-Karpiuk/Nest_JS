@@ -1,13 +1,13 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { Types } from 'mongoose';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import {
   ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
 } from '../../constants/auth-tokens.inject-constants';
+import { UserDevice } from '../../domain/devices.entity';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UsersDevicesRepository } from '../../infrastructure/users-devices.repository';
 
@@ -134,8 +134,8 @@ export class RefreshTokenUseCase implements ICommandHandler<
         iat: newRefreshTokenInfo.iat,
         exp: newRefreshTokenInfo.exp,
         lastActiveDate: new Date(),
-        userId: id,
-      });
+        user: { id },
+      } as UserDevice);
 
       return { accessToken, refreshToken: newRefreshToken };
     } catch (error) {

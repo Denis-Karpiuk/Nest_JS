@@ -12,14 +12,15 @@ export class UsersDevicesRepository {
 
   async findDevicesByUserId(userId: string): Promise<UserDevice[] | null> {
     return this.deviceRepository.find({
-      where: { userId },
+      where: { user: { id: userId } },
     });
   }
 
   async updateDevice(userId: string, device: UserDevice): Promise<void> {
+    const userRef = { id: userId };
     const existing = await this.deviceRepository.findOne({
       where: {
-        userId,
+        user: userRef,
         ip: device.ip,
         title: device.title,
       },
@@ -34,7 +35,7 @@ export class UsersDevicesRepository {
     } else {
       await this.deviceRepository.save({
         ...device,
-        userId,
+        user: device.user ?? userRef,
       });
     }
   }
@@ -46,7 +47,7 @@ export class UsersDevicesRepository {
   ): Promise<UserDevice | null> {
     return this.deviceRepository.findOne({
       where: {
-        userId,
+        user: { id: userId },
         ip: ipAddress,
         title: deviceName,
       },
@@ -59,7 +60,7 @@ export class UsersDevicesRepository {
   ): Promise<UserDevice | null> {
     return this.deviceRepository.findOne({
       where: {
-        userId,
+        user: { id: userId },
         deviceId,
       },
     });
@@ -68,9 +69,10 @@ export class UsersDevicesRepository {
   async findUserIdByDeviceId(deviceId: string): Promise<string | null> {
     const device = await this.deviceRepository.findOne({
       where: { deviceId },
-      select: ['userId'],
+      relations: ['user'],
+      select: { user: { id: true } },
     });
-    return device?.userId ?? null;
+    return device?.user?.id ?? null;
   }
 
   async findDevicesByIat(
@@ -79,7 +81,7 @@ export class UsersDevicesRepository {
   ): Promise<UserDevice[] | null> {
     const devices = await this.deviceRepository.find({
       where: {
-        userId,
+        user: { id: userId },
         iat,
       },
     });
@@ -87,7 +89,10 @@ export class UsersDevicesRepository {
   }
 
   async deleteUserDevice(userId: string, deviceId: string): Promise<void> {
-    await this.deviceRepository.delete({ userId, deviceId });
+    await this.deviceRepository.delete({
+      user: { id: userId },
+      deviceId,
+    });
   }
 
   async deleteAllUserDevicesExcludeCurrentDevice(
@@ -95,7 +100,7 @@ export class UsersDevicesRepository {
     deviceId: string,
   ): Promise<void> {
     await this.deviceRepository.delete({
-      userId,
+      user: { id: userId },
       deviceId: Not(deviceId),
     });
   }

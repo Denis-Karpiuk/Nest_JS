@@ -51,7 +51,7 @@ export class User {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @OneToMany(() => UserDevice, (device) => device.userId)
+  @OneToMany(() => UserDevice, (device) => device.user)
   devices: UserDevice[];
 
   static createInstance(dto: CreateUserDomainDto): User {

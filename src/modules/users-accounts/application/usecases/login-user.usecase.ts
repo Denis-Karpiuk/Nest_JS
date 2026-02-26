@@ -6,6 +6,7 @@ import {
 } from '../../constants/auth-tokens.inject-constants';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
+import { DeviceType } from '../../domain/devices.entity';
 import { SecurityService } from '../services/security.service';
 
 export type LoginUserCommandResult = {
@@ -64,7 +65,7 @@ export class LoginUserUseCase implements ICommandHandler<
       title: deviceName,
       lastActiveDate: new Date(),
       deviceId,
-      userId,
+      user: { id: userId },
       iat: refreshTokenInfo.iat,
       exp: refreshTokenInfo.exp,
     };
@@ -76,9 +77,9 @@ export class LoginUserUseCase implements ICommandHandler<
     );
 
     if (existingDevice) {
-      await this.securityService.updateUserDevice(userId, device);
+      await this.securityService.updateUserDevice(userId, device as DeviceType);
     } else {
-      await this.securityService.addUserDevice(userId, device);
+      await this.securityService.addUserDevice(userId, device as DeviceType);
     }
 
     return { accessToken, refreshToken };

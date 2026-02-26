@@ -14,14 +14,14 @@ export class SecurityService {
     await this.usersRepository.findOrNotFoundFail(userId);
     await this.usersDevicesRepository.save({
       ...device,
-      userId,
+      user: { id: userId },
     } as UserDevice);
   }
 
   async updateUserDevice(userId: string, device: DeviceType): Promise<void> {
     await this.usersDevicesRepository.updateDevice(userId, {
       ...device,
-      userId,
+      user: { id: userId },
     } as UserDevice);
   }
 
