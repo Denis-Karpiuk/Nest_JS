@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like } from '../domain/like.entity';
-import { EntityType } from '../domain/dto/entity-type.enum';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -10,31 +9,43 @@ export class LikesRepository {
     @InjectRepository(Like) private readonly likesRepository: Repository<Like>,
   ) {}
 
-  async findAllByEntityIdAndType(
-    entityId: string,
-    entityType: EntityType,
-  ): Promise<Like[]> {
+  async findAllByPostId(postId: string): Promise<Like[]> {
     return this.likesRepository.find({
-      where: { entityId, entityType },
-      order: { createdAt: -1 },
+      where: { post: { id: postId } },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findAllByCommentId(commentId: string): Promise<Like[]> {
+    return this.likesRepository.find({
+      where: { comment: { id: commentId } },
+      order: { createdAt: 'DESC' },
     });
   }
 
   async findAllPostsLikes(postId: string): Promise<Like[]> {
-    return this.findAllByEntityIdAndType(postId, EntityType.Post);
+    return this.findAllByPostId(postId);
   }
 
   async findById(id: string): Promise<Like | null> {
     return this.likesRepository.findOne({ where: { id } });
   }
 
-  async findByEntityAndUser(
-    entityId: string,
-    entityType: EntityType,
+  async findByPostAndUser(
+    postId: string,
     userId: string,
   ): Promise<Like | null> {
     return this.likesRepository.findOne({
-      where: { entityId, entityType, userId },
+      where: { post: { id: postId }, user: { id: userId } },
+    });
+  }
+
+  async findByCommentAndUser(
+    commentId: string,
+    userId: string,
+  ): Promise<Like | null> {
+    return this.likesRepository.findOne({
+      where: { comment: { id: commentId }, user: { id: userId } },
     });
   }
 

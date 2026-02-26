@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { EntityType } from '../domain/dto/entity-type.enum';
 import { LikeStatusEnum } from '../domain/dto/like-status-enum';
 import { Like } from '../domain/like.entity';
 import { Repository } from 'typeorm';
@@ -14,16 +13,14 @@ export class LikesCommentsQueryRepository {
   async getCommentsLikesInfo(commentId: string, userId?: string) {
     const likesCount = await this.likesRepository.count({
       where: {
-        entityId: commentId,
-        entityType: EntityType.Comment,
+        comment: { id: commentId },
         likeStatus: LikeStatusEnum.Like,
       },
     });
 
     const dislikesCount = await this.likesRepository.count({
       where: {
-        entityId: commentId,
-        entityType: EntityType.Comment,
+        comment: { id: commentId },
         likeStatus: LikeStatusEnum.Dislike,
       },
     });
@@ -36,7 +33,10 @@ export class LikesCommentsQueryRepository {
 
     if (userId) {
       const userLikeStatus = await this.likesRepository.findOne({
-        where: { entityId: commentId, entityType: EntityType.Comment, userId },
+        where: {
+          comment: { id: commentId },
+          user: { id: userId },
+        },
       });
 
       if (userLikeStatus) {
@@ -50,8 +50,7 @@ export class LikesCommentsQueryRepository {
   private async getCommentsLikesCount(commentId: string) {
     return await this.likesRepository.count({
       where: {
-        entityId: commentId,
-        entityType: EntityType.Comment,
+        comment: { id: commentId },
         likeStatus: LikeStatusEnum.Like,
       },
     });
@@ -60,8 +59,7 @@ export class LikesCommentsQueryRepository {
   private async getCommentsDislikesCount(commentId: string) {
     return await this.likesRepository.count({
       where: {
-        entityId: commentId,
-        entityType: EntityType.Comment,
+        comment: { id: commentId },
         likeStatus: LikeStatusEnum.Dislike,
       },
     });
@@ -72,7 +70,10 @@ export class LikesCommentsQueryRepository {
     userId: string,
   ): Promise<Like | null> {
     return this.likesRepository.findOne({
-      where: { entityId: commentId, entityType: EntityType.Comment, userId },
+      where: {
+        comment: { id: commentId },
+        user: { id: userId },
+      },
     });
   }
 }

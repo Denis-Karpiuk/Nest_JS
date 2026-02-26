@@ -13,6 +13,7 @@ import {
 import { Blog } from '../../blogs/domain/blog.entity';
 
 import { Comment } from '../../comments/domain/comment.entity';
+import type { Like } from '../../likes/domain/like.entity';
 
 @Entity()
 export class Post {
@@ -39,6 +40,9 @@ export class Post {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
+
+  @OneToMany('Like', (like: Like) => like.post)
+  likes: Like[];
 
   static createInstance(dto: CreatePostDomainDto): Post {
     const post = new this();

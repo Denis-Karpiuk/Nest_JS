@@ -13,6 +13,7 @@ import { EmailConfirmation } from './email-confirmation.schema';
 import { PasswordRecoveryInformation } from './password-recovery.schema';
 import { UserDevice } from './devices.entity';
 import { Comment } from 'src/modules/bloggers-platform/modules/comments/domain/comment.entity';
+import { Like } from 'src/modules/bloggers-platform/modules/likes/domain/like.entity';
 
 @Entity()
 export class User {
@@ -57,6 +58,9 @@ export class User {
 
   @OneToMany(() => Comment, (comment) => comment.commentator)
   comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
 
   static createInstance(dto: CreateUserDomainDto): User {
     const user = new this();

@@ -3,12 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Post } from '../../posts/domain/post.entity';
 import { CreateCommentDomainDto } from './dto/create-comment.domain.dto';
 import { User } from 'src/modules/users-accounts/domain/user.entity';
+import type { Like } from '../../likes/domain/like.entity';
 
 @Entity()
 export class Comment {
@@ -29,6 +31,9 @@ export class Comment {
 
   @ManyToOne(() => User, (user) => user.comments, { onDelete: 'CASCADE' })
   commentator: User;
+
+  @OneToMany('Like', (like: Like) => like.comment)
+  likes: Like[];
 
   static createInstance(dto: CreateCommentDomainDto): Comment {
     const comment = new this();

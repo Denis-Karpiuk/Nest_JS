@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like } from '../../domain/like.entity';
-import { EntityType } from '../../domain/dto/entity-type.enum';
 import { LikeStatusEnum } from '../../domain/dto/like-status-enum';
 import { Repository } from 'typeorm';
 
@@ -26,9 +25,8 @@ export class AddCommentLikeUseCase implements ICommandHandler<
   async execute(command: AddCommentLikeStatusCommand): Promise<void> {
     const existingLike = await this.likesRepository.findOne({
       where: {
-        entityId: command.commentId,
-        entityType: EntityType.Comment,
-        userId: command.userId,
+        comment: { id: command.commentId },
+        user: { id: command.userId },
       },
     });
 
@@ -39,8 +37,7 @@ export class AddCommentLikeUseCase implements ICommandHandler<
 
     if (!existingLike) {
       const like = Like.createInstance({
-        entityId: command.commentId,
-        entityType: EntityType.Comment,
+        commentId: command.commentId,
         likeStatus: command.likeStatus,
         userId: command.userId,
       });
