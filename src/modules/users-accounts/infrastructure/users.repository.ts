@@ -41,9 +41,13 @@ export class UsersRepository {
   }
 
   async findByEmailOrLogin(loginOrEmail: string): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: [{ email: loginOrEmail }, { login: loginOrEmail }],
-    });
+    return this.userRepository
+      .createQueryBuilder('user')
+      .where('user.email = :loginOrEmail', {
+        loginOrEmail,
+      })
+      .orWhere('user.login = :loginOrEmail', { loginOrEmail })
+      .getOne();
   }
 
   async findOrNotFoundFail(id: string): Promise<User> {
