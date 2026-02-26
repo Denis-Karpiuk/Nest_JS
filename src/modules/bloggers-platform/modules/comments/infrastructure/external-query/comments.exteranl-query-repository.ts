@@ -21,7 +21,10 @@ export class CommentsExternalQueryRepository {
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<CommentViewDto> {
-    const comment = await this.commentsRepository.findOne({ where: { id } });
+    const comment = await this.commentsRepository.findOne({
+      where: { id },
+      relations: ['post'],
+    });
 
     if (!comment) {
       throw new DomainException({
@@ -56,10 +59,11 @@ export class CommentsExternalQueryRepository {
       query.sortDirection === SortDirection.Asc ? 'ASC' : 'DESC';
 
     const comments = await this.commentsRepository.find({
-      where: { postId },
+      where: { post: { id: postId } },
       order: { createdAt: sortOrder },
       skip: query.calculateSkip(),
       take: query.pageSize,
+      relations: ['post'],
     });
 
     const items = await Promise.all(
@@ -81,7 +85,7 @@ export class CommentsExternalQueryRepository {
     );
 
     const totalCount = await this.commentsRepository.count({
-      where: { postId },
+      where: { post: { id: postId } },
     });
 
     return PaginatedViewDto.mapToView({

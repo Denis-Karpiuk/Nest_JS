@@ -1,6 +1,13 @@
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Post } from '../../posts/domain/post.entity';
 import { CreateCommentDomainDto } from './dto/create-comment.domain.dto';
-import { Column, CreateDateColumn, Entity, UpdateDateColumn } from 'typeorm';
-import { PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Comment {
@@ -11,19 +18,21 @@ export class Comment {
   content: string;
 
   @Column()
-  postId: string;
-
-  @Column()
   commentatorId: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
+  updatedAt: Date;
+
+  @ManyToOne(() => Post, (post) => post.comments, { onDelete: 'CASCADE' })
+  post: Post;
+
   static createInstance(dto: CreateCommentDomainDto): Comment {
     const comment = new this();
 
-    comment.postId = dto.postId;
+    comment.post = { id: dto.postId } as Post;
     comment.content = dto.content;
     comment.commentatorId = dto.commentatorId;
 

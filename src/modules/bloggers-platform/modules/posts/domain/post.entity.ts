@@ -6,10 +6,13 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Blog } from '../../blogs/domain/blog.entity';
+
+import { Comment } from '../../comments/domain/comment.entity';
 
 @Entity()
 export class Post {
@@ -33,6 +36,9 @@ export class Post {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[];
 
   static createInstance(dto: CreatePostDomainDto): Post {
     const post = new this();
