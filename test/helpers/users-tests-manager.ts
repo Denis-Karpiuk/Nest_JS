@@ -9,12 +9,12 @@ import { CreateUserInputDto } from 'src/modules/users-accounts/api/input-dto/cre
 import { UpdateUserInputDto } from 'src/modules/users-accounts/api/input-dto/update-user.input-dto';
 import { delay } from './delay';
 import { UsersRepository } from 'src/modules/users-accounts/infrastructure/users.repository';
-import { UserDocument } from 'src/modules/users-accounts/domain/user.entity';
+import { User } from 'src/modules/users-accounts/domain/user.entity';
 
 export class UsersTestManager {
   constructor(private readonly app: INestApplication) {}
 
-  async findByEmailOrLogin(emailOrLogin: string): Promise<UserDocument | null> {
+  async findByEmailOrLogin(emailOrLogin: string): Promise<User | null> {
     const usersRepository = this.app.get(UsersRepository);
     return usersRepository.findByEmailOrLogin(emailOrLogin);
   }

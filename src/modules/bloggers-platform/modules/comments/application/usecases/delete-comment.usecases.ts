@@ -19,7 +19,7 @@ export class DeleteCommentUseCase implements ICommandHandler<DeleteCommentComman
       command.commentId,
     );
 
-    if (comment.commentatorId !== command.userId) {
+    if (comment.commentator?.id !== command.userId) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         message: 'You are not allowed to delete this comment',

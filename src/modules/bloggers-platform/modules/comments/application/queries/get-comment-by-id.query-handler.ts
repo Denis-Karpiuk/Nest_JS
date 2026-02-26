@@ -30,7 +30,7 @@ export class GetCommentByIdQueryHandler implements IQueryHandler<GetCommentByIdQ
         query.userId,
       ),
       this.usersExternalQueryRepository.getByIdOrNotFoundFail(
-        comment.commentatorId,
+        comment.commentator?.id ?? '',
       ),
     ]);
 

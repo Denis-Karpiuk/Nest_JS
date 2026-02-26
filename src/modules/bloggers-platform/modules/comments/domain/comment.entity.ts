@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Post } from '../../posts/domain/post.entity';
 import { CreateCommentDomainDto } from './dto/create-comment.domain.dto';
+import { User } from 'src/modules/users-accounts/domain/user.entity';
 
 @Entity()
 export class Comment {
@@ -16,9 +17,6 @@ export class Comment {
 
   @Column()
   content: string;
-
-  @Column()
-  commentatorId: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -29,12 +27,15 @@ export class Comment {
   @ManyToOne(() => Post, (post) => post.comments, { onDelete: 'CASCADE' })
   post: Post;
 
+  @ManyToOne(() => User, (user) => user.comments, { onDelete: 'CASCADE' })
+  commentator: User;
+
   static createInstance(dto: CreateCommentDomainDto): Comment {
     const comment = new this();
 
     comment.post = { id: dto.postId } as Post;
     comment.content = dto.content;
-    comment.commentatorId = dto.commentatorId;
+    comment.commentator = { id: dto.commentatorId } as User;
 
     return comment;
   }

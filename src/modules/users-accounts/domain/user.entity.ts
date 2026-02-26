@@ -12,6 +12,7 @@ import { CreateUserDomainDto } from './dto/create-user.domain.dto';
 import { EmailConfirmation } from './email-confirmation.schema';
 import { PasswordRecoveryInformation } from './password-recovery.schema';
 import { UserDevice } from './devices.entity';
+import { Comment } from 'src/modules/bloggers-platform/modules/comments/domain/comment.entity';
 
 @Entity()
 export class User {
@@ -53,6 +54,9 @@ export class User {
 
   @OneToMany(() => UserDevice, (device) => device.user)
   devices: UserDevice[];
+
+  @OneToMany(() => Comment, (comment) => comment.commentator)
+  comments: Comment[];
 
   static createInstance(dto: CreateUserDomainDto): User {
     const user = new this();

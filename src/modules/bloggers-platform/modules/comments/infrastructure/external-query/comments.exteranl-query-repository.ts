@@ -23,7 +23,7 @@ export class CommentsExternalQueryRepository {
   async getByIdOrNotFoundFail(id: string): Promise<CommentViewDto> {
     const comment = await this.commentsRepository.findOne({
       where: { id },
-      relations: ['post'],
+      relations: ['post', 'commentator'],
     });
 
     if (!comment) {
@@ -41,7 +41,7 @@ export class CommentsExternalQueryRepository {
 
     const commentator =
       await this.usersExternalQueryRepository.getByIdOrNotFoundFail(
-        comment.commentatorId,
+        comment.commentator?.id ?? '',
       );
 
     return CommentViewDto.mapToView(comment, undefined, {
@@ -63,7 +63,7 @@ export class CommentsExternalQueryRepository {
       order: { createdAt: sortOrder },
       skip: query.calculateSkip(),
       take: query.pageSize,
-      relations: ['post'],
+      relations: ['post', 'commentator'],
     });
 
     const items = await Promise.all(
@@ -74,7 +74,7 @@ export class CommentsExternalQueryRepository {
             userId,
           ),
           this.usersExternalQueryRepository.getByIdOrNotFoundFail(
-            comment.commentatorId,
+            comment.commentator?.id ?? '',
           ),
         ]);
         return CommentViewDto.mapToView(comment, likesInfo, {

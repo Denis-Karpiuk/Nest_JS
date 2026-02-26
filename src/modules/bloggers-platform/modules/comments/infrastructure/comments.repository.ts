@@ -13,7 +13,10 @@ export class CommentsRepository {
   ) {}
 
   async findById(id: string): Promise<Comment | null> {
-    return this.commentsRepository.findOne({ where: { id } });
+    return this.commentsRepository.findOne({
+      where: { id },
+      relations: ['commentator'],
+    });
   }
 
   async findOrNotFoundFail(id: string): Promise<Comment> {
