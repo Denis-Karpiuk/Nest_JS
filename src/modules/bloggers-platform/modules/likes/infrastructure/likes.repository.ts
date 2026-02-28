@@ -10,17 +10,19 @@ export class LikesRepository {
   ) {}
 
   async findAllByPostId(postId: string): Promise<Like[]> {
-    return this.likesRepository.find({
-      where: { post: { id: postId } },
-      order: { createdAt: 'DESC' },
-    });
+    return this.likesRepository
+      .createQueryBuilder('l')
+      .where('l.post.id = :postId', { postId })
+      .orderBy('l.createdAt', 'DESC')
+      .getMany();
   }
 
   async findAllByCommentId(commentId: string): Promise<Like[]> {
-    return this.likesRepository.find({
-      where: { comment: { id: commentId } },
-      order: { createdAt: 'DESC' },
-    });
+    return this.likesRepository
+      .createQueryBuilder('l')
+      .where('l.comment.id = :commentId', { commentId })
+      .orderBy('l.createdAt', 'DESC')
+      .getMany();
   }
 
   async findAllPostsLikes(postId: string): Promise<Like[]> {
@@ -28,25 +30,32 @@ export class LikesRepository {
   }
 
   async findById(id: string): Promise<Like | null> {
-    return this.likesRepository.findOne({ where: { id } });
+    return this.likesRepository
+      .createQueryBuilder('l')
+      .where('l.id = :id', { id })
+      .getOne();
   }
 
   async findByPostAndUser(
     postId: string,
     userId: string,
   ): Promise<Like | null> {
-    return this.likesRepository.findOne({
-      where: { post: { id: postId }, user: { id: userId } },
-    });
+    return this.likesRepository
+      .createQueryBuilder('l')
+      .where('l.post.id = :postId', { postId })
+      .andWhere('l.user.id = :userId', { userId })
+      .getOne();
   }
 
   async findByCommentAndUser(
     commentId: string,
     userId: string,
   ): Promise<Like | null> {
-    return this.likesRepository.findOne({
-      where: { comment: { id: commentId }, user: { id: userId } },
-    });
+    return this.likesRepository
+      .createQueryBuilder('l')
+      .where('l.comment.id = :commentId', { commentId })
+      .andWhere('l.user.id = :userId', { userId })
+      .getOne();
   }
 
   async save(like: Like) {
