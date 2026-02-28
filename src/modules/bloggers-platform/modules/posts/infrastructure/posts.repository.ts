@@ -63,20 +63,27 @@ export class PostsRepository {
     take: number;
     blogId?: string;
   }): Promise<Post[]> {
-    return this.postsRepository.find({
-      where: options.blogId ? { blog: { id: options.blogId } } : undefined,
-      order: options.order,
-      skip: options.skip,
-      take: options.take,
-      relations: ['blog'],
-    });
+    return this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.blog', 'blog')
+      .where('post.blog.id = :blogId', { blogId: options.blogId })
+      .orderBy('post.createdAt', 'DESC')
+      .skip(options.skip)
+      .take(options.take)
+      .getMany();
   }
 
   async findAll(): Promise<Post[]> {
-    return this.postsRepository.find({ relations: ['blog'] });
+    return this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.blog', 'blog')
+      .getMany();
   }
 
   async countPostsByBlogId(blogId: string): Promise<number> {
-    return this.postsRepository.count({ where: { blog: { id: blogId } } });
+    return this.postsRepository
+      .createQueryBuilder('post')
+      .where('post.blog.id = :blogId', { blogId })
+      .getCount();
   }
 }
