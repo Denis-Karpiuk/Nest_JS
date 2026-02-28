@@ -13,10 +13,11 @@ export class CommentsQueryRepository {
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<Comment> {
-    const comment = await this.commentsRepository.findOne({
-      where: { id },
-      relations: ['commentator'],
-    });
+    const comment = await this.commentsRepository
+      .createQueryBuilder('c')
+      .where('c.id = :id', { id })
+      .leftJoinAndSelect('c.commentator', 'commentator')
+      .getOne();
 
     if (!comment) {
       throw new DomainException({

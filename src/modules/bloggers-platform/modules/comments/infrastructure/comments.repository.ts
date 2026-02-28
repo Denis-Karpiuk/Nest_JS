@@ -13,10 +13,11 @@ export class CommentsRepository {
   ) {}
 
   async findById(id: string): Promise<Comment | null> {
-    return this.commentsRepository.findOne({
-      where: { id },
-      relations: ['commentator'],
-    });
+    return this.commentsRepository
+      .createQueryBuilder('c')
+      .where('c.id = :id', { id })
+      .leftJoinAndSelect('c.commentator', 'commentator')
+      .getOne();
   }
 
   async findOrNotFoundFail(id: string): Promise<Comment> {

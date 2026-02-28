@@ -21,10 +21,12 @@ export class CommentsExternalQueryRepository {
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<CommentViewDto> {
-    const comment = await this.commentsRepository.findOne({
-      where: { id },
-      relations: ['post', 'commentator'],
-    });
+    const comment = await this.commentsRepository
+      .createQueryBuilder('c')
+      .where('c.id = :id', { id })
+      .leftJoinAndSelect('c.post', 'post')
+      .leftJoinAndSelect('c.commentator', 'commentator')
+      .getOne();
 
     if (!comment) {
       throw new DomainException({
@@ -58,13 +60,15 @@ export class CommentsExternalQueryRepository {
     const sortOrder =
       query.sortDirection === SortDirection.Asc ? 'ASC' : 'DESC';
 
-    const comments = await this.commentsRepository.find({
-      where: { post: { id: postId } },
-      order: { createdAt: sortOrder },
-      skip: query.calculateSkip(),
-      take: query.pageSize,
-      relations: ['post', 'commentator'],
-    });
+    const comments = await this.commentsRepository
+      .createQueryBuilder('c')
+      .where('c.post.id = :postId', { postId })
+      .leftJoinAndSelect('c.post', 'post')
+      .leftJoinAndSelect('c.commentator', 'commentator')
+      .orderBy('c.createdAt', sortOrder)
+      .skip(query.calculateSkip())
+      .take(query.pageSize)
+      .getMany();
 
     const items = await Promise.all(
       comments.map(async (comment) => {
