@@ -13,16 +13,16 @@ export class LikesPostsQueryRepository {
   ) {}
 
   async getPostsLikesInfo(postId: string, userId?: string) {
-    const newestLikes = await this.likesRepository.find({
-      where: {
-        post: { id: postId },
+    const newestLikes = await this.likesRepository
+      .createQueryBuilder('l')
+      .where('l.post.id = :postId', { postId })
+      .andWhere('l.likeStatus = :likeStatus', {
         likeStatus: LikeStatusEnum.Like,
-      },
-      order: { createdAt: 'DESC' },
-      take: 3,
-      skip: 0,
-      relations: ['user'],
-    });
+      })
+      .orderBy('l.createdAt', 'DESC')
+      .take(3)
+      .skip(0)
+      .getMany();
 
     const newestLikesWithUserInfo = await Promise.all(
       newestLikes.map(async (like) => {
