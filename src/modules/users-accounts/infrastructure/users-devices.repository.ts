@@ -11,20 +11,20 @@ export class UsersDevicesRepository {
   ) {}
 
   async findDevicesByUserId(userId: string): Promise<UserDevice[] | null> {
-    return this.deviceRepository.find({
-      where: { user: { id: userId } },
-    });
+    return this.deviceRepository
+      .createQueryBuilder('d')
+      .where('d.user.id = :userId', { userId })
+      .getMany();
   }
 
   async updateDevice(userId: string, device: UserDevice): Promise<void> {
     const userRef = { id: userId };
-    const existing = await this.deviceRepository.findOne({
-      where: {
-        user: userRef,
-        ip: device.ip,
-        title: device.title,
-      },
-    });
+    const existing = await this.deviceRepository
+      .createQueryBuilder('d')
+      .where('d.user.id = :userId', { userId })
+      .andWhere('d.ip = :ip', { ip: device.ip })
+      .andWhere('d.title = :title', { title: device.title })
+      .getOne();
 
     if (existing) {
       existing.lastActiveDate = device.lastActiveDate;
@@ -45,33 +45,33 @@ export class UsersDevicesRepository {
     ipAddress: string,
     deviceName: string,
   ): Promise<UserDevice | null> {
-    return this.deviceRepository.findOne({
-      where: {
-        user: { id: userId },
-        ip: ipAddress,
-        title: deviceName,
-      },
-    });
+    return this.deviceRepository
+      .createQueryBuilder('d')
+      .where('d.user.id = :userId', { userId })
+      .andWhere('d.ip = :ipAddress', { ipAddress })
+      .andWhere('d.title = :deviceName', { deviceName })
+      .getOne();
   }
 
   async findDeviceByDeviceId(
     userId: string,
     deviceId: string,
   ): Promise<UserDevice | null> {
-    return this.deviceRepository.findOne({
-      where: {
-        user: { id: userId },
-        deviceId,
-      },
-    });
+    return this.deviceRepository
+      .createQueryBuilder('d')
+      .where('d.user.id = :userId', { userId })
+      .andWhere('d.deviceId = :deviceId', { deviceId })
+      .getOne();
   }
 
   async findUserIdByDeviceId(deviceId: string): Promise<string | null> {
-    const device = await this.deviceRepository.findOne({
-      where: { deviceId },
-      relations: ['user'],
-      select: { user: { id: true } },
-    });
+    const device = await this.deviceRepository
+      .createQueryBuilder('d')
+      .where('d.deviceId = :deviceId', { deviceId })
+      .leftJoinAndSelect('d.user', 'u')
+      .select(['u.id'])
+      .getOne();
+
     return device?.user?.id ?? null;
   }
 
@@ -79,12 +79,11 @@ export class UsersDevicesRepository {
     userId: string,
     iat: number,
   ): Promise<UserDevice[] | null> {
-    const devices = await this.deviceRepository.find({
-      where: {
-        user: { id: userId },
-        iat,
-      },
-    });
+    const devices = await this.deviceRepository
+      .createQueryBuilder('d')
+      .where('d.user.id = :userId', { userId })
+      .andWhere('d.iat = :iat', { iat })
+      .getMany();
     return devices.length ? devices : null;
   }
 

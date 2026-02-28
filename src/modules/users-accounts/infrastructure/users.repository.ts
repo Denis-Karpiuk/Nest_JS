@@ -13,9 +13,10 @@ export class UsersRepository {
   ) {}
 
   async findById(id: string): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: { id },
-    });
+    return this.userRepository
+      .createQueryBuilder('u')
+      .where('u.id = :id', { id })
+      .getOne();
   }
 
   async findByConfirmationCode(confirmationCode: string): Promise<User | null> {

@@ -12,10 +12,11 @@ export class UsersExternalQueryRepository {
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<UserExternalDto> {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      withDeleted: true,
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('u.id = :id', { id })
+      .withDeleted()
+      .getOne();
 
     if (!user) {
       throw new NotFoundException('user not found');
@@ -25,10 +26,11 @@ export class UsersExternalQueryRepository {
   }
 
   async getUserLoginById(userId: string): Promise<string | null> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      withDeleted: true,
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('u.id = :id', { id: userId })
+      .withDeleted()
+      .getOne();
 
     return user?.login || null;
   }

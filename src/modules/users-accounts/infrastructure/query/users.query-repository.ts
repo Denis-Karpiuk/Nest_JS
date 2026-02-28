@@ -17,9 +17,10 @@ export class UsersQueryRepository {
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<UserViewDto> {
-    const user = await this.userRepository.findOne({
-      where: { id },
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('u.id = :id', { id })
+      .getOne();
 
     if (!user) {
       throw new DomainException({
