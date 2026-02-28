@@ -11,19 +11,21 @@ export class LikesCommentsQueryRepository {
   ) {}
 
   async getCommentsLikesInfo(commentId: string, userId?: string) {
-    const likesCount = await this.likesRepository.count({
-      where: {
-        comment: { id: commentId },
+    const likesCount = await this.likesRepository
+      .createQueryBuilder('l')
+      .where('l.comment.id = :commentId', { commentId })
+      .andWhere('l.likeStatus = :likeStatus', {
         likeStatus: LikeStatusEnum.Like,
-      },
-    });
+      })
+      .getCount();
 
-    const dislikesCount = await this.likesRepository.count({
-      where: {
-        comment: { id: commentId },
+    const dislikesCount = await this.likesRepository
+      .createQueryBuilder('l')
+      .where('l.comment.id = :commentId', { commentId })
+      .andWhere('l.likeStatus = :likeStatus', {
         likeStatus: LikeStatusEnum.Dislike,
-      },
-    });
+      })
+      .getCount();
 
     const result = {
       likesCount,
@@ -32,12 +34,11 @@ export class LikesCommentsQueryRepository {
     };
 
     if (userId) {
-      const userLikeStatus = await this.likesRepository.findOne({
-        where: {
-          comment: { id: commentId },
-          user: { id: userId },
-        },
-      });
+      const userLikeStatus = await this.likesRepository
+        .createQueryBuilder('l')
+        .where('l.comment.id = :commentId', { commentId })
+        .andWhere('l.user.id = :userId', { userId })
+        .getOne();
 
       if (userLikeStatus) {
         result.myStatus = userLikeStatus.likeStatus;
