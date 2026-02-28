@@ -17,9 +17,10 @@ export class BlogsQueryRepository {
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<BlogViewDto> {
-    const blog = await this.blogsRepository.findOne({
-      where: { id },
-    });
+    const blog = await this.blogsRepository
+      .createQueryBuilder('b')
+      .where('b.id = :id', { id })
+      .getOne();
 
     if (!blog) {
       throw new DomainException({

@@ -13,7 +13,10 @@ export class BlogsRepository {
   ) {}
 
   async findById(id: string): Promise<Blog | null> {
-    return this.blogsRepository.findOne({ where: { id } });
+    return this.blogsRepository
+      .createQueryBuilder('b')
+      .where('b.id = :id', { id })
+      .getOne();
   }
 
   async findOrNotFoundFail(id: string): Promise<Blog> {
