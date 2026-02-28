@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Like } from '../domain/like.entity';
 import { LikeStatusEnum } from '../domain/dto/like-status-enum';
-import { UsersExternalQueryRepository } from 'src/modules/users-accounts/infrastructure/external-query/users.external-query-repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -9,12 +8,12 @@ import { Repository } from 'typeorm';
 export class LikesPostsQueryRepository {
   constructor(
     @InjectRepository(Like) private readonly likesRepository: Repository<Like>,
-    private readonly usersExternalQueryRepository: UsersExternalQueryRepository,
   ) {}
 
   async getPostsLikesInfo(postId: string, userId?: string) {
     const newestLikes = await this.likesRepository
       .createQueryBuilder('l')
+      .leftJoinAndSelect('l.user', 'user')
       .where('l.post.id = :postId', { postId })
       .andWhere('l.likeStatus = :likeStatus', {
         likeStatus: LikeStatusEnum.Like,
@@ -24,19 +23,15 @@ export class LikesPostsQueryRepository {
       .skip(0)
       .getMany();
 
-    const newestLikesWithUserInfo = await Promise.all(
-      newestLikes.map(async (like) => {
-        const user =
-          await this.usersExternalQueryRepository.getByIdOrNotFoundFail(
-            like.user?.id ?? '',
-          );
-        return {
-          addedAt: like.createdAt,
-          userId: like.user?.id ?? '',
-          login: user?.login || 'unknown',
-        };
-      }),
-    );
+    const newestLikesWithUserInfo = newestLikes
+      .filter((like): like is Like & { user: NonNullable<Like['user']> } =>
+        Boolean(like.user?.id),
+      )
+      .map((like) => ({
+        addedAt: like.createdAt,
+        userId: like.user.id,
+        login: like.user.login ?? 'unknown',
+      }));
 
     const result = {
       likesCount: await this.likesRepository.count({
