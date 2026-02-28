@@ -63,14 +63,20 @@ export class PostsRepository {
     take: number;
     blogId?: string;
   }): Promise<Post[]> {
-    return this.postsRepository
+    const qb = this.postsRepository
       .createQueryBuilder('post')
-      .leftJoinAndSelect('post.blog', 'blog')
-      .where('post.blog.id = :blogId', { blogId: options.blogId })
-      .orderBy('post.createdAt', 'DESC')
-      .skip(options.skip)
-      .take(options.take)
-      .getMany();
+      .leftJoinAndSelect('post.blog', 'blog');
+
+    if (options.blogId) {
+      qb.where('post.blogId = :blogId', { blogId: options.blogId });
+    }
+
+    const [[sortBy, sortOrder]] = Object.entries(options.order);
+    const orderKey =
+      sortBy === 'createdAt' ? 'post.createdAt' : `post.${sortBy}`;
+    qb.orderBy(orderKey, sortOrder).skip(options.skip).take(options.take);
+
+    return qb.getMany();
   }
 
   async findAll(): Promise<Post[]> {
