@@ -23,11 +23,17 @@ const AppDataSource = new DataSource({
         password: process.env.POSTGRES_PASSWORD || 'postgres',
         database: process.env.POSTGRES_DB || 'app_dev',
       }),
+
+  // Явный список entity-файлов для устойчивой работы CLI
   entities: [
     join(__dirname, 'modules/users-accounts/domain/user.entity.ts'),
     join(
       __dirname,
       'modules/users-accounts/domain/email-confirmation.entity.ts',
+    ),
+    join(
+      __dirname,
+      'modules/users-accounts/domain/password-recovery.entity.ts',
     ),
     join(__dirname, 'modules/users-accounts/domain/devices.entity.ts'),
     join(
