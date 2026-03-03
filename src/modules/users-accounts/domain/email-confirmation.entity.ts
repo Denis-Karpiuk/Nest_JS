@@ -35,7 +35,7 @@ export class EmailConfirmation {
 
     emailConfirmation.user = { id: dto.userId } as User;
     emailConfirmation.confirmationCode = dto.confirmationCode;
-    emailConfirmation.expirationDate = new Date();
+    emailConfirmation.expirationDate = new Date(Date.now() + 2 * 60 * 1000);
     emailConfirmation.isConfirmed = false;
 
     return emailConfirmation;

@@ -20,8 +20,12 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
   async execute({
     confirmationCode,
   }: ConfirmationRegisterUserCommand): Promise<void> {
-    const user =
-      await this.usersRepository.findByConfirmationCode(confirmationCode);
+    const emailConfirmation =
+      await this.usersEmailConfirmationRepository.findByConfirmationCode(
+        confirmationCode,
+      );
+
+    const user = emailConfirmation?.user;
 
     if (!user) {
       throw new DomainException({
@@ -35,9 +39,6 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
         ],
       });
     }
-
-    const emailConfirmation =
-      await this.usersEmailConfirmationRepository.findByUserId(user.id);
 
     if (!emailConfirmation) {
       throw new DomainException({
@@ -59,7 +60,7 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
       });
     }
 
-    const expirationData = user.emailConfirmation.expirationDate;
+    const expirationData = emailConfirmation.expirationDate;
 
     if (expirationData < new Date()) {
       throw new DomainException({

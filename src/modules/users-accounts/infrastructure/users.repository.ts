@@ -19,18 +19,6 @@ export class UsersRepository {
       .getOne();
   }
 
-  async findByConfirmationCode(confirmationCode: string): Promise<User | null> {
-    return this.userRepository
-      .createQueryBuilder('u')
-      .where(
-        'u."emailConfirmation"->>\'confirmationCode\' = :confirmationCode',
-        {
-          confirmationCode,
-        },
-      )
-      .getOne();
-  }
-
   async findByRecoveryCode(recoveryCode: string): Promise<User | null> {
     return this.userRepository
       .createQueryBuilder('u')
