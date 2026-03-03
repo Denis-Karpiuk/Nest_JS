@@ -6,6 +6,8 @@ import { UsersFactory } from '../../factories/users.factory';
 import { UsersRepository } from 'src/modules/users-accounts/infrastructure/users.repository';
 import { uuid } from 'uuidv4';
 import { UserRegisteredEvent } from 'src/modules/users-accounts/domain/events/user-registered.event';
+import { UsersEmailConfirmationRepository } from 'src/modules/users-accounts/infrastructure/user-confrimation.repository';
+import { EmailConfirmation } from 'src/modules/users-accounts/domain/email-confirmation.entity';
 
 export class RegisterUserCommand {
   constructor(public readonly dto: CreateUserDto) {}
@@ -17,6 +19,7 @@ export class RegisterUserUseCase implements ICommandHandler<RegisterUserCommand>
     private readonly eventBus: EventBus,
     private readonly usersFactory: UsersFactory,
     private readonly usersRepository: UsersRepository,
+    private readonly usersEmailConfirmationRepository: UsersEmailConfirmationRepository,
   ) {}
 
   async execute({ dto }: RegisterUserCommand): Promise<void> {
@@ -56,7 +59,13 @@ export class RegisterUserUseCase implements ICommandHandler<RegisterUserCommand>
     const user = await this.usersFactory.create(dto);
 
     const confirmCode = uuid();
-    user.setConfirmationCode(confirmCode);
+
+    const emailConfirmation = EmailConfirmation.createInstance({
+      confirmationCode: confirmCode,
+      userId: user.id,
+    });
+
+    await this.usersEmailConfirmationRepository.save(emailConfirmation);
     await this.usersRepository.save(user);
 
     this.eventBus.publish(new UserRegisteredEvent(user.email, confirmCode));

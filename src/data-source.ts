@@ -25,6 +25,10 @@ const AppDataSource = new DataSource({
       }),
   entities: [
     join(__dirname, 'modules/users-accounts/domain/user.entity.ts'),
+    join(
+      __dirname,
+      'modules/users-accounts/domain/email-confirmation.entity.ts',
+    ),
     join(__dirname, 'modules/users-accounts/domain/devices.entity.ts'),
     join(
       __dirname,

@@ -69,7 +69,6 @@ const queryHandlers = [
 @Module({
   imports: [
     NotificationsModule,
-    // MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     TypeOrmModule.forFeature([User, UserDevice]),
     throttleModule,
     JwtModule,
@@ -83,10 +82,6 @@ const queryHandlers = [
   providers: [
     ...commandHandlers,
     ...queryHandlers,
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: ThrottlerGuard,
-    // },
     UsersFactory,
     AuthService,
     UsersRepository,

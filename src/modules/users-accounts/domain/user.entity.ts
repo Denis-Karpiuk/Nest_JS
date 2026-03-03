@@ -4,16 +4,17 @@ import {
   DeleteDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UpdateUserDto } from '../dto/create-user.dto';
 import { CreateUserDomainDto } from './dto/create-user.domain.dto';
-import { EmailConfirmation } from './email-confirmation.schema';
 import { PasswordRecoveryInformation } from './password-recovery.schema';
 import { UserDevice } from './devices.entity';
 import { Comment } from 'src/modules/bloggers-platform/modules/comments/domain/comment.entity';
 import { Like } from 'src/modules/bloggers-platform/modules/likes/domain/like.entity';
+import { EmailConfirmation } from './email-confirmation.entity';
 
 @Entity()
 export class User {
@@ -35,12 +36,6 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column({ default: false })
-  isEmailConfirmed: boolean;
-
-  @Column({ type: 'jsonb' })
-  emailConfirmation: EmailConfirmation;
-
   @Column({ type: 'jsonb' })
   passwordRecoveryInformation: PasswordRecoveryInformation;
 
@@ -52,6 +47,12 @@ export class User {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @OneToOne(
+    () => EmailConfirmation,
+    (emailConfirmation) => emailConfirmation.user,
+  )
+  emailConfirmation: EmailConfirmation;
 
   @OneToMany(() => UserDevice, (device) => device.user)
   devices: UserDevice[];
@@ -67,20 +68,20 @@ export class User {
     user.email = dto.email;
     user.passwordHash = dto.passwordHash;
     user.login = dto.login;
-    user.isEmailConfirmed = false;
 
     user.firstName = '';
     user.lastName = '';
 
-    user.emailConfirmation = {
-      confirmationCode: '',
-      expirationDate: new Date(),
-    };
+    // user.isEmailConfirmed = false;
+    // user.emailConfirmation = {
+    //   confirmationCode: '',
+    //   expirationDate: new Date(),
+    // };
 
-    user.passwordRecoveryInformation = {
-      recoveryCode: null,
-      expirationDate: null,
-    };
+    // user.passwordRecoveryInformation = {
+    //   recoveryCode: null,
+    //   expirationDate: null,
+    // };
 
     return user;
   }
@@ -95,31 +96,12 @@ export class User {
 
   update(dto: UpdateUserDto) {
     if (dto.email !== this.email) {
-      this.isEmailConfirmed = false;
       this.email = dto.email;
     }
   }
 
   updatePasswordHash(passwordHash: string) {
     this.passwordHash = passwordHash;
-  }
-
-  setConfirmationCode(code: string) {
-    this.emailConfirmation.confirmationCode = code;
-  }
-
-  setIsEmailConfirmation(isConfirmed: boolean) {
-    this.isEmailConfirmed = isConfirmed;
-  }
-
-  updateConfirmationInformation(code: string) {
-    this.emailConfirmation.expirationDate = new Date(
-      Date.now() + 2 * 60 * 1000,
-    );
-
-    this.setConfirmationCode(code);
-
-    this.setIsEmailConfirmation(false);
   }
 
   setRecoveryPasswordInformation(recoveryCode: string) {

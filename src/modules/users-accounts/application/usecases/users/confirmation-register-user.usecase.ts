@@ -2,6 +2,7 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { UserVerifyRegisteredEvent } from 'src/modules/users-accounts/domain/events/user-verify-registered.event';
+import { UsersEmailConfirmationRepository } from 'src/modules/users-accounts/infrastructure/user-confrimation.repository';
 import { UsersRepository } from 'src/modules/users-accounts/infrastructure/users.repository';
 
 export class ConfirmationRegisterUserCommand {
@@ -13,6 +14,7 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
   constructor(
     private readonly eventBus: EventBus,
     private readonly usersRepository: UsersRepository,
+    private readonly usersEmailConfirmationRepository: UsersEmailConfirmationRepository,
   ) {}
 
   async execute({
@@ -34,9 +36,17 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
       });
     }
 
-    const isConfirmed = user.isEmailConfirmed;
+    const emailConfirmation =
+      await this.usersEmailConfirmationRepository.findByUserId(user.id);
 
-    if (isConfirmed) {
+    if (!emailConfirmation) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'Email confirmation not found',
+      });
+    }
+
+    if (emailConfirmation?.isConfirmed) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         message: 'User already confirmed',
@@ -64,9 +74,8 @@ export class ConfirmationRegisterUserUseCase implements ICommandHandler<Confirma
       });
     }
 
-    user.setIsEmailConfirmation(true);
-
-    await this.usersRepository.save(user);
+    emailConfirmation.setEmailConfirmation(true);
+    await this.usersEmailConfirmationRepository.save(emailConfirmation);
 
     this.eventBus.publish(new UserVerifyRegisteredEvent(user.email));
   }

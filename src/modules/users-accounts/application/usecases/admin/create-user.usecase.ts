@@ -4,6 +4,8 @@ import { UsersRepository } from 'src/modules/users-accounts/infrastructure/users
 import { UsersFactory } from '../../factories/users.factory';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { UsersEmailConfirmationRepository } from 'src/modules/users-accounts/infrastructure/user-confrimation.repository';
+import { EmailConfirmation } from 'src/modules/users-accounts/domain/email-confirmation.entity';
 
 export class CreateUserCommand {
   constructor(public readonly createUserDto: CreateUserDto) {}
@@ -17,6 +19,7 @@ export class CreateUserUseCase implements ICommandHandler<
   constructor(
     private readonly usersFactory: UsersFactory,
     private readonly usersRepository: UsersRepository,
+    private readonly usersEmailConfirmationRepository: UsersEmailConfirmationRepository,
   ) {}
 
   async execute(command: CreateUserCommand): Promise<string> {
@@ -27,7 +30,14 @@ export class CreateUserUseCase implements ICommandHandler<
 
     const user = await this.usersFactory.create(command.createUserDto);
 
-    user.isEmailConfirmed = true;
+    const emailConfirmation = EmailConfirmation.createInstance({
+      confirmationCode: '',
+      userId: user.id,
+    });
+
+    emailConfirmation.setEmailConfirmation(true);
+
+    await this.usersEmailConfirmationRepository.save(emailConfirmation);
 
     await this.usersRepository.save(user);
 
