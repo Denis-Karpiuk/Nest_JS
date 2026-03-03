@@ -22,7 +22,9 @@ export class EmailConfirmation {
   @Column({ default: false })
   isConfirmed: boolean;
 
-  @OneToOne(() => User, (user) => user.emailConfirmation)
+  @OneToOne(() => User, (user) => user.emailConfirmation, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   user: User;
 

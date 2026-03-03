@@ -72,17 +72,6 @@ export class User {
     user.firstName = '';
     user.lastName = '';
 
-    // user.isEmailConfirmed = false;
-    // user.emailConfirmation = {
-    //   confirmationCode: '',
-    //   expirationDate: new Date(),
-    // };
-
-    // user.passwordRecoveryInformation = {
-    //   recoveryCode: null,
-    //   expirationDate: null,
-    // };
-
     return user;
   }
 
