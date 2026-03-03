@@ -72,6 +72,11 @@ export class User {
     user.firstName = '';
     user.lastName = '';
 
+    user.passwordRecoveryInformation = {
+      recoveryCode: null,
+      expirationDate: null,
+    };
+
     return user;
   }
 

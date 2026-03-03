@@ -30,6 +30,9 @@ export class CreateUserUseCase implements ICommandHandler<
 
     const user = await this.usersFactory.create(command.createUserDto);
 
+    // Сначала сохраняем пользователя, чтобы получить сгенерированный id
+    await this.usersRepository.save(user);
+
     const emailConfirmation = EmailConfirmation.createInstance({
       confirmationCode: '',
       userId: user.id,
@@ -38,8 +41,6 @@ export class CreateUserUseCase implements ICommandHandler<
     emailConfirmation.setEmailConfirmation(true);
 
     await this.usersEmailConfirmationRepository.save(emailConfirmation);
-
-    await this.usersRepository.save(user);
 
     return user.id;
   }
