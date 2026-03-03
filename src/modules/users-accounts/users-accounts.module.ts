@@ -28,6 +28,7 @@ import { PasswordRecoveryUserUseCase } from './application/usecases/users/passwo
 import { RegisterUserUseCase } from './application/usecases/users/register-user.usecase';
 import { ResendRegistrationEmailUserUseCase } from './application/usecases/users/resend-registration-email-user';
 import { AuthConfig } from './config/auth.config';
+import { EmailConfirmation } from './domain/email-confirmation.entity';
 import { User } from './domain/user.entity';
 import { JwtStrategy } from './guards/bearer/jwt.strategy';
 import { JwtRefreshStrategy } from './guards/refresh/jwt-refresh.strategy';
@@ -36,6 +37,7 @@ import { UsersExternalQueryRepository } from './infrastructure/external-query/us
 import { AuthQueryRepository } from './infrastructure/query/auth.query-repository';
 import { SecurityDevicesQueryRepository } from './infrastructure/query/security-devices.query-repository';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
+import { UsersEmailConfirmationRepository } from './infrastructure/user-confrimation.repository';
 import { UsersRepository } from './infrastructure/users.repository';
 import { UsersDevicesRepository } from './infrastructure/users-devices.repository';
 import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
@@ -69,7 +71,7 @@ const queryHandlers = [
 @Module({
   imports: [
     NotificationsModule,
-    TypeOrmModule.forFeature([User, UserDevice]),
+    TypeOrmModule.forFeature([User, UserDevice, EmailConfirmation]),
     throttleModule,
     JwtModule,
   ],
@@ -85,6 +87,7 @@ const queryHandlers = [
     UsersFactory,
     AuthService,
     UsersRepository,
+    UsersEmailConfirmationRepository,
     UsersDevicesRepository,
     UsersQueryRepository,
     SecurityDevicesQueryRepository,
