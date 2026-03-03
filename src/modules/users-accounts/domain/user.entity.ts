@@ -10,11 +10,11 @@ import {
 } from 'typeorm';
 import { UpdateUserDto } from '../dto/create-user.dto';
 import { CreateUserDomainDto } from './dto/create-user.domain.dto';
-import { PasswordRecoveryInformation } from './password-recovery.schema';
 import { UserDevice } from './devices.entity';
 import { Comment } from 'src/modules/bloggers-platform/modules/comments/domain/comment.entity';
 import { Like } from 'src/modules/bloggers-platform/modules/likes/domain/like.entity';
 import { EmailConfirmation } from './email-confirmation.entity';
+import { PasswordRecovery } from './password-recovery.entity';
 
 @Entity()
 export class User {
@@ -36,8 +36,8 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column({ type: 'jsonb' })
-  passwordRecoveryInformation: PasswordRecoveryInformation;
+  @OneToOne(() => PasswordRecovery, (passwordRecovery) => passwordRecovery.user)
+  passwordRecoveryInformation: PasswordRecovery;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -72,11 +72,6 @@ export class User {
     user.firstName = '';
     user.lastName = '';
 
-    user.passwordRecoveryInformation = {
-      recoveryCode: null,
-      expirationDate: null,
-    };
-
     return user;
   }
 
@@ -96,12 +91,5 @@ export class User {
 
   updatePasswordHash(passwordHash: string) {
     this.passwordHash = passwordHash;
-  }
-
-  setRecoveryPasswordInformation(recoveryCode: string) {
-    this.passwordRecoveryInformation = {
-      recoveryCode,
-      expirationDate: new Date(Date.now() + 2 * 60 * 1000),
-    };
   }
 }

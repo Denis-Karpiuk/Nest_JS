@@ -29,6 +29,7 @@ import { RegisterUserUseCase } from './application/usecases/users/register-user.
 import { ResendRegistrationEmailUserUseCase } from './application/usecases/users/resend-registration-email-user';
 import { AuthConfig } from './config/auth.config';
 import { EmailConfirmation } from './domain/email-confirmation.entity';
+import { PasswordRecovery } from './domain/password-recovery.entity';
 import { User } from './domain/user.entity';
 import { JwtStrategy } from './guards/bearer/jwt.strategy';
 import { JwtRefreshStrategy } from './guards/refresh/jwt-refresh.strategy';
@@ -44,6 +45,7 @@ import { jwtAccessModule, jwtRefreshModule } from './modules/jwt-module';
 import { throttleModule } from './modules/throttle-module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserDevice } from './domain/devices.entity';
+import { UsersPasswordRecoveryRepository } from './infrastructure/user-passwrod-recovery.repository';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -71,7 +73,12 @@ const queryHandlers = [
 @Module({
   imports: [
     NotificationsModule,
-    TypeOrmModule.forFeature([User, UserDevice, EmailConfirmation]),
+    TypeOrmModule.forFeature([
+      User,
+      UserDevice,
+      EmailConfirmation,
+      PasswordRecovery,
+    ]),
     throttleModule,
     JwtModule,
   ],
@@ -88,6 +95,7 @@ const queryHandlers = [
     AuthService,
     UsersRepository,
     UsersEmailConfirmationRepository,
+    UsersPasswordRecoveryRepository,
     UsersDevicesRepository,
     UsersQueryRepository,
     SecurityDevicesQueryRepository,
