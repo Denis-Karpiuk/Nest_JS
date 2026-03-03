@@ -1,4 +1,10 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserEmailConfirmationDomainDto } from './dto/create-user-email-confirmation.domain.dto';
 
@@ -17,6 +23,7 @@ export class EmailConfirmation {
   isConfirmed: boolean;
 
   @OneToOne(() => User, (user) => user.emailConfirmation)
+  @JoinColumn()
   user: User;
 
   static createInstance(
