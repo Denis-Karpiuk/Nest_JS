@@ -57,6 +57,7 @@ export class RegisterUserUseCase implements ICommandHandler<RegisterUserCommand>
     }
 
     const user = await this.usersFactory.create(dto);
+    await this.usersRepository.save(user);
 
     const confirmCode = uuid();
 
@@ -66,7 +67,6 @@ export class RegisterUserUseCase implements ICommandHandler<RegisterUserCommand>
     });
 
     await this.usersEmailConfirmationRepository.save(emailConfirmation);
-    await this.usersRepository.save(user);
 
     this.eventBus.publish(new UserRegisteredEvent(user.email, confirmCode));
   }
