@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
-import { BasicAuthGuard } from 'src/modules/users-accounts/guards/basic/basic-auth.guard';
+import { BasicAuthGuard } from 'src/core/guards/basic-auth.guard';
 import { JwtAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-auth.guard';
 import { JwtOptionalAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-optional-auth.guard';
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';

@@ -20,7 +20,7 @@ import { CreateBlogPostDto } from './input-dto/creat-blog-post.dto';
 import { PostsExternalService } from '../../posts/application/posts.external-service';
 import { PostsExternalQueryRepository } from '../../posts/infrastructure/external-query/posts.external-query-repository';
 import { GetBlogsPostsQueryParamsDto } from './input-dto/get-blogs-posts-query-params';
-import { BasicAuthGuard } from 'src/modules/users-accounts/guards/basic/basic-auth.guard';
+import { BasicAuthGuard } from 'src/core/guards/basic-auth.guard';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
 import { GetBlogByIdQuery } from '../application/queries/get-blog-by-id';

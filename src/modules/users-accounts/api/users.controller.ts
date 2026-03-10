@@ -20,7 +20,7 @@ import { GetUserByIdQuery } from '../application/queries/get-user-by-id.query';
 import { CreateUserCommand } from '../application/usecases/admin/create-user.usecase';
 import { DeleteUserCommand } from '../application/usecases/admin/delete-user.usecase';
 import { UpdateUserCommand } from '../application/usecases/update-user.usecase';
-import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
+import { BasicAuthGuard } from '../../../core/guards/basic-auth.guard';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dto';

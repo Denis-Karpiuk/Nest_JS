@@ -12,6 +12,7 @@ import { mongooseModule } from './mongoose-module';
 import { postgresModule } from './postgres-module';
 import { ThrottleHttpExceptionsFilter } from './core/exceptions/filters/throttle-exceptions.filter';
 import { CoreModule } from './core/core.module';
+import { QuizModule } from './modules/quiz/quiz.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CoreModule } from './core/core.module';
     BloggersPlatformModule,
     TestingModule,
     CoreModule,
+    QuizModule,
   ],
   controllers: [AppController],
   providers: [
