@@ -8,6 +8,8 @@ import {
   HttpStatus,
   HttpCode,
   Put,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { BasicAuthGuard } from 'src/core/guards/basic-auth.guard';
 import { CreateQuestionInputDto } from './input-dto/create-question.input.dto';
@@ -20,6 +22,10 @@ import { UpdateQuestionInputDto } from './input-dto/create-question.input.dto';
 import { UpdateQuestionCommand } from '../application/usecases/update-question.usecase';
 import { PublishQuestionInputDto } from './input-dto/publish-question.input.dto';
 import { PublishQuestionCommand } from '../application/usecases/publish-question.usecase';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
+import { GetQuestionsQuery } from '../application/queries/get-questions.query-handler';
+import { GetQuestionsQueryParamsDto } from './input-dto/get-questions-query-params.input.dto';
+import { QuestionViewDto } from './view-dto/question.view-dto';
 
 @UseGuards(BasicAuthGuard)
 @Controller('sa/quiz/questions')
@@ -69,5 +75,15 @@ export class SaQuestionsController {
     await this.commandBus.execute<PublishQuestionCommand, void>(
       new PublishQuestionCommand(id, dto),
     );
+  }
+
+  @Get()
+  async getAllQuestions(
+    @Query() query: GetQuestionsQueryParamsDto,
+  ): Promise<PaginatedViewDto<QuestionViewDto[]>> {
+    return this.queryBus.execute<
+      GetQuestionsQuery,
+      PaginatedViewDto<QuestionViewDto[]>
+    >(new GetQuestionsQuery(query));
   }
 }
