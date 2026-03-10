@@ -52,6 +52,12 @@ const AppDataSource = new DataSource({
       __dirname,
       'modules/bloggers-platform/modules/likes/domain/like.entity.ts',
     ),
+    join(__dirname, 'modules/quiz/modules/questions/domain/question.entity.ts'),
+    join(__dirname, 'modules/quiz/modules/games/domain/game.entity.ts'),
+    join(
+      __dirname,
+      'modules/quiz/modules/games/domain/player-progress.entity.ts',
+    ),
   ],
   migrations: [join(__dirname, 'migrations', '*.ts')],
   logging: process.env.NODE_ENV === 'development',
