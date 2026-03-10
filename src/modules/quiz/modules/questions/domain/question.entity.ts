@@ -1,17 +1,15 @@
-import { Column } from 'typeorm';
-import { CreateQuestionDto } from './dto/create-question.dto';
-
 import {
+  Column,
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
+import { CreateQuestionDto } from './dto/create-question.dto';
 import { PublishQuestionDto } from './dto/publish-question.dto';
 
 @Entity()
 export class Question {
-  @PrimaryGeneratedColumn('increment')
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -26,8 +24,8 @@ export class Question {
   @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  updatedAt: Date | null;
 
   static createInstance(dto: CreateQuestionDto): Question {
     const question = new this();
@@ -41,9 +39,11 @@ export class Question {
   update(dto: CreateQuestionDto) {
     this.body = dto.body;
     this.correctAnswers = dto.correctAnswers;
+    this.updatedAt = new Date();
   }
 
   publish(dto: PublishQuestionDto) {
     this.published = dto.published;
+    this.updatedAt = new Date();
   }
 }
