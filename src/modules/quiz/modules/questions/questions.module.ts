@@ -6,8 +6,9 @@ import { CreateQuestionUseCase } from './application/usecases/create-question.us
 import { QuestionsQueryRepository } from './infrastructure/question.query-repository';
 import { GetQuestionByIdQueryHandler } from './application/queries/get-question-by-id.query-handler';
 import { QuestionsRepository } from './infrastructure/questions.repository';
+import { DeleteQuestionUseCase } from './application/usecases/delete-question.usecase';
 
-const commandHandlers = [CreateQuestionUseCase];
+const commandHandlers = [CreateQuestionUseCase, DeleteQuestionUseCase];
 const queryHandlers = [GetQuestionByIdQueryHandler];
 
 @Module({

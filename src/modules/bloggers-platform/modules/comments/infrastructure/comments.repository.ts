@@ -45,6 +45,7 @@ export class CommentsRepository {
     const result = await this.commentsRepository.delete({
       id,
     });
+
     return {
       acknowledged: true,
       deletedCount: result.affected ?? 0,
