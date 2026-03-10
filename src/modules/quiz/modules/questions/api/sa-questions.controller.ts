@@ -18,6 +18,8 @@ import { Question } from '../domain/question.entity';
 import { DeleteQuestionCommand } from '../application/usecases/delete-question.usecase';
 import { UpdateQuestionInputDto } from './input-dto/create-question.input.dto';
 import { UpdateQuestionCommand } from '../application/usecases/update-question.usecase';
+import { PublishQuestionInputDto } from './input-dto/publish-question.input.dto';
+import { PublishQuestionCommand } from '../application/usecases/publish-question.usecase';
 
 @UseGuards(BasicAuthGuard)
 @Controller('sa/quiz/questions')
@@ -55,6 +57,17 @@ export class SaQuestionsController {
   ) {
     await this.commandBus.execute<UpdateQuestionCommand, void>(
       new UpdateQuestionCommand(id, dto),
+    );
+  }
+
+  @Put(':id/publish')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async publishQuestion(
+    @Param('id') id: string,
+    @Body() dto: PublishQuestionInputDto,
+  ) {
+    await this.commandBus.execute<PublishQuestionCommand, void>(
+      new PublishQuestionCommand(id, dto),
     );
   }
 }

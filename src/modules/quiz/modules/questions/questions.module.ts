@@ -8,11 +8,13 @@ import { GetQuestionByIdQueryHandler } from './application/queries/get-question-
 import { QuestionsRepository } from './infrastructure/questions.repository';
 import { DeleteQuestionUseCase } from './application/usecases/delete-question.usecase';
 import { UpdateQuestionUseCase } from './application/usecases/update-question.usecase';
+import { PublishQuestionUseCase } from './application/usecases/publish-question.usecase';
 
 const commandHandlers = [
   CreateQuestionUseCase,
   DeleteQuestionUseCase,
   UpdateQuestionUseCase,
+  PublishQuestionUseCase,
 ];
 const queryHandlers = [GetQuestionByIdQueryHandler];
 
