@@ -7,6 +7,7 @@ import {
   UseGuards,
   HttpStatus,
   HttpCode,
+  Put,
 } from '@nestjs/common';
 import { BasicAuthGuard } from 'src/core/guards/basic-auth.guard';
 import { CreateQuestionInputDto } from './input-dto/create-question.input.dto';
@@ -15,7 +16,10 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetQuestionByIdQuery } from '../application/queries/get-question-by-id.query-handler';
 import { Question } from '../domain/question.entity';
 import { DeleteQuestionCommand } from '../application/usecases/delete-question.usecase';
+import { UpdateQuestionInputDto } from './input-dto/create-question.input.dto';
+import { UpdateQuestionCommand } from '../application/usecases/update-question.usecase';
 
+@UseGuards(BasicAuthGuard)
 @Controller('sa/quiz/questions')
 export class SaQuestionsController {
   constructor(
@@ -23,7 +27,6 @@ export class SaQuestionsController {
     private readonly commandBus: CommandBus,
   ) {}
 
-  @UseGuards(BasicAuthGuard)
   @Post()
   async createQuestion(@Body() dto: CreateQuestionInputDto) {
     const questionId = await this.commandBus.execute<
@@ -36,12 +39,22 @@ export class SaQuestionsController {
     );
   }
 
-  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteQuestion(@Param('id') id: string) {
     await this.commandBus.execute<DeleteQuestionCommand, void>(
       new DeleteQuestionCommand(id),
+    );
+  }
+
+  @Put(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateQuestion(
+    @Param('id') id: string,
+    @Body() dto: UpdateQuestionInputDto,
+  ) {
+    await this.commandBus.execute<UpdateQuestionCommand, void>(
+      new UpdateQuestionCommand(id, dto),
     );
   }
 }

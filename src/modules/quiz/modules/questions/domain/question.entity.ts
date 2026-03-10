@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PublishQuestionDto } from './dto/publish-question.dto';
 
 @Entity()
 export class Question {
@@ -36,5 +37,13 @@ export class Question {
     question.published = false;
 
     return question;
+  }
+  update(dto: CreateQuestionDto) {
+    this.body = dto.body;
+    this.correctAnswers = dto.correctAnswers;
+  }
+
+  publish(dto: PublishQuestionDto) {
+    this.published = dto.published;
   }
 }

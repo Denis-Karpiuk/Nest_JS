@@ -7,8 +7,13 @@ import { QuestionsQueryRepository } from './infrastructure/question.query-reposi
 import { GetQuestionByIdQueryHandler } from './application/queries/get-question-by-id.query-handler';
 import { QuestionsRepository } from './infrastructure/questions.repository';
 import { DeleteQuestionUseCase } from './application/usecases/delete-question.usecase';
+import { UpdateQuestionUseCase } from './application/usecases/update-question.usecase';
 
-const commandHandlers = [CreateQuestionUseCase, DeleteQuestionUseCase];
+const commandHandlers = [
+  CreateQuestionUseCase,
+  DeleteQuestionUseCase,
+  UpdateQuestionUseCase,
+];
 const queryHandlers = [GetQuestionByIdQueryHandler];
 
 @Module({

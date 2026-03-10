@@ -13,3 +13,5 @@ export class CreateQuestionInputDto {
   @IsString({ each: true })
   correctAnswers: string[];
 }
+
+export class UpdateQuestionInputDto extends CreateQuestionInputDto {}
