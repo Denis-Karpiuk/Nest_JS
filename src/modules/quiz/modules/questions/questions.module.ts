@@ -28,5 +28,6 @@ const queryHandlers = [GetQuestionByIdQueryHandler, GetQuestionsQueryHandler];
     QuestionsQueryRepository,
   ],
   controllers: [SaQuestionsController],
+  exports: [QuestionsRepository],
 })
 export class QuestionsModule {}

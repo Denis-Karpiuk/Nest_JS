@@ -38,6 +38,14 @@ export class QuestionsRepository {
     await this.questionsRepository.delete({ id });
   }
 
+  async findRandomQuestions(count: number): Promise<Question[]> {
+    return this.questionsRepository
+      .createQueryBuilder('q')
+      .orderBy('RANDOM()')
+      .take(count)
+      .getMany();
+  }
+
   save(question: Question) {
     return this.questionsRepository.save(question);
   }
