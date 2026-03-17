@@ -8,8 +8,9 @@ export const postgresModule = TypeOrmModule.forRootAsync({
     const databaseUrl = configService.get<string>('DATABASE_URL');
     const base = {
       type: 'postgres' as const,
+      schema: 'public',
       synchronize: configService.get('NODE_ENV') === 'development',
-      logging: configService.get('NODE_ENV') === 'development',
+      logging: false,
       autoLoadEntities: true,
     };
     if (databaseUrl) {

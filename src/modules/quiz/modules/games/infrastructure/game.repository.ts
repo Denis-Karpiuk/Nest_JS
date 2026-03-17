@@ -42,6 +42,22 @@ export class GameRepository {
       .getOne();
   }
 
+  async findByPlayerIdOrNotFoundFail(playerId: string): Promise<Game> {
+    const game = await this.gamesRepository
+      .createQueryBuilder('b')
+      .where('b.firstPlayer.id = :playerId', { playerId })
+      .orWhere('b.secondPlayer.id = :playerId', { playerId })
+      .getOne();
+
+    if (!game) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Game not found',
+      });
+    }
+    return game;
+  }
+
   save(game: Game) {
     return this.gamesRepository.save(game);
   }

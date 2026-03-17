@@ -3,39 +3,31 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
 } from 'typeorm';
-import { PlayerProgress } from './player-progress.entity';
-import {
-  CreateGameDto,
-  GameQuestionItem,
-  GameStatus,
-} from './dto/create-game.dto';
 import { AddSecondPlayerDto } from './dto/add-second-player.dto';
+import { CreateGameDto, GameStatus } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
+import { Player } from './player.entity';
+import { GameQuestion } from './game-question.entity';
 
 @Entity()
 export class Game {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   public id: string;
 
-  @Column({ nullable: true })
-  firstPlayerProgressId: string;
+  @OneToOne(() => Player)
+  @JoinColumn()
+  firstPlayer: Player;
 
-  @OneToOne(() => PlayerProgress)
-  @JoinColumn({ name: 'firstPlayerProgressId', referencedColumnName: 'id' })
-  firstPlayerProgress: PlayerProgress;
+  @OneToOne(() => Player)
+  @JoinColumn()
+  secondPlayer: Player | null;
 
-  @Column({ nullable: true })
-  secondPlayerProgressId: string | null;
-
-  @OneToOne(() => PlayerProgress)
-  @JoinColumn({ name: 'secondPlayerProgressId', referencedColumnName: 'id' })
-  secondPlayerProgress: PlayerProgress | null;
-
-  @Column({ type: 'jsonb', default: [] })
-  questions: GameQuestionItem[];
+  @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.game)
+  questions: GameQuestion[];
 
   @Column()
   status: GameStatus;
@@ -52,15 +44,19 @@ export class Game {
   static createInstance(dto: CreateGameDto) {
     const game = new this();
 
-    game.firstPlayerProgressId = dto.firstPlayerProgressId;
-    game.questions = dto.questions;
+    game.id = dto.id;
+    game.firstPlayer = { id: dto.playerId } as Player;
     game.status = GameStatus.PendingSecondPlayer;
 
     return game;
   }
 
   addSecondPlayer(dto: AddSecondPlayerDto) {
-    this.secondPlayerProgressId = dto.playerId;
+    this.secondPlayer = {
+      id: dto.playerId,
+    } as Player;
+
+    this.startDate = new Date();
     this.status = GameStatus.Active;
   }
 

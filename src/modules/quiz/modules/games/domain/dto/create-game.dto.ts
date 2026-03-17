@@ -1,6 +1,6 @@
 export class CreateGameDto {
-  firstPlayerProgressId: string;
-  questions: GameQuestionItem[];
+  id: string;
+  playerId: string;
 }
 
 export enum GameStatus {

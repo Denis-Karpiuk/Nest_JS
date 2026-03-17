@@ -46,6 +46,16 @@ export class QuestionsRepository {
       .getMany();
   }
 
+  async findQuestionsByIds(ids: string[]): Promise<Question[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return this.questionsRepository
+      .createQueryBuilder('q')
+      .where('q.id IN (:...ids)', { ids })
+      .getMany();
+  }
+
   save(question: Question) {
     return this.questionsRepository.save(question);
   }

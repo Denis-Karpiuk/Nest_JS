@@ -13,10 +13,14 @@ export class GameQueryRepository {
   ) {}
 
   async getByIdOrNotFoundFail(id: string): Promise<Game> {
-    const game = await this.gamesRepository
-      .createQueryBuilder('game')
-      .where('game.id = :id', { id })
-      .getOne();
+    const game = await this.gamesRepository.findOne({
+      where: { id },
+      relations: {
+        firstPlayer: { playerAccount: true },
+        secondPlayer: { playerAccount: true },
+        questions: { question: true },
+      },
+    });
 
     if (!game) {
       throw new DomainException({
@@ -37,8 +41,8 @@ export class GameQueryRepository {
   async getGameByPlayerId(playerId: string): Promise<Game | null> {
     return await this.gamesRepository
       .createQueryBuilder('game')
-      .where('game.firstPlayerProgressId = :playerId', { playerId })
-      .orWhere('game.secondPlayerProgressId = :playerId', { playerId })
+      .where('game.firstPlayerId = :playerId', { playerId })
+      .orWhere('game.secondPlayerId = :playerId', { playerId })
       .getOne();
   }
 
