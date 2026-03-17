@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
@@ -8,6 +8,9 @@ import { Game } from '../domain/game.entity';
 import { AddAnswerCommand } from '../application/usecases/add-answer.usecase';
 import { AnswerViewDto } from './view-dto/answer.view-dto';
 import { AddAnswerInputDto } from './input-dto/add-answer.input.dto';
+import { GetGameByIdQuery } from '../application/queries/get-game-by-id.query-handler';
+import { GameViewDto } from './view-dto/game.view-dto';
+import { GetUserCurrentGameQuery } from '../application/queries/get-user-current-game.query-handler';
 
 @Controller('pair-game-quiz/pairs')
 export class PairsController {
@@ -25,6 +28,16 @@ export class PairsController {
       new ConnectPairGameCommand({ playerId: user.id }),
     );
   }
+  @Get('my-current')
+  @UseGuards(JwtAuthGuard)
+  async getUserCurrentGame(
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<GameViewDto> {
+    return await this.queryBus.execute<GetUserCurrentGameQuery, GameViewDto>(
+      new GetUserCurrentGameQuery(user.id),
+    );
+  }
+
   @Post('my-current/answers')
   @UseGuards(JwtAuthGuard)
   async addAnswer(
@@ -33,6 +46,14 @@ export class PairsController {
   ): Promise<AnswerViewDto> {
     return await this.commandBus.execute<AddAnswerCommand, AnswerViewDto>(
       new AddAnswerCommand({ ...addAnswerInputDto, userId: user.id }),
+    );
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async getGameById(@Param('id') id: string): Promise<GameViewDto> {
+    return await this.queryBus.execute<GetGameByIdQuery, GameViewDto>(
+      new GetGameByIdQuery(id),
     );
   }
 }

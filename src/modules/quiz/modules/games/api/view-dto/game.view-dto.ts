@@ -16,7 +16,7 @@ export class GameViewDto {
 
   static mapToView(game: Game, questions: Question[]): GameViewDto {
     const dto = new GameViewDto();
-
+    console.log(game);
     dto.id = game.id;
     dto.status = game.status;
     dto.questions = questions?.map(QuestionViewDto.mapToView);

@@ -6,9 +6,9 @@ import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
 import { Answer } from '../../domain/answer.entity';
 import { AnswerStatus } from '../../domain/dto/create-answer.dto';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
-import { GameQuestionRepository } from '../../infrastructure/game.question.repository';
 import { GameRepository } from '../../infrastructure/game.repository';
 import { PlayerRepository } from '../../infrastructure/player.repository';
+import { GameQuestionRepository } from '../../infrastructure/game.question.repository';
 
 export class AddAnswerCommand {
   constructor(public readonly dto: AddAnswerInputDto) {}

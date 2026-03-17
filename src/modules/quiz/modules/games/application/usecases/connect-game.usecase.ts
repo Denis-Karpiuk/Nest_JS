@@ -9,9 +9,9 @@ import { GameQuestion } from '../../domain/game-question.entity';
 import { Game } from '../../domain/game.entity';
 import { Player } from '../../domain/player.entity';
 import { GameQueryRepository } from '../../infrastructure/game.query.repository';
-import { GameQuestionRepository } from '../../infrastructure/game.question.repository';
 import { GameRepository } from '../../infrastructure/game.repository';
 import { PlayerRepository } from '../../infrastructure/player.repository';
+import { GameQuestionRepository } from '../../infrastructure/game.question.repository';
 
 export class ConnectPairGameCommand {
   constructor(public readonly dto: CreatePairGameInputDto) {}

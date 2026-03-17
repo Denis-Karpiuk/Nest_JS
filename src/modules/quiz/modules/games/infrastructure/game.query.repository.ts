@@ -41,6 +41,10 @@ export class GameQueryRepository {
   async getGameByPlayerId(playerId: string): Promise<Game | null> {
     return await this.gamesRepository
       .createQueryBuilder('game')
+      .leftJoinAndSelect('game.firstPlayer', 'firstPlayer')
+      .leftJoinAndSelect('firstPlayer.playerAccount', 'firstPlayerAccount')
+      .leftJoinAndSelect('game.secondPlayer', 'secondPlayer')
+      .leftJoinAndSelect('secondPlayer.playerAccount', 'secondPlayerAccount')
       .where('game.firstPlayerId = :playerId', { playerId })
       .orWhere('game.secondPlayerId = :playerId', { playerId })
       .getOne();
