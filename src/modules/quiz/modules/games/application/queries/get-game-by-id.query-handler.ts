@@ -4,9 +4,12 @@ import { GameQueryRepository } from '../../infrastructure/game.query.repository'
 import { GameQuestionQueryRepository } from '../../infrastructure/game.question.query.repository';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { UuidInputDto } from '../../api/input-dto/uuid.input.dto';
 
 export class GetGameByIdQuery {
-  constructor(public readonly dto: { gameId: string; userId: string }) {}
+  constructor(
+    public readonly dto: { gameId: UuidInputDto['id']; userId: string },
+  ) {}
 }
 
 @QueryHandler(GetGameByIdQuery)
