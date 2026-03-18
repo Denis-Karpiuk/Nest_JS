@@ -63,4 +63,9 @@ export class Game {
   updateStatus(dto: UpdateGameDto) {
     this.status = dto.status;
   }
+
+  finishGame() {
+    this.status = GameStatus.Finished;
+    this.finishDate = new Date();
+  }
 }

@@ -4,6 +4,7 @@ import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes'
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { Repository } from 'typeorm';
 import { Game } from '../domain/game.entity';
+import { GameStatus } from '../domain/dto/create-game.dto';
 
 @Injectable()
 export class GameQueryRepository {
@@ -47,6 +48,39 @@ export class GameQueryRepository {
       .leftJoinAndSelect('secondPlayer.playerAccount', 'secondPlayerAccount')
       .where('game.firstPlayerId = :playerId', { playerId })
       .orWhere('game.secondPlayerId = :playerId', { playerId })
+      .getOne();
+  }
+
+  async findActiveOrPendingGameByUserId(userId: string): Promise<Game | null> {
+    return await this.gamesRepository
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.firstPlayer', 'firstPlayer')
+      .leftJoinAndSelect('firstPlayer.playerAccount', 'fpAccount')
+      .leftJoinAndSelect('game.secondPlayer', 'secondPlayer')
+      .leftJoinAndSelect('secondPlayer.playerAccount', 'spAccount')
+      .where('game.status IN (:...statuses)', {
+        statuses: [GameStatus.Active, GameStatus.PendingSecondPlayer],
+      })
+      .andWhere(
+        '(fpAccount.id = :userId OR spAccount.id = :userId)',
+        { userId },
+      )
+      .getOne();
+  }
+
+  async findActiveGameByUserId(userId: string): Promise<Game | null> {
+    return await this.gamesRepository
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.firstPlayer', 'firstPlayer')
+      .leftJoinAndSelect('firstPlayer.playerAccount', 'fpAccount')
+      .leftJoinAndSelect('game.secondPlayer', 'secondPlayer')
+      .leftJoinAndSelect('secondPlayer.playerAccount', 'spAccount')
+      .leftJoinAndSelect('game.questions', 'questions')
+      .leftJoinAndSelect('questions.question', 'question')
+      .where('game.status = :status', { status: GameStatus.Active })
+      .andWhere('(fpAccount.id = :userId OR spAccount.id = :userId)', {
+        userId,
+      })
       .getOne();
   }
 

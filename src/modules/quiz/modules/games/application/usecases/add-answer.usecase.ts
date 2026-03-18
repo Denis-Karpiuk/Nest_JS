@@ -6,9 +6,9 @@ import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
 import { Answer } from '../../domain/answer.entity';
 import { AnswerStatus } from '../../domain/dto/create-answer.dto';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
-import { GameRepository } from '../../infrastructure/game.repository';
-import { PlayerRepository } from '../../infrastructure/player.repository';
+import { GameQueryRepository } from '../../infrastructure/game.query.repository';
 import { GameQuestionRepository } from '../../infrastructure/game.question.repository';
+import { GameRepository } from '../../infrastructure/game.repository';
 
 export class AddAnswerCommand {
   constructor(public readonly dto: AddAnswerInputDto) {}
@@ -17,34 +17,66 @@ export class AddAnswerCommand {
 @CommandHandler(AddAnswerCommand)
 export class AddAnswerCommandUseCase implements ICommandHandler<AddAnswerCommand> {
   constructor(
+    private readonly gameQueryRepository: GameQueryRepository,
     private readonly gameRepository: GameRepository,
     private readonly answerRepository: AnswerRepository,
-    private readonly playerRepository: PlayerRepository,
     private readonly gameQuestionRepository: GameQuestionRepository,
   ) {}
 
   async execute({ dto }: AddAnswerCommand): Promise<AnswerViewDto> {
-    const player = await this.playerRepository.findByUserIdOrNotFoundFail(
+    const game = await this.gameQueryRepository.findActiveGameByUserId(
       dto.userId,
     );
 
-    const game = await this.gameRepository.findByPlayerIdOrNotFoundFail(
-      player.id,
-    );
+    if (!game) {
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+        message: 'You are not in an active pair',
+        extensions: [
+          {
+            field: 'answers',
+            message: 'You are not in an active pair',
+          },
+        ],
+      });
+    }
 
-    const answers = await this.answerRepository.findByPlayerId(player.id);
+    const player =
+      game.firstPlayer?.playerAccount?.id === dto.userId
+        ? game.firstPlayer
+        : game.secondPlayer;
+
+    if (!player) {
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+        message: 'You are not in an active pair',
+        extensions: [
+          { field: 'answers', message: 'You are not in an active pair' },
+        ],
+      });
+    }
 
     const gameQuestions =
       await this.gameQuestionRepository.findByGameIdOrNotFoundFail(game.id);
 
-    if (answers.length === gameQuestions.length) {
+    const gameQuestionIds = new Set(gameQuestions.map((gq) => gq.question.id));
+    const allAnswers = await this.answerRepository.findByPlayerId(player.id);
+    const answers = allAnswers
+      .filter((a) => gameQuestionIds.has(a.questionId))
+      .sort(
+        (a, b) =>
+          gameQuestions.findIndex((gq) => gq.question.id === a.questionId) -
+          gameQuestions.findIndex((gq) => gq.question.id === b.questionId),
+      );
+
+    if (answers.length >= gameQuestions.length) {
       throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'All questions answered',
+        code: DomainExceptionCode.Forbidden,
+        message: 'All questions already answered',
         extensions: [
           {
             field: 'answers',
-            message: 'All questions answered',
+            message: 'All questions already answered',
           },
         ],
       });
@@ -63,12 +95,29 @@ export class AddAnswerCommandUseCase implements ICommandHandler<AddAnswerCommand
       answerStatus: isCorrect ? AnswerStatus.Correct : AnswerStatus.Incorrect,
     });
 
-    await this.answerRepository.save(answer);
+    const savedAnswer = await this.answerRepository.save(answer);
 
-    const savedAnswer =
-      await this.answerRepository.findByQuestionIdOrNotFoundFail(
-        answer.questionId,
-      );
+    const firstPlayerAnswers = await this.answerRepository.findByPlayerId(
+      game.firstPlayer.id,
+    );
+    const secondPlayerAnswers = game.secondPlayer
+      ? await this.answerRepository.findByPlayerId(game.secondPlayer.id)
+      : [];
+    const firstPlayerGameAnswers = firstPlayerAnswers.filter((a) =>
+      gameQuestionIds.has(a.questionId),
+    );
+    const secondPlayerGameAnswers = secondPlayerAnswers.filter((a) =>
+      gameQuestionIds.has(a.questionId),
+    );
+    const questionsCount = gameQuestions.length;
+    const bothPlayersFinished =
+      firstPlayerGameAnswers.length === questionsCount &&
+      secondPlayerGameAnswers.length === questionsCount;
+
+    if (bothPlayersFinished) {
+      game.finishGame();
+      await this.gameRepository.save(game);
+    }
 
     return AnswerViewDto.mapToView(savedAnswer);
   }

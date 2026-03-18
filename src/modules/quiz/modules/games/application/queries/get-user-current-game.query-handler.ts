@@ -2,7 +2,6 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GameViewDto } from '../../api/view-dto/game.view-dto';
 import { GameQueryRepository } from '../../infrastructure/game.query.repository';
 import { GameQuestionQueryRepository } from '../../infrastructure/game.question.query.repository';
-import { PlayerRepository } from '../../infrastructure/player.repository';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 
@@ -13,16 +12,13 @@ export class GetUserCurrentGameQuery {
 @QueryHandler(GetUserCurrentGameQuery)
 export class GetUserCurrentGameQueryHandler implements IQueryHandler<GetUserCurrentGameQuery> {
   constructor(
-    private readonly playerRepository: PlayerRepository,
     private readonly gameQueryRepository: GameQueryRepository,
     private readonly gameQuestionQueryRepository: GameQuestionQueryRepository,
   ) {}
 
   async execute({ userId }: GetUserCurrentGameQuery): Promise<GameViewDto> {
-    const player =
-      await this.playerRepository.findByUserIdOrNotFoundFail(userId);
-
-    const game = await this.gameQueryRepository.getGameByPlayerId(player.id);
+    const game =
+      await this.gameQueryRepository.findActiveOrPendingGameByUserId(userId);
 
     if (!game) {
       throw new DomainException({
@@ -31,10 +27,8 @@ export class GetUserCurrentGameQueryHandler implements IQueryHandler<GetUserCurr
       });
     }
 
-    console.log(game.id);
-
     const questions = await this.gameQuestionQueryRepository.findManyByGameId(
-      game?.id,
+      game.id,
     );
 
     return GameViewDto.mapToView(game, questions);

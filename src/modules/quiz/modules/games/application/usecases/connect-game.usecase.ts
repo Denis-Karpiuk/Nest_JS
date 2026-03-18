@@ -1,5 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { v4 as uuidv4 } from 'uuid';
+import { DomainException } from 'src/core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { Question } from '../../../questions/domain/question.entity';
 import { QuestionsRepository } from '../../../questions/infrastructure/questions.repository';
 import { CreatePairGameInputDto } from '../../api/input-dto/create-pair-game.input.dto';
@@ -29,6 +31,23 @@ export class ConnectGameCommandUseCase implements ICommandHandler<ConnectPairGam
 
   async execute(command: ConnectPairGameCommand): Promise<GameViewDto> {
     const dto = command.dto;
+
+    const existingGame =
+      await this.gameQueryRepository.findActiveOrPendingGameByUserId(
+        dto.playerId,
+      );
+    if (existingGame) {
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+        message: 'You are already participating in an active pair',
+        extensions: [
+          {
+            field: 'connection',
+            message: 'You are already participating in an active pair',
+          },
+        ],
+      });
+    }
 
     const pendingSecondPlayerGame = await this.gameRepository.findGamyByStatus(
       GameStatus.PendingSecondPlayer,

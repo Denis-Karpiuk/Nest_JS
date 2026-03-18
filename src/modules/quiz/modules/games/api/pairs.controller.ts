@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from 'src/modules/users-accounts/guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from 'src/modules/users-accounts/guards/decorators/params/extract-user-from-request.decorator';
@@ -51,9 +59,12 @@ export class PairsController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async getGameById(@Param('id') id: string): Promise<GameViewDto> {
+  async getGameById(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<GameViewDto> {
     return await this.queryBus.execute<GetGameByIdQuery, GameViewDto>(
-      new GetGameByIdQuery(id),
+      new GetGameByIdQuery({ gameId: id, userId: user.id }),
     );
   }
 }

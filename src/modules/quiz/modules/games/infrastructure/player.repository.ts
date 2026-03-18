@@ -11,9 +11,10 @@ export class PlayerRepository {
   ) {}
 
   async findByUserIdOrNotFoundFail(userId: string): Promise<Player> {
-    const player = await this.playerRepository.findOne({
-      where: { playerAccount: { id: userId } },
-    });
+    const player = await this.playerRepository
+      .createQueryBuilder('player')
+      .where('player.playerAccount.id = :userId', { userId })
+      .getOne();
 
     if (!player) {
       throw new DomainException({

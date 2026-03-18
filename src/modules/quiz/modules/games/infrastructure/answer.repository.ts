@@ -31,7 +31,7 @@ export class AnswerRepository {
     return answer;
   }
 
-  async save(answer: Answer): Promise<void> {
-    await this.answerRepository.save(answer);
+  async save(answer: Answer): Promise<Answer> {
+    return this.answerRepository.save(answer);
   }
 }

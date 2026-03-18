@@ -17,6 +17,7 @@ export class GameQuestionRepository {
       .createQueryBuilder('gameQuestion')
       .where('gameQuestion.gameId = :gameId', { gameId })
       .leftJoinAndSelect('gameQuestion.question', 'question')
+      .orderBy('gameQuestion.id', 'ASC')
       .getMany();
 
     if (!gameQuestions) {
