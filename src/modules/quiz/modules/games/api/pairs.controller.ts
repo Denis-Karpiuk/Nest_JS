@@ -21,7 +21,6 @@ import { AddAnswerInputDto } from './input-dto/add-answer.input.dto';
 import { GetGameByIdQuery } from '../application/queries/get-game-by-id.query-handler';
 import { GameViewDto } from './view-dto/game.view-dto';
 import { GetUserCurrentGameQuery } from '../application/queries/get-user-current-game.query-handler';
-import { UuidInputDto } from './input-dto/uuid.input.dto';
 
 @Controller('pair-game-quiz/pairs')
 export class PairsController {
@@ -65,11 +64,11 @@ export class PairsController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async getGameById(
-    @Param('id', ParseUUIDPipe) id: UuidInputDto,
+    @Param('id', ParseUUIDPipe) id: string,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<GameViewDto> {
     return await this.queryBus.execute<GetGameByIdQuery, GameViewDto>(
-      new GetGameByIdQuery({ gameId: id.id, userId: user.id }),
+      new GetGameByIdQuery({ gameId: id, userId: user.id }),
     );
   }
 }

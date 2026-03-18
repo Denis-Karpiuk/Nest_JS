@@ -13,6 +13,7 @@ import { postgresModule } from './postgres-module';
 import { ThrottleHttpExceptionsFilter } from './core/exceptions/filters/throttle-exceptions.filter';
 import { CoreModule } from './core/core.module';
 import { QuizModule } from './modules/quiz/quiz.module';
+import { UUIDExceptionsFilter } from './core/exceptions/filters/uuid-exceptions.filter';
 
 @Module({
   imports: [
@@ -39,6 +40,10 @@ import { QuizModule } from './modules/quiz/quiz.module';
     {
       provide: APP_FILTER,
       useClass: DomainHttpExceptionsFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: UUIDExceptionsFilter,
     },
   ],
 })
