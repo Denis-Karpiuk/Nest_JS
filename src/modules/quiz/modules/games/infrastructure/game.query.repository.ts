@@ -84,7 +84,7 @@ export class GameQueryRepository {
       .getOne();
   }
 
-  async getAllGames(
+  async getAllPaginatedGames(
     query: GetAllGamesQueryParamsDto,
     userId: string,
   ): Promise<{ games: Game[]; totalCount: number }> {
@@ -104,10 +104,21 @@ export class GameQueryRepository {
       .take(query.pageSize);
 
     const sortDir = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
-    // In API `pairCreatedDate` corresponds to DB `games.createdAt`.
-    qb.orderBy('games.createdAt', sortDir);
+    qb.orderBy(query.sortBy, sortDir);
 
     const [games, totalCount] = await qb.getManyAndCount();
     return { games, totalCount };
+  }
+
+  getFinishedGamesByUserId(userId: string): Promise<Game[]> {
+    return this.gamesRepository
+      .createQueryBuilder('games')
+      .leftJoinAndSelect('games.firstPlayer', 'firstPlayer')
+      .leftJoinAndSelect('firstPlayer.playerAccount', 'fpAccount')
+      .leftJoinAndSelect('games.secondPlayer', 'secondPlayer')
+      .leftJoinAndSelect('secondPlayer.playerAccount', 'spAccount')
+      .where('(fpAccount.id = :userId OR spAccount.id = :userId)', { userId })
+      .andWhere('games.status = :status', { status: GameStatus.Finished })
+      .getMany();
   }
 }

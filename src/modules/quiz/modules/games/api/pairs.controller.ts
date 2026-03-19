@@ -25,6 +25,8 @@ import { GetUserCurrentGameQuery } from '../application/queries/get-user-current
 import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 import { GetAllGamesQueryParamsDto } from './input-dto/get-all-games-query.input-dto';
 import { GetAllUserGamesQuery } from '../application/queries/get-all-user-games.query-handler';
+import { MyGameStatisticViewDto } from './view-dto/my-game-statistic.view-dto';
+import { GetGamesStatisticsQuery } from '../application/queries/get-games-statistics.query-handler';
 
 @Controller('pair-game-quiz/pairs')
 export class PairsController {
@@ -75,6 +77,17 @@ export class PairsController {
       GetAllUserGamesQuery,
       PaginatedViewDto<GameViewDto[]>
     >(new GetAllUserGamesQuery(query, user.id));
+  }
+
+  @Get('my-statistics')
+  @UseGuards(JwtAuthGuard)
+  async getGamesStatistics(
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<MyGameStatisticViewDto> {
+    return await this.queryBus.execute<
+      GetGamesStatisticsQuery,
+      MyGameStatisticViewDto
+    >(new GetGamesStatisticsQuery(user.id));
   }
 
   @Get(':id')

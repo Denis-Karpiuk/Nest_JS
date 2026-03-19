@@ -27,10 +27,8 @@ export class GetAllUserGamesQueryHandler implements IQueryHandler<GetAllUserGame
     query,
     userId,
   }: GetAllUserGamesQuery): Promise<PaginatedViewDto<GameViewDto[]>> {
-    const { games, totalCount } = await this.gameQueryRepository.getAllGames(
-      query,
-      userId,
-    );
+    const { games, totalCount } =
+      await this.gameQueryRepository.getAllPaginatedGames(query, userId);
 
     const playerIds: string[] = games
       .flatMap((game) => [
