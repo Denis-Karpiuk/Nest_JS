@@ -36,8 +36,17 @@ export class GetAllUserGamesQueryHandler implements IQueryHandler<GetAllUserGame
     const { games, totalCount } =
       await this.gameQueryRepository.getAllGamesByPlayerIds(playerIds, query);
 
-    const answers: Answer[] = playerIds.length
-      ? await this.answerRepository.findByPlayerIds(playerIds)
+    const allGamePlayerIds = Array.from(
+      new Set(
+        games.flatMap((game) => [
+          game.firstPlayer.id,
+          ...(game.secondPlayer ? [game.secondPlayer.id] : []),
+        ]),
+      ),
+    );
+
+    const answers: Answer[] = allGamePlayerIds.length
+      ? await this.answerRepository.findByPlayerIds(allGamePlayerIds)
       : [];
 
     const gameIds = games.map((game) => game.id);
@@ -48,6 +57,7 @@ export class GetAllUserGamesQueryHandler implements IQueryHandler<GetAllUserGame
     const items = games.map((game) => {
       const questions = gameQuestions
         .filter((gq) => gq.game.id === game.id)
+        .sort((a, b) => a.id - b.id)
         .map((gq) => gq.question);
 
       const questionIds = new Set(questions.map((q) => q.id));

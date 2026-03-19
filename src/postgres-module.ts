@@ -9,7 +9,11 @@ export const postgresModule = TypeOrmModule.forRootAsync({
     const base = {
       type: 'postgres' as const,
       schema: 'public',
-      synchronize: configService.get('NODE_ENV') === 'development',
+      // В тестах могут не выполняться миграции; включаем синхронизацию,
+      // чтобы схема БД соответствовала текущим entities.
+      synchronize: ['development', 'test', 'testing'].includes(
+        String(configService.get('NODE_ENV') ?? ''),
+      ),
       logging: false,
       autoLoadEntities: true,
     };
