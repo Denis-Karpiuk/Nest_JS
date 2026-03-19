@@ -44,9 +44,11 @@ export class GetGamesStatisticsQueryHandler implements IQueryHandler<GetGamesSta
 
     const gamesCount = finishedGames.length;
     const avgScores = gamesCount ? sumScore / gamesCount : 0;
+    // Округляем до 2 знаков после запятой (число, а не строка).
+    const roundedAvgScores = Math.round(avgScores * 100) / 100;
 
     dto.sumScore = sumScore;
-    dto.avgScores = avgScores;
+    dto.avgScores = roundedAvgScores;
     dto.gamesCount = gamesCount;
     dto.winsCount = winsCount;
     dto.lossesCount = lossesCount;

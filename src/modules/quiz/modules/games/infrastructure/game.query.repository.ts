@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { GameStatus } from '../domain/dto/create-game.dto';
 import { Game } from '../domain/game.entity';
 import { GetAllGamesQueryParamsDto } from '../api/input-dto/get-all-games-query.input-dto';
+import { PairSortBy } from '../api/input-dto/pair-sort-by';
 
 @Injectable()
 export class GameQueryRepository {
@@ -98,13 +99,25 @@ export class GameQueryRepository {
       .leftJoinAndSelect('gameQuestions.question', 'question')
       .where('(fpAccount.id = :userId OR spAccount.id = :userId)', { userId })
       .andWhere('games.status IN (:...statuses)', {
-        statuses: [GameStatus.Active, GameStatus.PendingSecondPlayer],
+        statuses: [
+          GameStatus.Active,
+          GameStatus.PendingSecondPlayer,
+          GameStatus.Finished,
+        ],
       })
       .skip(query.calculateSkip())
       .take(query.pageSize);
 
     const sortDir = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
-    qb.orderBy(query.sortBy, sortDir);
+    // sortBy is either `createdAt` or `status` (see PairSortBy enum)
+    qb.orderBy(`games.${query.sortBy}`, sortDir);
+
+    // Для стабильности результата при сортировке по status
+    // (когда несколько игр имеют одинаковый status) — доп. сортируем по времени создания.
+    qb.addOrderBy('games.createdAt', 'DESC');
+
+    // Чтобы порядок `game.questions[]` был детерминированным для тестов.
+    qb.addOrderBy('gameQuestions.id', 'ASC');
 
     const [games, totalCount] = await qb.getManyAndCount();
     return { games, totalCount };
