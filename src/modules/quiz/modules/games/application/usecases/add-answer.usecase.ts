@@ -121,6 +121,41 @@ export class AddAnswerCommandUseCase implements ICommandHandler<AddAnswerCommand
       secondPlayerGameAnswers.length === questionsCount;
 
     if (bothPlayersFinished) {
+      const firstPlayerLastAnswerAt = firstPlayerGameAnswers.reduce(
+        (latest, current) =>
+          current.addedAt > latest ? current.addedAt : latest,
+        firstPlayerGameAnswers[0].addedAt,
+      );
+      const secondPlayerLastAnswerAt = secondPlayerGameAnswers.reduce(
+        (latest, current) =>
+          current.addedAt > latest ? current.addedAt : latest,
+        secondPlayerGameAnswers[0].addedAt,
+      );
+
+      const firstPlayerHasCorrectAnswer = firstPlayerGameAnswers.some(
+        (gameAnswer) => gameAnswer.answerStatus === AnswerStatus.Correct,
+      );
+      const secondPlayerHasCorrectAnswer = secondPlayerGameAnswers.some(
+        (gameAnswer) => gameAnswer.answerStatus === AnswerStatus.Correct,
+      );
+
+      if (
+        firstPlayerLastAnswerAt < secondPlayerLastAnswerAt &&
+        firstPlayerHasCorrectAnswer
+      ) {
+        game.firstPlayer.score += 1;
+        await this.playerRepository.save(game.firstPlayer);
+      }
+
+      if (
+        secondPlayerLastAnswerAt < firstPlayerLastAnswerAt &&
+        secondPlayerHasCorrectAnswer &&
+        game.secondPlayer
+      ) {
+        game.secondPlayer.score += 1;
+        await this.playerRepository.save(game.secondPlayer);
+      }
+
       game.finishGame();
       await this.gameRepository.save(game);
     }
