@@ -5,6 +5,8 @@ import { GameQuestionQueryRepository } from '../../infrastructure/game.question.
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { UuidInputDto } from '../../api/input-dto/uuid.input.dto';
+import { AnswerRepository } from '../../infrastructure/answer.repository';
+import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
 
 export class GetGameByIdQuery {
   constructor(
@@ -17,6 +19,7 @@ export class GetGameByIdQueryHandler implements IQueryHandler<GetGameByIdQuery> 
   constructor(
     private readonly gameQueryRepository: GameQueryRepository,
     private readonly gameQuestionQueryRepository: GameQuestionQueryRepository,
+    private readonly answerRepository: AnswerRepository,
   ) {}
 
   async execute({ dto }: GetGameByIdQuery): Promise<GameViewDto> {
@@ -46,7 +49,27 @@ export class GetGameByIdQueryHandler implements IQueryHandler<GetGameByIdQuery> 
     const questions = await this.gameQuestionQueryRepository.findManyByGameId(
       dto.gameId,
     );
+    const questionIds = new Set(questions.map((q) => q.id));
 
-    return GameViewDto.mapToView(game, questions);
+    const firstPlayerAnswers = (
+      await this.answerRepository.findByPlayerId(game.firstPlayer.id)
+    )
+      .filter((answer) => questionIds.has(answer.questionId))
+      .sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime())
+      .map(AnswerViewDto.mapToView);
+
+    const secondPlayerAnswers = game.secondPlayer
+      ? (await this.answerRepository.findByPlayerId(game.secondPlayer.id))
+          .filter((answer) => questionIds.has(answer.questionId))
+          .sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime())
+          .map(AnswerViewDto.mapToView)
+      : [];
+
+    return GameViewDto.mapToView(
+      game,
+      questions,
+      firstPlayerAnswers,
+      secondPlayerAnswers,
+    );
   }
 }

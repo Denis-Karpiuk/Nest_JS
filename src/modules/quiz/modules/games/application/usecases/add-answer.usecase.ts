@@ -9,6 +9,7 @@ import { AnswerRepository } from '../../infrastructure/answer.repository';
 import { GameQueryRepository } from '../../infrastructure/game.query.repository';
 import { GameQuestionRepository } from '../../infrastructure/game.question.repository';
 import { GameRepository } from '../../infrastructure/game.repository';
+import { PlayerRepository } from '../../infrastructure/player.repository';
 
 export class AddAnswerCommand {
   constructor(public readonly dto: AddAnswerInputDto) {}
@@ -21,6 +22,7 @@ export class AddAnswerCommandUseCase implements ICommandHandler<AddAnswerCommand
     private readonly gameRepository: GameRepository,
     private readonly answerRepository: AnswerRepository,
     private readonly gameQuestionRepository: GameQuestionRepository,
+    private readonly playerRepository: PlayerRepository,
   ) {}
 
   async execute({ dto }: AddAnswerCommand): Promise<AnswerViewDto> {
@@ -96,6 +98,10 @@ export class AddAnswerCommandUseCase implements ICommandHandler<AddAnswerCommand
     });
 
     const savedAnswer = await this.answerRepository.save(answer);
+    if (isCorrect) {
+      player.score += 1;
+      await this.playerRepository.save(player);
+    }
 
     const firstPlayerAnswers = await this.answerRepository.findByPlayerId(
       game.firstPlayer.id,

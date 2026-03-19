@@ -4,6 +4,8 @@ import { GameQueryRepository } from '../../infrastructure/game.query.repository'
 import { GameQuestionQueryRepository } from '../../infrastructure/game.question.query.repository';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { AnswerRepository } from '../../infrastructure/answer.repository';
+import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
 
 export class GetUserCurrentGameQuery {
   constructor(public readonly userId: string) {}
@@ -14,6 +16,7 @@ export class GetUserCurrentGameQueryHandler implements IQueryHandler<GetUserCurr
   constructor(
     private readonly gameQueryRepository: GameQueryRepository,
     private readonly gameQuestionQueryRepository: GameQuestionQueryRepository,
+    private readonly answerRepository: AnswerRepository,
   ) {}
 
   async execute({ userId }: GetUserCurrentGameQuery): Promise<GameViewDto> {
@@ -30,7 +33,27 @@ export class GetUserCurrentGameQueryHandler implements IQueryHandler<GetUserCurr
     const questions = await this.gameQuestionQueryRepository.findManyByGameId(
       game.id,
     );
+    const questionIds = new Set(questions.map((q) => q.id));
 
-    return GameViewDto.mapToView(game, questions);
+    const firstPlayerAnswers = (
+      await this.answerRepository.findByPlayerId(game.firstPlayer.id)
+    )
+      .filter((answer) => questionIds.has(answer.questionId))
+      .sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime())
+      .map(AnswerViewDto.mapToView);
+
+    const secondPlayerAnswers = game.secondPlayer
+      ? (await this.answerRepository.findByPlayerId(game.secondPlayer.id))
+          .filter((answer) => questionIds.has(answer.questionId))
+          .sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime())
+          .map(AnswerViewDto.mapToView)
+      : [];
+
+    return GameViewDto.mapToView(
+      game,
+      questions,
+      firstPlayerAnswers,
+      secondPlayerAnswers,
+    );
   }
 }
