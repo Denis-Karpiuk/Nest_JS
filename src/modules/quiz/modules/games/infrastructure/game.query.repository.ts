@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { GameStatus } from '../domain/dto/create-game.dto';
 import { Game } from '../domain/game.entity';
 import { GetAllGamesQueryParamsDto } from '../api/input-dto/get-all-games-query.input-dto';
-import { PairSortBy } from '../api/input-dto/pair-sort-by';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 
 @Injectable()
 export class GameQueryRepository {
@@ -83,6 +83,37 @@ export class GameQueryRepository {
         userId,
       })
       .getOne();
+  }
+
+  async getAllGamesByPlayerIds(
+    playerIds: string[],
+    query: GetAllGamesQueryParamsDto,
+  ): Promise<{ games: Game[]; totalCount: number }> {
+    const qb = this.gamesRepository
+      .createQueryBuilder('games')
+      .where(
+        'games.firstPlayerId IN (:...playerIds) OR games.secondPlayerId IN (:...playerIds)',
+        { playerIds },
+      )
+      .leftJoinAndSelect('games.firstPlayer', 'firstPlayer')
+      .leftJoinAndSelect('firstPlayer.playerAccount', 'fpAccount')
+      .leftJoinAndSelect('games.secondPlayer', 'secondPlayer')
+      .leftJoinAndSelect('secondPlayer.playerAccount', 'spAccount')
+
+      .skip(query.calculateSkip())
+      .take(query.pageSize);
+
+    const sortDir = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
+    // sortBy is either `createdAt` or `status` (see PairSortBy enum)
+    qb.orderBy(`games.${query.sortBy}`, sortDir);
+
+    // Для стабильности результата при сортировке по status
+    // (когда несколько игр имеют одинаковый status) — доп. сортируем по времени создания.
+    qb.addOrderBy('games.createdAt', 'DESC');
+
+    const [games, totalCount] = await qb.getManyAndCount();
+
+    return { games, totalCount };
   }
 
   async getAllPaginatedGames(

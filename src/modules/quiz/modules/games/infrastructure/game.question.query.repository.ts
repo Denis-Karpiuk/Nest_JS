@@ -39,4 +39,12 @@ export class GameQuestionQueryRepository {
 
     return gameQuestions.map((gq) => gq.question);
   }
+
+  async findManyByGameIds(gameIds: string[]): Promise<GameQuestion[]> {
+    return await this.gameQuestionRepository
+      .createQueryBuilder('gameQuestion')
+      .where('gameQuestion.gameId IN (:...gameIds)', { gameIds })
+      .leftJoinAndSelect('gameQuestion.question', 'question')
+      .getMany();
+  }
 }
