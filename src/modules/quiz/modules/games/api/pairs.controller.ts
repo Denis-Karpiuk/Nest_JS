@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -21,6 +22,9 @@ import { AddAnswerInputDto } from './input-dto/add-answer.input.dto';
 import { GetGameByIdQuery } from '../application/queries/get-game-by-id.query-handler';
 import { GameViewDto } from './view-dto/game.view-dto';
 import { GetUserCurrentGameQuery } from '../application/queries/get-user-current-game.query-handler';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
+import { GetAllGamesQueryParamsDto } from './input-dto/get-all-games-query.input-dto';
+import { GetAllUserGamesQuery } from '../application/queries/get-all-user-games.query-handler';
 
 @Controller('pair-game-quiz/pairs')
 export class PairsController {
@@ -59,6 +63,18 @@ export class PairsController {
     return await this.commandBus.execute<AddAnswerCommand, AnswerViewDto>(
       new AddAnswerCommand({ ...addAnswerInputDto, userId: user.id }),
     );
+  }
+
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  async getAllUserGames(
+    @ExtractUserFromRequest() user: UserContextDto,
+    @Query() query: GetAllGamesQueryParamsDto,
+  ): Promise<PaginatedViewDto<GameViewDto[]>> {
+    return await this.queryBus.execute<
+      GetAllUserGamesQuery,
+      PaginatedViewDto<GameViewDto[]>
+    >(new GetAllUserGamesQuery(query, user.id));
   }
 
   @Get(':id')

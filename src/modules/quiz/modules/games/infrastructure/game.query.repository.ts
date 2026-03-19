@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { Repository } from 'typeorm';
-import { Game } from '../domain/game.entity';
 import { GameStatus } from '../domain/dto/create-game.dto';
+import { Game } from '../domain/game.entity';
+import { GetAllGamesQueryParamsDto } from '../api/input-dto/get-all-games-query.input-dto';
 
 @Injectable()
 export class GameQueryRepository {
@@ -61,10 +62,9 @@ export class GameQueryRepository {
       .where('game.status IN (:...statuses)', {
         statuses: [GameStatus.Active, GameStatus.PendingSecondPlayer],
       })
-      .andWhere(
-        '(fpAccount.id = :userId OR spAccount.id = :userId)',
-        { userId },
-      )
+      .andWhere('(fpAccount.id = :userId OR spAccount.id = :userId)', {
+        userId,
+      })
       .getOne();
   }
 
@@ -84,45 +84,30 @@ export class GameQueryRepository {
       .getOne();
   }
 
-  // async getAllGames(
-  //   query: GetGamesQueryParamsDto,
-  // ): Promise<PaginatedViewDto<GameViewDto[]>> {
-  //   const qb = this.gamesRepository
-  //     .createQueryBuilder('question')
-  //     .skip(query.calculateSkip())
-  //     .take(query.pageSize);
+  async getAllGames(
+    query: GetAllGamesQueryParamsDto,
+    userId: string,
+  ): Promise<{ games: Game[]; totalCount: number }> {
+    const qb = this.gamesRepository
+      .createQueryBuilder('games')
+      .leftJoinAndSelect('games.firstPlayer', 'firstPlayer')
+      .leftJoinAndSelect('firstPlayer.playerAccount', 'fpAccount')
+      .leftJoinAndSelect('games.secondPlayer', 'secondPlayer')
+      .leftJoinAndSelect('secondPlayer.playerAccount', 'spAccount')
+      .leftJoinAndSelect('games.questions', 'gameQuestions')
+      .leftJoinAndSelect('gameQuestions.question', 'question')
+      .where('(fpAccount.id = :userId OR spAccount.id = :userId)', { userId })
+      .andWhere('games.status IN (:...statuses)', {
+        statuses: [GameStatus.Active, GameStatus.PendingSecondPlayer],
+      })
+      .skip(query.calculateSkip())
+      .take(query.pageSize);
 
-  //   const bodySearchTerm = query.bodySearchTerm;
-  //   if (bodySearchTerm) {
-  //     qb.andWhere('question.body ILIKE :term', {
-  //       term: `%${bodySearchTerm}%`,
-  //     });
-  //   }
+    const sortDir = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
+    // In API `pairCreatedDate` corresponds to DB `games.createdAt`.
+    qb.orderBy('games.createdAt', sortDir);
 
-  //   const publishedStatus = query.publishedStatus;
-  //   if (publishedStatus === PublishedStatuses.Published) {
-  //     qb.andWhere('question.published = :published', {
-  //       published: true,
-  //     });
-  //   }
-
-  //   if (publishedStatus === PublishedStatuses.NotPublished) {
-  //     qb.andWhere('question.published = :published', {
-  //       published: false,
-  //     });
-  //   }
-
-  //   const sortDir = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
-  //   qb.orderBy(`question.${query.sortBy}`, sortDir);
-
-  //   const [questions, totalCount] = await qb.getManyAndCount();
-  //   const items = questions.map(QuestionViewDto.mapToView);
-
-  //   return PaginatedViewDto.mapToView({
-  //     items,
-  //     totalCount,
-  //     page: query.pageNumber,
-  //     size: query.pageSize,
-  //   });
-  // }
+    const [games, totalCount] = await qb.getManyAndCount();
+    return { games, totalCount };
+  }
 }

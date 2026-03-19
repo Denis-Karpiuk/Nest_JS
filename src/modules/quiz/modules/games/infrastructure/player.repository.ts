@@ -25,6 +25,13 @@ export class PlayerRepository {
     return player;
   }
 
+  async findManyByUserId(userId: string): Promise<Player[]> {
+    return await this.playerRepository
+      .createQueryBuilder('player')
+      .where('player.playerAccount.id = :userId', { userId })
+      .getMany();
+  }
+
   async findByIdOrNotFoundFail(id: string): Promise<Player> {
     const player = await this.playerRepository.findOne({ where: { id } });
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Answer } from '../domain/answer.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { DomainException } from 'src/core/exceptions/domain-exceptions';
 
@@ -15,6 +15,15 @@ export class AnswerRepository {
   async findByPlayerId(playerId: string): Promise<Answer[]> {
     return await this.answerRepository.find({
       where: { player: { id: playerId } },
+    });
+  }
+
+  async findByPlayerIds(playerIds: string[]): Promise<Answer[]> {
+    if (!playerIds.length) return [];
+
+    // playerId - это поле в таблице answer (часть составного PK).
+    return await this.answerRepository.find({
+      where: { playerId: In(playerIds) },
     });
   }
 
