@@ -44,6 +44,7 @@ export class GameQuestionQueryRepository {
     return await this.gameQuestionRepository
       .createQueryBuilder('gameQuestion')
       .where('gameQuestion.gameId IN (:...gameIds)', { gameIds })
+      .leftJoinAndSelect('gameQuestion.game', 'game')
       .leftJoinAndSelect('gameQuestion.question', 'question')
       .getMany();
   }
