@@ -79,7 +79,7 @@ export class PairsController {
     >(new GetAllUserGamesQuery(query, user.id));
   }
 
-  @Get('my-statistics')
+  @Get('my-statistic')
   @UseGuards(JwtAuthGuard)
   async getGamesStatistics(
     @ExtractUserFromRequest() user: UserContextDto,
