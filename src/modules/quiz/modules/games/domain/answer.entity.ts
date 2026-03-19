@@ -14,8 +14,11 @@ export class Answer {
   @PrimaryColumn('uuid')
   public questionId: string;
 
+  @PrimaryColumn('uuid')
+  public playerId: string;
+
   @ManyToOne(() => Player)
-  @JoinColumn()
+  @JoinColumn({ name: 'playerId' })
   player: Player;
 
   @Column()
@@ -31,6 +34,7 @@ export class Answer {
     const answer = new this();
 
     answer.questionId = dto.questionId;
+    answer.playerId = dto.playerId;
     answer.player = { id: dto.playerId } as Player;
     answer.answer = dto.answer;
     answer.answerStatus = dto.answerStatus;

@@ -55,6 +55,11 @@ const AppDataSource = new DataSource({
     join(__dirname, 'modules/quiz/modules/questions/domain/question.entity.ts'),
     join(__dirname, 'modules/quiz/modules/games/domain/game.entity.ts'),
     join(__dirname, 'modules/quiz/modules/games/domain/player.entity.ts'),
+    join(
+      __dirname,
+      'modules/quiz/modules/games/domain/game-question.entity.ts',
+    ),
+    join(__dirname, 'modules/quiz/modules/games/domain/answer.entity.ts'),
   ],
   migrations: [join(__dirname, 'migrations', '*.ts')],
   // logging: process.env.NODE_ENV === 'development',
