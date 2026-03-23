@@ -27,6 +27,9 @@ import { GetAllGamesQueryParamsDto } from './input-dto/get-all-games-query.input
 import { GetAllUserGamesQuery } from '../application/queries/get-all-user-games.query-handler';
 import { MyGameStatisticViewDto } from './view-dto/my-game-statistic.view-dto';
 import { GetGamesStatisticsQuery } from '../application/queries/get-games-statistics.query-handler';
+import { GetTopUsersStatisticsQuery } from '../application/queries/get-top-users-statistics.query-handler';
+import { GetTopUsersQueryParamsDto } from './input-dto/get-top-users-query.input-dto';
+import { TopUsersViewDto } from './view-dto/top-users.view-dto';
 
 @Controller('pair-game-quiz')
 export class PairsController {
@@ -64,6 +67,16 @@ export class PairsController {
       GetGamesStatisticsQuery,
       MyGameStatisticViewDto
     >(new GetGamesStatisticsQuery(user.id));
+  }
+
+  @Get('users/top')
+  async getTopUsers(
+    @Query() query: GetTopUsersQueryParamsDto,
+  ): Promise<PaginatedViewDto<TopUsersViewDto[]>> {
+    return await this.queryBus.execute<
+      GetTopUsersStatisticsQuery,
+      PaginatedViewDto<TopUsersViewDto[]>
+    >(new GetTopUsersStatisticsQuery(query));
   }
 
   @Post('pairs/my-current/answers')

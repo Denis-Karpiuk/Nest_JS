@@ -18,6 +18,7 @@ import { GameQuestionRepository } from './infrastructure/game.question.repositor
 import { GetUserCurrentGameQueryHandler } from './application/queries/get-user-current-game.query-handler';
 import { GetAllUserGamesQueryHandler } from './application/queries/get-all-user-games.query-handler';
 import { GetGamesStatisticsQueryHandler } from './application/queries/get-games-statistics.query-handler';
+import { GetTopUsersStatisticsQueryHandler } from './application/queries/get-top-users-statistics.query-handler';
 
 const commandHandlers = [ConnectGameCommandUseCase, AddAnswerCommandUseCase];
 const queryHandlers = [
@@ -25,6 +26,7 @@ const queryHandlers = [
   GetUserCurrentGameQueryHandler,
   GetAllUserGamesQueryHandler,
   GetGamesStatisticsQueryHandler,
+  GetTopUsersStatisticsQueryHandler,
 ];
 @Module({
   imports: [

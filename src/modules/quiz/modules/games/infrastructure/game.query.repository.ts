@@ -6,7 +6,6 @@ import { Repository } from 'typeorm';
 import { GameStatus } from '../domain/dto/create-game.dto';
 import { Game } from '../domain/game.entity';
 import { GetAllGamesQueryParamsDto } from '../api/input-dto/get-all-games-query.input-dto';
-import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
 
 @Injectable()
 export class GameQueryRepository {
@@ -163,6 +162,17 @@ export class GameQueryRepository {
       .leftJoinAndSelect('secondPlayer.playerAccount', 'spAccount')
       .where('(fpAccount.id = :userId OR spAccount.id = :userId)', { userId })
       .andWhere('games.status = :status', { status: GameStatus.Finished })
+      .getMany();
+  }
+
+  getAllFinishedGames(): Promise<Game[]> {
+    return this.gamesRepository
+      .createQueryBuilder('games')
+      .leftJoinAndSelect('games.firstPlayer', 'firstPlayer')
+      .leftJoinAndSelect('firstPlayer.playerAccount', 'fpAccount')
+      .leftJoinAndSelect('games.secondPlayer', 'secondPlayer')
+      .leftJoinAndSelect('secondPlayer.playerAccount', 'spAccount')
+      .where('games.status = :status', { status: GameStatus.Finished })
       .getMany();
   }
 }
