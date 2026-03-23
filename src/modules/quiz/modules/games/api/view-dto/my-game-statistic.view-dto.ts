@@ -8,18 +8,41 @@ export class MyGameStatisticViewDto {
   lossesCount: number;
   drawsCount: number;
 
-  static mapToView(myGames: Game[]): MyGameStatisticViewDto {
+  static mapToView(myGames: Game[], userId: string): MyGameStatisticViewDto {
     const dto = new MyGameStatisticViewDto();
-    // В текущей модели `Game` не содержит данных, достаточных
-    // чтобы вычислить победителя/поражение без `userId`.
-    // Поэтому используем заглушку. Основная логика статистики —
-    // в query-handler `get-games-statistics`.
-    dto.gamesCount = myGames.length;
-    dto.sumScore = 0;
-    dto.avgScores = 0;
-    dto.winsCount = 0;
-    dto.lossesCount = 0;
-    dto.drawsCount = 0;
+
+    let sumScore = 0;
+    let winsCount = 0;
+    let lossesCount = 0;
+    let drawsCount = 0;
+
+    for (const game of myGames) {
+      const firstIsUser = game.firstPlayer?.playerAccount.id === userId;
+      const userPlayer = firstIsUser ? game.firstPlayer : game.secondPlayer;
+      const opponentPlayer = firstIsUser ? game.secondPlayer : game.firstPlayer;
+
+      if (!userPlayer || !opponentPlayer) continue;
+
+      const userScore = userPlayer.score;
+      const opponentScore = opponentPlayer.score;
+
+      sumScore += userScore;
+
+      if (userScore > opponentScore) winsCount += 1;
+      else if (userScore < opponentScore) lossesCount += 1;
+      else drawsCount += 1;
+    }
+
+    const gamesCount = myGames.length;
+    const avgScores = gamesCount ? sumScore / gamesCount : 0;
+    const roundedAvgScores = Math.round(avgScores * 100) / 100;
+
+    dto.sumScore = sumScore;
+    dto.avgScores = roundedAvgScores;
+    dto.gamesCount = gamesCount;
+    dto.winsCount = winsCount;
+    dto.lossesCount = lossesCount;
+    dto.drawsCount = drawsCount;
     return dto;
   }
 }
