@@ -10,6 +10,7 @@ import { GameQueryRepository } from '../../infrastructure/game.query.repository'
 import { GameQuestionRepository } from '../../infrastructure/game.question.repository';
 import { GameRepository } from '../../infrastructure/game.repository';
 import { PlayerRepository } from '../../infrastructure/player.repository';
+import { GameTimeoutService } from '../services/game-timeout.service';
 
 export class AddAnswerCommand {
   constructor(public readonly dto: AddAnswerInputDto) {}
@@ -23,6 +24,7 @@ export class AddAnswerCommandUseCase implements ICommandHandler<AddAnswerCommand
     private readonly answerRepository: AnswerRepository,
     private readonly gameQuestionRepository: GameQuestionRepository,
     private readonly playerRepository: PlayerRepository,
+    private readonly gameTimeoutService: GameTimeoutService,
   ) {}
 
   async execute({ dto }: AddAnswerCommand): Promise<AnswerViewDto> {
@@ -121,6 +123,8 @@ export class AddAnswerCommandUseCase implements ICommandHandler<AddAnswerCommand
       secondPlayerGameAnswers.length === questionsCount;
 
     if (bothPlayersFinished) {
+      this.gameTimeoutService.cancelTimeout(game.id);
+
       const firstPlayerLastAnswerAt = firstPlayerGameAnswers.reduce(
         (latest, current) =>
           current.addedAt > latest ? current.addedAt : latest,
@@ -158,6 +162,11 @@ export class AddAnswerCommandUseCase implements ICommandHandler<AddAnswerCommand
 
       game.finishGame();
       await this.gameRepository.save(game);
+    } else if (
+      firstPlayerGameAnswers.length === questionsCount ||
+      secondPlayerGameAnswers.length === questionsCount
+    ) {
+      this.gameTimeoutService.scheduleFinishIfNeeded(game.id);
     }
 
     return AnswerViewDto.mapToView(savedAnswer);

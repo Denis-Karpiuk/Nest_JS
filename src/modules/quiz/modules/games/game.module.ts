@@ -20,6 +20,7 @@ import { GetAllUserGamesQueryHandler } from './application/queries/get-all-user-
 import { GetGamesStatisticsQueryHandler } from './application/queries/get-games-statistics.query-handler';
 import { GetTopUsersStatisticsQueryHandler } from './application/queries/get-top-users-statistics.query-handler';
 import { ScheduleModule } from '@nestjs/schedule';
+import { GameTimeoutService } from './application/services/game-timeout.service';
 
 const commandHandlers = [ConnectGameCommandUseCase, AddAnswerCommandUseCase];
 const queryHandlers = [
@@ -44,6 +45,7 @@ const queryHandlers = [
     GameQuestionQueryRepository,
     AnswerRepository,
     GameQuestionRepository,
+    GameTimeoutService,
   ],
   controllers: [PairsController],
 })

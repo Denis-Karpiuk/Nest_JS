@@ -7,6 +7,7 @@ import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes'
 import { UuidInputDto } from '../../api/input-dto/uuid.input.dto';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
 import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
+import { GameTimeoutService } from '../services/game-timeout.service';
 
 export class GetGameByIdQuery {
   constructor(
@@ -20,12 +21,15 @@ export class GetGameByIdQueryHandler implements IQueryHandler<GetGameByIdQuery> 
     private readonly gameQueryRepository: GameQueryRepository,
     private readonly gameQuestionQueryRepository: GameQuestionQueryRepository,
     private readonly answerRepository: AnswerRepository,
+    private readonly gameTimeoutService: GameTimeoutService,
   ) {}
 
   async execute({ dto }: GetGameByIdQuery): Promise<GameViewDto> {
-    const game = await this.gameQueryRepository.getByIdOrNotFoundFail(
+    let game = await this.gameQueryRepository.getByIdOrNotFoundFail(
       dto.gameId,
     );
+    await this.gameTimeoutService.finishIfTimeoutExpired(game.id);
+    game = await this.gameQueryRepository.getByIdOrNotFoundFail(dto.gameId);
 
     const firstPlayerUserId = game.firstPlayer?.playerAccount?.id;
     const secondPlayerUserId = game.secondPlayer?.playerAccount?.id;

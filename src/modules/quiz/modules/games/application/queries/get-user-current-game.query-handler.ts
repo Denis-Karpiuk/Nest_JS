@@ -6,6 +6,7 @@ import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
 import { AnswerViewDto } from '../../api/view-dto/answer.view-dto';
+import { GameTimeoutService } from '../services/game-timeout.service';
 
 export class GetUserCurrentGameQuery {
   constructor(public readonly userId: string) {}
@@ -17,10 +18,21 @@ export class GetUserCurrentGameQueryHandler implements IQueryHandler<GetUserCurr
     private readonly gameQueryRepository: GameQueryRepository,
     private readonly gameQuestionQueryRepository: GameQuestionQueryRepository,
     private readonly answerRepository: AnswerRepository,
+    private readonly gameTimeoutService: GameTimeoutService,
   ) {}
 
   async execute({ userId }: GetUserCurrentGameQuery): Promise<GameViewDto> {
-    const game =
+    let game =
+      await this.gameQueryRepository.findActiveOrPendingGameByUserId(userId);
+
+    if (!game) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: 'Game not found',
+      });
+    }
+    await this.gameTimeoutService.finishIfTimeoutExpired(game.id);
+    game =
       await this.gameQueryRepository.findActiveOrPendingGameByUserId(userId);
 
     if (!game) {
