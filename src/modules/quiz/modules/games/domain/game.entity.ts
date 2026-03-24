@@ -29,7 +29,12 @@ export class Game {
   @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.game)
   questions: GameQuestion[];
 
-  @Column()
+  @Column({
+    type: 'enum',
+    enum: GameStatus,
+    default: GameStatus.PendingSecondPlayer,
+    nullable: true,
+  })
   status: GameStatus;
 
   @CreateDateColumn()

@@ -19,6 +19,7 @@ import { GetUserCurrentGameQueryHandler } from './application/queries/get-user-c
 import { GetAllUserGamesQueryHandler } from './application/queries/get-all-user-games.query-handler';
 import { GetGamesStatisticsQueryHandler } from './application/queries/get-games-statistics.query-handler';
 import { GetTopUsersStatisticsQueryHandler } from './application/queries/get-top-users-statistics.query-handler';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const commandHandlers = [ConnectGameCommandUseCase, AddAnswerCommandUseCase];
 const queryHandlers = [
@@ -32,6 +33,7 @@ const queryHandlers = [
   imports: [
     TypeOrmModule.forFeature([Game, Player, GameQuestion, Answer]),
     QuestionsModule,
+    ScheduleModule.forRoot(),
   ],
   providers: [
     ...commandHandlers,

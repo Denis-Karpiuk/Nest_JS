@@ -32,7 +32,7 @@ export class Like {
   @ManyToOne(() => User, (user) => user.likes, { onDelete: 'CASCADE' })
   user: User;
 
-  @Column()
+  @Column({ type: 'enum', enum: LikeStatusEnum })
   likeStatus: LikeStatusEnum;
 
   @CreateDateColumn()
